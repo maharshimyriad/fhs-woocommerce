@@ -17,6 +17,8 @@
  * @version 9.6.0
  */
 
+print_r("grid template");exit;
+
 defined( 'ABSPATH' ) || exit;
 
 global $product;
