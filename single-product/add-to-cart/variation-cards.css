@@ -256,6 +256,7 @@
     display: flex;
     align-items: stretch;
     min-height: 42px;
+    margin:0 0 20px;
 }
 
 .fhs-variation-card__form .quantity-container input[type="number"]{
