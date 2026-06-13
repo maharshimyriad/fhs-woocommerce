@@ -380,18 +380,6 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 						<?php endif; ?>
 
 						<!-- Wishlist + Quote — flush bottom row -->
-						<div class="ms-wishlist-container">
-							<div id="ms-wishlist-text">
-								<i class="icofont-heart"></i> Add to My List
-								<i class="icofont-caret-down ms-wishlist-arrow"></i>
-							</div>
-							<div class="ms-wishlist-action">
-								<button id="wishlist-dropdown-submit" type="button">
-									<i class="icofont-plus"></i>
-								</button>
-							</div>
-						</div>
-
 						<div class="woocommerce-other-btn">
 							<?php echo do_shortcode( '[yith_wcwl_add_to_wishlist]' ); ?>
 							<?php echo do_shortcode( '[stars_add_to_quote_button text="Add to Quote"]' ); ?>

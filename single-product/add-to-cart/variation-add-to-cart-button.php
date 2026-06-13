@@ -85,16 +85,6 @@
 				echo do_shortcode('[yith_wcwl_add_to_wishlist]');
 				echo do_shortcode('[stars_add_to_quote_button text="Add to Quote"]');
 				echo '</div>';
-				echo '
-					<div class="ms-wishlist-container">
-						<div id="ms-wishlist-text">
-							<i class="icofont-heart"></i> Add to My Wishlist
-							<i class="icofont-caret-down ms-wishlist-arrow"></i>
-						</div>
-						<div class="ms-wishlist-action">
-							<button id="wishlist-dropdown-submit" type="button"><i class="icofont-plus"></i></button>
-						</div>
-					</div>';
 			?>
 
             <details class="product-specs-details">
