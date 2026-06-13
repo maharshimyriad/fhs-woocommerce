@@ -201,18 +201,12 @@
 /* ── Wishlist + Quote bottom row ─────────────────────────────────────────── */
 
 /* Wrapper that holds ms-wishlist-container + woocommerce-other-btn side by side */
-.fhs-variation-card__body .ms-wishlist-container,
-.fhs-variation-card__body .woocommerce-other-btn {
-    margin-left: -16px;
-    margin-right: -16px;
-}
 
 /* Row container — ms-wishlist-container is left, woocommerce-other-btn is right */
 .fhs-variation-card__body .ms-wishlist-container {
     display: flex;
     align-items: stretch;
     border-top: 1px solid #e5e7eb;
-    background: #eef2ff;
     min-height: 42px;
     margin-top: auto;
     margin-bottom: 0;
