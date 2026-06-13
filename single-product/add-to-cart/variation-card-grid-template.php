@@ -358,10 +358,30 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 								<input type="hidden" name="add-to-cart"  value="<?php echo absint( $variation_id ); ?>" />
 								<input type="hidden" name="product_id"   value="<?php echo absint( $product->get_id() ); ?>" />
 								<input type="hidden" name="variation_id" value="<?php echo absint( $variation_id ); ?>" />
-								<?php foreach ( $variation_data['attributes'] as $attr_key => $attr_value ) : ?>
+								<?php
+								/*
+								 * Submit each attribute that defines this variation.
+								 * If variation_data['attributes'] has an empty string for a key
+								 * it means "any value" — WooCommerce still expects the field
+								 * present and non-empty, so we resolve the real stored value
+								 * directly from the variation product's attributes.
+								 */
+								$variation_attributes = $variation_product->get_variation_attributes();
+								foreach ( $variation_data['attributes'] as $attr_key => $attr_value ) :
+									// $attr_key is e.g. "attribute_pa_size" or "attribute_other"
+									// Normalise to the key format WC stores on the product.
+									$resolved_value = $attr_value;
+									if ( '' === $resolved_value ) {
+										// Try to get it from the variation product itself.
+										$clean_key      = sanitize_title( $attr_key );
+										$resolved_value = isset( $variation_attributes[ $clean_key ] )
+											? $variation_attributes[ $clean_key ]
+											: $attr_value;
+									}
+								?>
 									<input type="hidden"
 										name="<?php echo esc_attr( $attr_key ); ?>"
-										value="<?php echo esc_attr( $attr_value ); ?>" />
+										value="<?php echo esc_attr( $resolved_value ); ?>" />
 								<?php endforeach; ?>
 
 							</form>
