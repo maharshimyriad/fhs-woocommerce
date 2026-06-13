@@ -141,24 +141,14 @@
     flex: 0 0 auto;
 }
 
-.fhs-variation-card__form .quantity-container .minus,
-.fhs-variation-card__form .quantity-container .plus {
-    width: 28px;
-    height: 36px;
+.fhs-variation-card__form .quantity-container .minus, .fhs-variation-card__form .quantity-container .plus {
     padding: 0;
-    font-size: 1rem;
     line-height: 1;
-    background: #f3f4f6;
     border: none;
     cursor: pointer;
     color: #374151;
     flex: 0 0 auto;
     transition: background 0.15s;
-}
-
-.fhs-variation-card__form .quantity-container .minus:hover,
-.fhs-variation-card__form .quantity-container .plus:hover {
-    background: #e5e7eb;
 }
 
 .fhs-variation-card__form .quantity-container input[type="number"] {
@@ -266,9 +256,11 @@
     display: flex;
     align-items: stretch;
     border-top: 1px solid #e5e7eb;
-    background: #eef2ff;
     min-height: 42px;
-    
+}
+
+.fhs-variation-card__form .quantity-container input[type="number"]{
+    border:none !important;
 }
 
 /* Hide the YITH button — wishlist handled by ms-wishlist-container above */
