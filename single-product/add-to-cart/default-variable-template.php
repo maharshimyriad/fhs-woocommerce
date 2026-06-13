@@ -14,7 +14,6 @@
  * @package WooCommerce\Templates
  * @version 9.6.0
  */
-print_r("Hello world");exit;
 defined( 'ABSPATH' ) || exit;
 
 global $product;
