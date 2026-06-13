@@ -8,7 +8,7 @@
 /* ── Grid container ──────────────────────────────────────────────────────── */
 .fhs-variation-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(20%, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(25%, 1fr));
     gap: 24px;
     margin-top: 24px;
 }
