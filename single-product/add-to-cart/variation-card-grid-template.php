@@ -373,9 +373,9 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 									$resolved_value = $attr_value;
 									if ( '' === $resolved_value ) {
 										// Try to get it from the variation product itself.
-										$clean_key      = sanitize_title( $attr_key );
-										$resolved_value = isset( $variation_attributes[ $clean_key ] )
-											? $variation_attributes[ $clean_key ]
+										// Don't sanitize the key - use it as-is to match variation_attributes keys
+										$resolved_value = isset( $variation_attributes[ $attr_key ] )
+											? $variation_attributes[ $attr_key ]
 											: $attr_value;
 									}
 								?>
