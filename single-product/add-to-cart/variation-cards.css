@@ -48,11 +48,12 @@
     border-bottom: 1px solid #f0f2f5;
 }
 
-.fhs-variation-card__image {
+.fhs-variation-card .fhs-variation-card__img-wrap .fhs-variation-card__image {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
+    box-shadow: none;
 }
 
 /* ── Card body ───────────────────────────────────────────────────────────── */
