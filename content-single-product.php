@@ -62,6 +62,18 @@ if ( post_password_required() ) {
 			?>
 		</div>
 		</div><!-- /.single-product-layout-wrap -->
+
+		<?php
+		/**
+		 * Hook: fhs_inside_product_main_container.
+		 *
+		 * Fires inside .single-product-content-container, after the
+		 * images + summary layout wrap. Used to inject the variation
+		 * card grid for categories that have category_variation_template = true.
+		 */
+		do_action( 'fhs_inside_product_main_container' );
+		?>
+
 	</div>
 
 	<?php
