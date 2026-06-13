@@ -309,46 +309,50 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 
 					<?php if ( is_user_logged_in() ) : ?>
 
-						<!-- Price -->
-						<div class="fhs-variation-card__price-wrap">
-							<?php echo wp_kses_post( $price_html ); ?>
-							<span class="gst-text">(Ex GST)</span>
-						</div>
-
 						<?php if ( $can_add ) : ?>
 
-							<!-- Per-variation add-to-cart form -->
+							<!-- Price + qty + ATC on one row -->
 							<form class="fhs-variation-card__form cart"
 								action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>"
 								method="post"
 								enctype="multipart/form-data">
 
-								<!-- Quantity stepper -->
-								<div class="quantity-container">
-									<button type="button" class="minus"
-										aria-label="<?php esc_attr_e( 'Decrease quantity', 'woocommerce' ); ?>">-</button>
-									<div class="quantity">
-										<?php
-										woocommerce_quantity_input(
-											array(
-												'min_value'   => 1,
-												'max_value'   => $max_qty > 0 ? $max_qty : '',
-												'input_value' => 1,
-											),
-											$variation_product,
-											true
-										);
-										?>
-									</div>
-									<button type="button" class="plus"
-										aria-label="<?php esc_attr_e( 'Increase quantity', 'woocommerce' ); ?>">+</button>
-								</div>
+								<div class="fhs-variation-card__purchase-row">
 
-								<!-- Add to cart -->
-								<button type="submit" class="single_add_to_cart_button button alt fhs-variation-card__atc">
-									<i class="icofont-shopping-cart"></i>
-									<?php esc_html_e( 'Add to cart', 'woocommerce' ); ?>
-								</button>
+									<!-- Price -->
+									<div class="fhs-variation-card__price-wrap">
+										<?php echo wp_kses_post( $price_html ); ?>
+										<span class="gst-text">(Ex GST)</span>
+									</div>
+
+									<!-- Quantity stepper -->
+									<div class="quantity-container">
+										<button type="button" class="minus"
+											aria-label="<?php esc_attr_e( 'Decrease quantity', 'woocommerce' ); ?>">-</button>
+										<div class="quantity">
+											<?php
+											woocommerce_quantity_input(
+												array(
+													'min_value'   => 1,
+													'max_value'   => $max_qty > 0 ? $max_qty : '',
+													'input_value' => 1,
+												),
+												$variation_product,
+												true
+											);
+											?>
+										</div>
+										<button type="button" class="plus"
+											aria-label="<?php esc_attr_e( 'Increase quantity', 'woocommerce' ); ?>">+</button>
+									</div>
+
+									<!-- Add to cart -->
+									<button type="submit" class="single_add_to_cart_button button alt fhs-variation-card__atc">
+										<i class="icofont-shopping-cart"></i>
+										<?php esc_html_e( 'Add to cart', 'woocommerce' ); ?>
+									</button>
+
+								</div><!-- /.fhs-variation-card__purchase-row -->
 
 								<!-- Hidden fields -->
 								<input type="hidden" name="add-to-cart"  value="<?php echo absint( $variation_id ); ?>" />
@@ -363,21 +367,22 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 							</form>
 
 						<?php else : ?>
+
+							<!-- Price (out of stock — no form) -->
+							<div class="fhs-variation-card__price-wrap">
+								<?php echo wp_kses_post( $price_html ); ?>
+								<span class="gst-text">(Ex GST)</span>
+							</div>
 							<p class="stock out-of-stock">
 								<?php esc_html_e( 'Out of stock', 'woocommerce' ); ?>
 							</p>
+
 						<?php endif; ?>
 
-						<!-- Add to Quote + YITH wishlist -->
-						<div class="woocommerce-other-btn">
-							<?php echo do_shortcode( '[yith_wcwl_add_to_wishlist]' ); ?>
-							<?php echo do_shortcode( '[stars_add_to_quote_button text="Add to Quote"]' ); ?>
-						</div>
-
-						<!-- Custom wishlist dropdown -->
+						<!-- Wishlist + Quote — flush bottom row -->
 						<div class="ms-wishlist-container">
 							<div id="ms-wishlist-text">
-								<i class="icofont-heart"></i> Add to My Wishlist
+								<i class="icofont-heart"></i> Add to My List
 								<i class="icofont-caret-down ms-wishlist-arrow"></i>
 							</div>
 							<div class="ms-wishlist-action">
@@ -385,6 +390,11 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 									<i class="icofont-plus"></i>
 								</button>
 							</div>
+						</div>
+
+						<div class="woocommerce-other-btn">
+							<?php echo do_shortcode( '[yith_wcwl_add_to_wishlist]' ); ?>
+							<?php echo do_shortcode( '[stars_add_to_quote_button text="Add to Quote"]' ); ?>
 						</div>
 
 					<?php else : ?>
