@@ -31,6 +31,7 @@ if ( function_exists( 'get_field' ) ) {
 		$term = get_term( $term_id, 'product_cat' );
 		if ( ! $term || is_wp_error( $term ) ) {
 			continue;
+			
 		}
 		$terms_to_check[] = $term;
 
