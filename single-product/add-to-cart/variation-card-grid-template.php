@@ -3,31 +3,23 @@
  * Variation card grid template
  *
  * Renders each product variation as an individual card — image, name, SKU,
- * price, quantity stepper, Add to Cart and Add to Quote buttons.
+ * price, quantity stepper, Add to Cart, Add to Quote, wishlist, features
+ * accordion and delivery timeframes.
  *
  * Loaded by variable.php when any assigned category (or parent category) has
  * the ACF field `category_variation_template` set to true.
  *
  * Layout note
  * ───────────
- * This file is included from inside woocommerce_template_single_add_to_cart
- * (priority 30 on woocommerce_single_product_summary), which sits inside
- * .summary.entry-summary → .single-product-layout-wrap.
+ * Included from inside woocommerce_template_single_add_to_cart (priority 30
+ * on woocommerce_single_product_summary), which sits inside .summary →
+ * .single-product-layout-wrap.
  *
- * The card grid must render AFTER .single-product-layout-wrap but still inside
- * .single-product-content-container.product-main-container, so we:
+ * The visible card grid is registered on the custom hook
+ * `fhs_inside_product_main_container` (fired by content-single-product.php
+ * after .single-product-layout-wrap closes, still inside the container div).
  *
- *   1. Register the card grid output on the custom hook
- *      `fhs_inside_product_main_container` (fired by content-single-product.php
- *      after the layout wrap closes, still inside the container div).
- *
- *   2. Output only the hidden native variations_form here, inside the summary,
- *      so WooCommerce's wc-add-to-cart-variation.js still initialises correctly.
- *
- * Available variables (passed from variable.php via wc_get_template):
- *   $available_variations  — array of variation data arrays
- *   $attributes            — array of attribute name => options
- *   $selected_attributes   — array of pre-selected attribute values
+ * Only the hidden native variations_form is output here so WC JS works.
  *
  * @package WooCommerce\Templates
  * @version 9.6.0
@@ -54,19 +46,16 @@ if ( ! wp_style_is( 'fhs-variation-cards', 'enqueued' ) ) {
 
 do_action( 'woocommerce_before_add_to_cart_form' );
 
-// ── Stash data in globals so the hooked closure can reach it ──────────────────
-// (wc_get_template runs in a limited scope; named globals are the reliable
-//  bridge into a later-firing hook callback.)
+// ── Stash data so the hooked function can reach it ────────────────────────────
 $GLOBALS['_fhs_grid_product']    = $product;
 $GLOBALS['_fhs_grid_variations'] = $available_variations;
 $GLOBALS['_fhs_grid_attr']       = $variations_attr;
 
-// ── Register the card grid on the custom hook (fires once, then self-removes) ─
+// ── Register the card grid on the custom hook (fires once, self-removes) ──────
 if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_card_grid' ) ) {
 
 	function fhs_render_variation_card_grid() {
 
-		// Self-remove — only render once per page.
 		remove_action( 'fhs_inside_product_main_container', 'fhs_render_variation_card_grid' );
 
 		$product              = $GLOBALS['_fhs_grid_product'];
@@ -79,8 +68,44 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 			return;
 		}
 
+		// ── Shared data computed once for all cards ───────────────────────────
+
+		// Store address (for pickup details).
+		$store_address_1 = get_option( 'woocommerce_store_address' );
+		$store_address_2 = get_option( 'woocommerce_store_address_2' );
+		$store_city      = get_option( 'woocommerce_store_city' );
+		$store_postcode  = get_option( 'woocommerce_store_postcode' );
+		$store_country   = get_option( 'woocommerce_default_country' );
+		$country_parts   = explode( ':', $store_country );
+		$country_code    = $country_parts[0];
+		$countries       = WC()->countries->countries;
+		$country_name    = $countries[ $country_code ] ?? '';
+		$formatted_address = implode( ', ', array_filter( array(
+			$store_address_1,
+			$store_address_2,
+			$store_city,
+			$store_postcode,
+			$country_name,
+		) ) );
+
+		// Current user email (for delivery enquiry modal).
+		$current_user_email = '';
+		if ( is_user_logged_in() ) {
+			$user_data          = get_userdata( get_current_user_id() );
+			$current_user_email = $user_data ? $user_data->user_email : '';
+		}
+
+		// Parent product features (ACF field on the product).
+		$product_features = get_field( 'product_features', $product->get_id() ) ?: '-';
+
+		// Whether any variation triggers the backorder enquiry button.
+		$show_delivery_enquiry = ( $product->get_backorders() === 'notify' );
+
 		?>
-		<!-- Variation card grid ─────────────────────────────────────────────── -->
+
+		<!-- ═══════════════════════════════════════════════════════════════════
+		     Variation card grid
+		     ═══════════════════════════════════════════════════════════════════ -->
 		<div class="fhs-variation-cards"
 			data-product_id="<?php echo absint( $product->get_id() ); ?>">
 
@@ -93,7 +118,7 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 					continue;
 				}
 
-				// ── Variation display name ────────────────────────────────
+				// ── Variation display name ────────────────────────────────────
 				$attr_labels = array();
 				foreach ( $variation_data['attributes'] as $attr_key => $attr_value ) {
 					if ( ! $attr_value ) {
@@ -107,19 +132,39 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 					? implode( ' / ', $attr_labels )
 					: $variation_product->get_name();
 
-				// ── Image (falls back to parent product image) ────────────
+				// ── Image (falls back to parent) ──────────────────────────────
 				$image_id   = $variation_product->get_image_id() ?: $product->get_image_id();
 				$image_html = $image_id
 					? wp_get_attachment_image( $image_id, 'woocommerce_thumbnail', false, array( 'class' => 'fhs-variation-card__image' ) )
 					: wc_placeholder_img( 'woocommerce_thumbnail', array( 'class' => 'fhs-variation-card__image' ) );
 
-				// ── Stock / purchasable state ─────────────────────────────
+				// ── Stock / purchasable ───────────────────────────────────────
 				$sku            = $variation_product->get_sku();
 				$is_in_stock    = $variation_product->is_in_stock();
 				$is_purchasable = $variation_product->is_purchasable();
 				$can_add        = $is_in_stock && $is_purchasable;
 				$price_html     = $variation_product->get_price_html();
 				$max_qty        = $variation_product->get_max_purchase_quantity();
+
+				// ── Estimated delivery (reuse theme's existing logic if present) ─
+				$est_time_string = '-';
+				$shipping_address = '';
+				if ( is_user_logged_in() ) {
+					$customer = WC()->customer;
+					if ( $customer ) {
+						$shipping_parts   = array_filter( array(
+							$customer->get_shipping_address(),
+							$customer->get_shipping_address_2(),
+							$customer->get_shipping_city(),
+							$customer->get_shipping_state(),
+							$customer->get_shipping_postcode(),
+							$customer->get_shipping_country(),
+						) );
+						$shipping_address = implode( ', ', $shipping_parts );
+					}
+				}
+
+				$card_show_delivery_enquiry = ( $variation_product->get_backorders() === 'notify' );
 
 			?>
 
@@ -187,12 +232,7 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 									<?php esc_html_e( 'Add to cart', 'woocommerce' ); ?>
 								</button>
 
-								<!-- Add to Quote -->
-								<div class="woocommerce-other-btn fhs-variation-card__other-btns">
-									<?php echo do_shortcode( '[stars_add_to_quote_button text="Add to Quote"]' ); ?>
-								</div>
-
-								<!-- Hidden fields: tell WooCommerce exactly which variation to add -->
+								<!-- Hidden fields -->
 								<input type="hidden" name="add-to-cart"  value="<?php echo absint( $variation_id ); ?>" />
 								<input type="hidden" name="product_id"   value="<?php echo absint( $product->get_id() ); ?>" />
 								<input type="hidden" name="variation_id" value="<?php echo absint( $variation_id ); ?>" />
@@ -209,6 +249,112 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 								<?php esc_html_e( 'Out of stock', 'woocommerce' ); ?>
 							</p>
 						<?php endif; ?>
+
+						<!-- Add to Quote + YITH wishlist -->
+						<div class="woocommerce-other-btn">
+							<?php echo do_shortcode( '[yith_wcwl_add_to_wishlist]' ); ?>
+							<?php echo do_shortcode( '[stars_add_to_quote_button text="Add to Quote"]' ); ?>
+						</div>
+
+						<!-- Custom wishlist dropdown -->
+						<div class="ms-wishlist-container">
+							<div id="ms-wishlist-text">
+								<i class="icofont-heart"></i> Add to My Wishlist
+								<i class="icofont-caret-down ms-wishlist-arrow"></i>
+							</div>
+							<div class="ms-wishlist-action">
+								<button id="wishlist-dropdown-submit" type="button">
+									<i class="icofont-plus"></i>
+								</button>
+							</div>
+						</div>
+
+						<!-- Features accordion -->
+						<details class="product-specs-details">
+							<summary class="dropdown-header product-specs-summary"
+								style="width:100%;display:flex;justify-content:space-between;">
+								<span>
+									<i class="icofont icofont-file-alt" style="margin-right:7px;"></i>
+									Features
+								</span>
+								<span class="dropdown-icon"><i class="icofont-rounded-down"></i></span>
+							</summary>
+							<div class="summary-container product-specs-content">
+								<div class="product-specs-row-detail">
+									<?php echo wp_kses_post( $product_features ); ?>
+								</div>
+							</div>
+						</details>
+
+						<!-- Delivery Timeframes -->
+						<div class="wpf_available-address-container">
+
+							<div class="wpf_available-address-header">
+								<i class="icofont-tick-mark"></i>
+								<span>Delivery Timeframes</span>
+							</div>
+
+							<div class="wpf_available-address-content">
+
+								<div class="wpf_pickup-section">
+									<div class="wpf_pickup-label">
+										<span class="wpf_pickup-text">
+											<i class="icofont-vehicle-delivery-van"></i>
+											<span>Pickup From FHS Poly</span>
+											<details>
+												<summary>Store Details</summary>
+												<span><?php echo esc_html( $formatted_address ); ?></span>
+											</details>
+										</span>
+									</div>
+									<div class="wpf_pickup-time">
+										Usually ready within 24 hours<br/>
+										<span style="color:#28a745;">(when in stock)</span>
+									</div>
+								</div>
+
+								<div class="wpf_delivery-section">
+									<div class="wpf_delivery-label">
+										<i class="icofont-ui-home"></i>
+										<div>
+											<span class="wpf_delivery-text">Delivery To</span>
+											<div class="wpf_delivery-address">
+												<details>
+													<summary>My delivery address</summary>
+													<span><?php echo esc_html( $shipping_address ); ?></span>
+												</details>
+											</div>
+										</div>
+									</div>
+									<div class="wpf_delivery-time">
+										Estimated delivery time<br/>
+										<?php echo esc_html( $est_time_string ); ?>
+									</div>
+								</div>
+
+								<div class="wpf-delivery-note">
+									<div class="wpf-delivery-note-text">
+										Item(s) weighing more than 22kgs will require appropriate lifting facilities to unload your delivery.
+									</div>
+								</div>
+
+							</div><!-- /.wpf_available-address-content -->
+
+							<?php if ( $card_show_delivery_enquiry ) : ?>
+								<div class="wpf_delivery-enquiry-wrap">
+									<button
+										type="button"
+										class="wpf_delivery-enquiry-btn"
+										data-product-id="<?php echo esc_attr( $variation_product->get_id() ); ?>"
+										data-nonce="<?php echo esc_attr( wp_create_nonce( 'delivery_enquiry_nonce' ) ); ?>"
+									>
+										<i class="icofont-clock-time"></i>
+										Enquiry for Backorder Delivery Time Estimates
+									</button>
+								</div>
+							<?php endif; ?>
+
+						</div><!-- /.wpf_available-address-container -->
 
 					<?php else : ?>
 
@@ -230,13 +376,60 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 			<?php endforeach; ?>
 
 		</div><!-- /.fhs-variation-cards -->
+
+		<!-- Delivery enquiry modal (rendered once, shared by all cards) ──── -->
+		<div id="wpf-delivery-enquiry-modal" class="wpf-enquiry-overlay">
+			<div class="wpf-enquiry-modal-box">
+
+				<button type="button" id="wpf-enquiry-modal-close" class="wpf-enquiry-modal-close">&times;</button>
+
+				<h3 class="wpf-enquiry-modal-title">
+					Enquiry for Backorder Delivery Time Estimates
+				</h3>
+
+				<p class="wpf-enquiry-modal-desc">
+					Enter your postcode and we'll get back to you with an estimated delivery time.
+				</p>
+
+				<div id="wpf-enquiry-success-msg" class="wpf-enquiry-success-msg">
+					Thanks, We've received your enquiry. Will reach out to you soon.
+				</div>
+
+				<div id="wpf-enquiry-form-area">
+
+					<label class="wpf-enquiry-label">
+						Your Email <span class="wpf-enquiry-required">*</span>
+					</label>
+					<input type="email" id="wpf-enquiry-email" class="wpf-enquiry-input"
+						placeholder="Enter your email"
+						value="<?php echo esc_attr( $current_user_email ); ?>" />
+
+					<label class="wpf-enquiry-label">
+						Your postcode <span class="wpf-enquiry-required">*</span>
+					</label>
+					<input type="text" id="wpf-enquiry-postcode" class="wpf-enquiry-input"
+						placeholder="Enter postcode" maxlength="20" />
+
+					<input type="hidden" id="wpf-enquiry-sku" value="">
+
+					<div id="wpf-enquiry-error" class="wpf-enquiry-error"></div>
+
+					<button type="button" id="wpf-enquiry-submit-btn" class="wpf-enquiry-submit-btn">
+						Submit Enquiry
+					</button>
+
+				</div>
+
+			</div>
+		</div><!-- /#wpf-delivery-enquiry-modal -->
+
 		<?php
 	}
 
 	add_action( 'fhs_inside_product_main_container', 'fhs_render_variation_card_grid' );
 }
 
-// ── Hidden native form (stays inside .summary so WC JS initialises) ───────────
+// ── Hidden native form (inside .summary so WC JS initialises) ─────────────────
 ?>
 <form class="variations_form cart"
 	style="display:none!important;visibility:hidden!important;"
