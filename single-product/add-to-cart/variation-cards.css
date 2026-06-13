@@ -255,7 +255,6 @@
 .fhs-variation-card__body .woocommerce-other-btn {
     display: flex;
     align-items: stretch;
-    border-top: 1px solid #e5e7eb;
     min-height: 42px;
 }
 
