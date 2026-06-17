@@ -325,33 +325,10 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 										if ( current_user_can( 'manage_woocommerce' ) ) {
 											// Admin view: Show Level A pricing if available
 											$level_a_regular = get_post_meta( $variation_id, '_LevelA_tiered_price_regular_price', true );
+											$level_a_sale = get_post_meta( $variation_id, '_LevelA_tiered_price_sale_price', true );
 											
 											if ( $level_a_regular ) {
-												// Level A pricing available
-												$level_a_sale = '';
-												
-												// Check fixed price rules for sale price
-												$fixed_rules = get_post_meta( $variation_id, '_LevelA_fixed_price_rules', true );
-												if ( $fixed_rules && is_array( $fixed_rules ) && count( $fixed_rules ) > 0 ) {
-													$min_price = min( array_column( $fixed_rules, 'price' ) );
-													if ( $min_price && $min_price < (float) $level_a_regular ) {
-														$level_a_sale = $min_price;
-													}
-												}
-												
-												// Check percentage rules for sale price
-												if ( ! $level_a_sale ) {
-													$percentage_rules = get_post_meta( $variation_id, '_LevelA_percentage_price_rules', true );
-													if ( $percentage_rules && is_array( $percentage_rules ) && count( $percentage_rules ) > 0 ) {
-														$first_rule = $percentage_rules[0];
-														if ( isset( $first_rule['price'] ) ) {
-															$discount_percent = (float) $first_rule['price'];
-															$level_a_sale = (float) $level_a_regular * ( 1 - ( $discount_percent / 100 ) );
-														}
-													}
-												}
-												
-												// Display Level A pricing with strikethrough + sale price
+												// Show Level A pricing
 												if ( $level_a_sale && $level_a_sale < (float) $level_a_regular ) {
 													echo wp_kses_post( wc_format_sale_price( $level_a_regular, $level_a_sale ) );
 												} else {

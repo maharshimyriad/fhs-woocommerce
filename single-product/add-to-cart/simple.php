@@ -45,74 +45,31 @@ echo wc_get_stock_html( $product ); // WPCS: XSS ok.
         if ( current_user_can( 'manage_woocommerce' ) ) {
             // Admin view
             $level_a_regular = get_post_meta( $product->get_id(), '_LevelA_tiered_price_regular_price', true );
-            
-            echo '<!-- ADMIN DEBUG START -->';
-            echo '<!-- Product ID: ' . $product->get_id() . ' -->';
-            echo '<!-- Level A Regular Price Found: ' . ( $level_a_regular ? 'YES = ' . $level_a_regular : 'NO' ) . ' -->';
+            $level_a_sale = get_post_meta( $product->get_id(), '_LevelA_tiered_price_sale_price', true );
             
             if ( $level_a_regular ) {
-                echo '<!-- SHOWING: LEVEL A PRICING -->';
-                
-                $level_a_sale = '';
-                
-                // Check fixed price rules for sale price
-                $fixed_rules = get_post_meta( $product->get_id(), '_LevelA_fixed_price_rules', true );
-                if ( $fixed_rules && is_array( $fixed_rules ) && count( $fixed_rules ) > 0 ) {
-                    $min_price = min( array_column( $fixed_rules, 'price' ) );
-                    if ( $min_price && $min_price < (float) $level_a_regular ) {
-                        $level_a_sale = $min_price;
-                        echo '<!-- Level A Sale Price (from fixed rules): ' . $level_a_sale . ' -->';
-                    }
-                }
-                
-                // Check percentage rules for sale price
-                if ( ! $level_a_sale ) {
-                    $percentage_rules = get_post_meta( $product->get_id(), '_LevelA_percentage_price_rules', true );
-                    if ( $percentage_rules && is_array( $percentage_rules ) && count( $percentage_rules ) > 0 ) {
-                        $first_rule = $percentage_rules[0];
-                        if ( isset( $first_rule['price'] ) ) {
-                            $discount_percent = (float) $first_rule['price'];
-                            $level_a_sale = (float) $level_a_regular * ( 1 - ( $discount_percent / 100 ) );
-                            echo '<!-- Level A Sale Price (from ' . $discount_percent . '% discount): ' . $level_a_sale . ' -->';
-                        }
-                    }
-                }
-                
-                // Display Level A pricing
+                // Show Level A pricing
                 if ( $level_a_sale && $level_a_sale < (float) $level_a_regular ) {
-                    echo '<!-- Format: Strikethrough ' . $level_a_regular . ' + Red ' . $level_a_sale . ' -->';
                     echo wc_format_sale_price( $level_a_regular, $level_a_sale );
                 } else {
-                    echo '<!-- Format: No Sale Price, just regular ' . $level_a_regular . ' -->';
                     echo wc_price( $level_a_regular );
                 }
             } else {
-                echo '<!-- SHOWING: PRODUCT REGULAR/SALE PRICE (no Level A) -->';
-                
                 // No Level A pricing - show product's regular and sale price
                 $regular = (float) $product->get_regular_price();
                 $sale = (float) $product->get_sale_price();
                 
-                echo '<!-- Product Regular: ' . $regular . ' -->';
-                echo '<!-- Product Sale: ' . ( $sale ? $sale : 'NO SALE' ) . ' -->';
-                
                 if ( $sale && $sale < $regular ) {
-                    echo '<!-- Format: Strikethrough ' . $regular . ' + Red ' . $sale . ' -->';
                     echo wc_format_sale_price( $regular, $sale );
                 } else {
-                    echo '<!-- Format: No Sale Price, just regular ' . $regular . ' -->';
                     echo wc_price( $regular );
                 }
             }
-            echo '<!-- ADMIN DEBUG END -->';
 
         } else {
-            echo '<!-- NOT ADMIN - SHOWING TIER PRICING -->';
             // Regular user - show tier pricing
             $base_price = (float) $product->get_regular_price();
             $tier_price = (float) $product->get_price();
-            
-            echo '<!-- Base Price: ' . $base_price . ', Tier Price: ' . $tier_price . ' -->';
 
             if ( $tier_price < $base_price ) {
                 echo wc_format_sale_price( $base_price, $tier_price ) . $product->get_price_suffix();
