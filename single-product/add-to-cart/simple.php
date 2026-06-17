@@ -43,11 +43,11 @@ echo wc_get_stock_html( $product ); // WPCS: XSS ok.
     <p class="<?php echo esc_attr( apply_filters( 'woocommerce_product_price_class', 'price' ) ); ?>">
         <?php
         if ( current_user_can( 'manage_woocommerce' ) ) {
-            // Admin view: Show Level A pricing if available, else regular price
+            // Admin view: Show Level A pricing if available
             $level_a_regular = get_post_meta( $product->get_id(), '_LevelA_tiered_price_regular_price', true );
             
             if ( $level_a_regular ) {
-                // Level A pricing available
+                // Level A pricing available - show with sale price format
                 $level_a_sale = '';
                 
                 // Check fixed price rules for sale price
@@ -71,19 +71,26 @@ echo wc_get_stock_html( $product ); // WPCS: XSS ok.
                     }
                 }
                 
-                // Display Level A pricing
+                // Display Level A pricing with strikethrough + sale price
                 if ( $level_a_sale && $level_a_sale < (float) $level_a_regular ) {
                     echo wc_format_sale_price( $level_a_regular, $level_a_sale );
                 } else {
                     echo wc_price( $level_a_regular );
                 }
             } else {
-                // No Level A pricing, show regular price
-                echo wc_price( $product->get_regular_price() );
+                // No Level A pricing - show product's regular and sale price
+                $regular = (float) $product->get_regular_price();
+                $sale = (float) $product->get_sale_price();
+                
+                if ( $sale && $sale < $regular ) {
+                    echo wc_format_sale_price( $regular, $sale );
+                } else {
+                    echo wc_price( $regular );
+                }
             }
 
         } else {
-
+            // Regular user - show tier pricing
             $base_price = (float) $product->get_regular_price();
             $tier_price = (float) $product->get_price();
 

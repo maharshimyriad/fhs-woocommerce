@@ -351,15 +351,22 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 													}
 												}
 												
-												// Display Level A pricing
+												// Display Level A pricing with strikethrough + sale price
 												if ( $level_a_sale && $level_a_sale < (float) $level_a_regular ) {
 													echo wp_kses_post( wc_format_sale_price( $level_a_regular, $level_a_sale ) );
 												} else {
 													echo wp_kses_post( wc_price( $level_a_regular ) );
 												}
 											} else {
-												// No Level A pricing, show regular
-												echo wp_kses_post( wc_price( $variation_product->get_regular_price() ) );
+												// No Level A pricing - show variation's regular + sale price
+												$var_regular = (float) $variation_product->get_regular_price();
+												$var_sale = (float) $variation_product->get_sale_price();
+												
+												if ( $var_sale && $var_sale < $var_regular ) {
+													echo wp_kses_post( wc_format_sale_price( $var_regular, $var_sale ) );
+												} else {
+													echo wp_kses_post( wc_price( $var_regular ) );
+												}
 											}
 										} else {
 											echo wp_kses_post( $price_html );
