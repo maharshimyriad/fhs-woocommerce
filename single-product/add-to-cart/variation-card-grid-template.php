@@ -321,7 +321,22 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 
 									<!-- Price -->
 									<div class="fhs-variation-card__price-wrap">
-										<?php echo wp_kses_post( $price_html ); ?>
+										<?php 
+										if ( current_user_can( 'manage_woocommerce' ) ) {
+											// Admin view: Show regular price + Level A pricing if available
+											echo wp_kses_post( wc_price( $variation_product->get_regular_price() ) );
+											
+											// Check for Level A pricing on this variation
+											$level_a_regular = get_post_meta( $variation_id, '_LevelA_tiered_price_regular_price', true );
+											if ( $level_a_regular ) {
+												echo '<br><small style="color: #666;">';
+												echo 'Level A: ' . wp_kses_post( wc_price( $level_a_regular ) );
+												echo '</small>';
+											}
+										} else {
+											echo wp_kses_post( $price_html );
+										}
+										?>
 										<span class="gst-text">(Ex GST)</span>
 									</div>
 

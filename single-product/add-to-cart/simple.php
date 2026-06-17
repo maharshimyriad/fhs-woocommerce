@@ -43,8 +43,16 @@ echo wc_get_stock_html( $product ); // WPCS: XSS ok.
     <p class="<?php echo esc_attr( apply_filters( 'woocommerce_product_price_class', 'price' ) ); ?>">
         <?php
         if ( current_user_can( 'manage_woocommerce' ) ) {
-
+            // Admin view: Show regular price + Level A pricing if available
             echo wc_price( $product->get_regular_price() );
+            
+            // Check for Level A pricing
+            $level_a_regular = get_post_meta( $product->get_id(), '_LevelA_tiered_price_regular_price', true );
+            if ( $level_a_regular ) {
+                echo '<br><small style="color: #666;">';
+                echo 'Level A: ' . wc_price( $level_a_regular );
+                echo '</small>';
+            }
 
         } else {
 
