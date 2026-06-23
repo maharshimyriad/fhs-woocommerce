@@ -136,7 +136,9 @@ if (is_user_logged_in()) {
 							$field['label'] = esc_html__('Address', 'woocommerce');
 						}
 
-						$value = $checkout->get_value($key);
+						// TEST: force all shipping fields empty to isolate infinite ajax loop.
+						// $value = $checkout->get_value($key);
+						$value = '';
 						woocommerce_form_field($key, $field, $value);
 					}
 					?>
