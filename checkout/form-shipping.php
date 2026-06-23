@@ -136,9 +136,14 @@ if (is_user_logged_in()) {
 							$field['label'] = esc_html__('Address', 'woocommerce');
 						}
 
-						// TEST: force all shipping fields empty to isolate infinite ajax loop.
-						// $value = $checkout->get_value($key);
-						$value = '';
+						// Never pre-fill shipping fields from the saved customer profile.
+						// When WooCommerce re-renders the form on every updated_checkout AJAX
+						// call it would restore the original saved values, overwriting any
+						// correction macship made to city/postcode/suburb — causing macship
+						// to validate again, correct again, trigger update_checkout again: loop.
+						// Fields are populated either by the user typing, by the
+						// "same as billing" JS sync, or by the address-book selector.
+						$value = ( 'shipping_country' === $key ) ? ( $checkout->get_value( 'shipping_country' ) ?: get_option( 'woocommerce_default_country', 'AU' ) ) : '';
 						woocommerce_form_field($key, $field, $value);
 					}
 					?>
