@@ -136,13 +136,9 @@ if (is_user_logged_in()) {
 							$field['label'] = esc_html__('Address', 'woocommerce');
 						}
 
-						// Never pre-fill shipping fields from the saved customer profile.
-						// When WooCommerce re-renders the form on every updated_checkout AJAX
-						// call it would restore the original saved values, overwriting any
-						// correction macship made to city/postcode/suburb — causing macship
-						// to validate again, correct again, trigger update_checkout again: loop.
-						// Fields are populated either by the user typing, by the
-						// "same as billing" JS sync, or by the address-book selector.
+						// Never pre-fill shipping fields from the saved customer profile on render.
+						// See JS below for why — fields are filled once after the first
+						// updated_checkout settles, via localStorage.
 						$value = ( 'shipping_country' === $key ) ? ( $checkout->get_value( 'shipping_country' ) ?: get_option( 'woocommerce_default_country', 'AU' ) ) : '';
 						woocommerce_form_field($key, $field, $value);
 					}
@@ -200,6 +196,68 @@ if (is_user_logged_in()) {
 <script>
 	document.addEventListener('DOMContentLoaded', function () {
 		const STORAGE_KEY = 'checkout_state';
+
+		// ── Saved shipping address (from WP customer profile, output once by PHP) ──
+		// We store this in localStorage and apply it ONCE after the first
+		// updated_checkout fires. This avoids the macship infinite-loop:
+		// if PHP pre-fills the fields on every render, macship validates
+		// postcode+suburb, corrects a field, triggers update_checkout,
+		// WC re-renders with the original saved values → macship corrects → loop.
+		// By injecting the values only after checkout has fully settled we let
+		// macship do its validation once with no WC render overwriting it.
+		const FHS_SHIPPING_PREFILL_KEY = 'fhs_shipping_prefill';
+		const savedShippingAddress = <?php
+			$prefill = [];
+			foreach ( ['first_name','last_name','address_1','city','state','postcode','country'] as $f ) {
+				$val = $checkout->get_value( 'shipping_' . $f );
+				$prefill[ 'shipping_' . $f ] = $val ? $val : '';
+			}
+			echo wp_json_encode( $prefill );
+		?>;
+
+		// Always refresh the stored prefill from the latest PHP-rendered values.
+		try {
+			localStorage.setItem( FHS_SHIPPING_PREFILL_KEY, JSON.stringify( savedShippingAddress ) );
+		} catch (e) {}
+
+		let shippingPrefillApplied = false;
+
+		const applyShippingPrefill = function () {
+			if ( shippingPrefillApplied ) return;
+			var stored;
+			try {
+				stored = JSON.parse( localStorage.getItem( FHS_SHIPPING_PREFILL_KEY ) || 'null' );
+			} catch (e) { stored = null; }
+			if ( ! stored ) return;
+
+			// Only apply if the user hasn't already typed something in a key field.
+			const postcodeField = document.getElementById('shipping_postcode');
+			const cityField     = document.getElementById('shipping_city');
+			if ( ( postcodeField && postcodeField.value.trim() !== '' ) ||
+			     ( cityField     && cityField.value.trim()     !== '' ) ) {
+				// User or macship already populated — don't overwrite.
+				shippingPrefillApplied = true;
+				return;
+			}
+
+			Object.keys( stored ).forEach( function ( fieldId ) {
+				const el = document.getElementById( fieldId );
+				if ( ! el || ! stored[ fieldId ] ) return;
+				el.value = stored[ fieldId ];
+				// Trigger change so Select2 / WC picks up country & state.
+				if ( fieldId === 'shipping_country' || fieldId === 'shipping_state' ) {
+					el.dispatchEvent( new Event('change', { bubbles: true }) );
+				}
+			} );
+
+			shippingPrefillApplied = true;
+
+			// One final update so macship can validate the now-populated address.
+			if ( window.jQuery ) {
+				window.jQuery( document.body ).trigger('update_checkout');
+			}
+		};
+
 		const billingStateElement = document.getElementById('billing_state');
 
 		if (billingStateElement) {
@@ -507,6 +565,11 @@ if (is_user_logged_in()) {
 				if (sameAsBilling && sameAsBilling.checked) {
 					syncShippingStateWithBilling();
 				}
+				// Apply the saved shipping address once, after the first
+				// updated_checkout — at this point macship has loaded and
+				// WC has finished its initial render, so our values won't
+				// be overwritten by a PHP re-render.
+				applyShippingPrefill();
 				ensureBillingAddressEditable();
 			});
 		}
