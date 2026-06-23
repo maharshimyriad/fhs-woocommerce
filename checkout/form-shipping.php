@@ -340,14 +340,18 @@ if (is_user_logged_in()) {
 
 			if (!shippingState) return;
 
-
 			const storedValue = localStorage.getItem(STORAGE_KEY) || '';
 
-
+			// Only update the value; do NOT dispatch a change event here.
+			// Dispatching 'change' on a shipping field triggers WooCommerce's
+			// checkout update listeners, which in turn fires updated_checkout,
+			// which calls this function again → infinite update_checkout loop,
+			// especially with shipping plugins (e.g. macship) that watch
+			// postcode / city / state for recalculation.
+			// The parent queueCheckoutUpdate() already schedules the AJAX call
+			// when a full sync is needed.
 			if (shippingState.value !== storedValue) {
 				shippingState.value = storedValue;
-
-				shippingState.dispatchEvent(new Event('change', { bubbles: true }));
 			}
 		};
 
