@@ -33,25 +33,65 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    OUTER WRAPPER
+   Scoped entirely to .fhs-configurator so nothing leaks to other products.
+
+   Root cause of width issue:
+   WooCommerce layout CSS floats div.images (48%) and div.summary (48%)
+   inside .single-product-layout-wrap. The configurator renders after that
+   wrap closes, still inside .single-product-content-container. We need
+   clear:both so we escape the float context, then width:100% so we fill
+   the container rather than collapsing to fit-content.
+
+   Root cause of vertical gap:
+   Astra outputs a min-height on div.product and the summary column has
+   margin-bottom:2em. With add_cart suppressed the summary is short, but
+   the product gallery float makes .single-product-layout-wrap as tall as
+   the gallery. The gap is that leftover height. We cannot shrink the gallery
+   but we can pull the configurator up by removing its top margin and
+   relying on the padding within .single-product-content-container.
+   We use margin-top:0 and padding-top:24px instead of the previous 32px
+   outer margin, which visually closes the gap without negative margins.
+   This rule is scoped to .fhs-configurator so it only affects configurator
+   products.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator {
+    /* Escape the float context of .single-product-layout-wrap above */
+    clear: both;
+    /* Fill .single-product-content-container fully */
+    width: 100%;
+    /* Remove inherited box-sizing issues */
+    box-sizing: border-box;
+
     background: #f5f6f8;
     border-top: 1px solid #e0e4ea;
     border-bottom: 1px solid #e0e4ea;
-    padding: 32px 0 40px;
-    margin-top: 32px;
-    width: 100%;
+    /* No top margin — gap is handled by padding so it looks intentional */
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 24px 0 40px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TWO-COLUMN LAYOUT
+   The outer .fhs-configurator spans the full .single-product-content-container.
+   The inner __layout adds horizontal padding matching the page container,
+   then splits into left (options) + right (sidebar) columns.
+
+   .product-main-container on this site uses max-width + auto margins for
+   centring — we replicate that padding here so the content aligns with the
+   product title/images above.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator__layout {
+    /* Horizontal padding matches .product-main-container on this theme */
+    padding: 0 20px;
+    box-sizing: border-box;
+
     display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 28px;
+    /* Left: flexible options area. Right: fixed configuration sidebar ~380px */
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 24px;
     align-items: start;
 }
 
@@ -259,11 +299,13 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MACHINE PACKAGES — large radio-style cards
+   ~4 cards across on a full-width desktop left column.
+   minmax(180px, 1fr) gives 4 cols when left area is ~750px+
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator__grid--machine {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 14px;
 }
 
@@ -353,11 +395,13 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    STANDARD SECTIONS — compact checkbox-style grid
+   ~6–7 cards across on a full-width desktop left column.
+   minmax(130px, 1fr) gives natural packing without cramping.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator__grid--standard {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 12px;
 }
 
@@ -469,7 +513,7 @@
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Tablet — stack columns, right panel goes below */
+/* Large tablet — sidebar drops below, left column takes full width */
 @media ( max-width: 1024px ) {
     .fhs-configurator__layout {
         grid-template-columns: 1fr;
@@ -480,14 +524,14 @@
     }
 }
 
-/* Tablet — machine packages 2 cols */
+/* Tablet — machine packages 3 cols */
 @media ( max-width: 900px ) {
     .fhs-configurator__grid--machine {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .fhs-configurator__grid--standard {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     }
 }
 
@@ -497,7 +541,6 @@
         flex-wrap: nowrap;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        border-radius: 8px;
     }
 
     .fhs-configurator__tab {
@@ -512,12 +555,16 @@
     .fhs-configurator__intro-help {
         width: 100%;
     }
+
+    .fhs-configurator__layout {
+        padding: 0 12px;
+    }
 }
 
-/* Mobile — machine packages 1 col */
+/* Mobile — machine packages 2 cols */
 @media ( max-width: 480px ) {
     .fhs-configurator__grid--machine {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .fhs-configurator__grid--standard {
