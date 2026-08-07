@@ -130,6 +130,203 @@ function fhs_configurator_filter_astra_structure( $structure ) {
 add_filter( 'astra_woo_single_product_structure', 'fhs_configurator_filter_astra_structure' );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 4a. Product data helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Returns a sanitised data array for a single product.
+ *
+ * Used by fhs_configurator_get_sections() for each validated product.
+ * Pricing is intentionally omitted here — that is Step 5.
+ *
+ * @param int $product_id Validated, absint product ID.
+ * @return array {
+ *     @type int    $id        Product ID.
+ *     @type string $name      Product display name.
+ *     @type string $sku       Product SKU (empty string if none).
+ *     @type string $image_url Full URL to the product thumbnail, or placeholder.
+ * }
+ */
+function fhs_configurator_get_product_data( $product_id ) {
+
+	$product = wc_get_product( absint( $product_id ) );
+
+	if ( ! $product || ! $product->is_type( 'simple' ) ) {
+		return array();
+	}
+
+	// Image: product thumbnail → parent fallback → WC placeholder.
+	$image_id  = $product->get_image_id();
+	$image_url = $image_id
+		? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' )
+		: wc_placeholder_img_src( 'woocommerce_thumbnail' );
+
+	return array(
+		'id'        => $product->get_id(),
+		'name'      => $product->get_name(),
+		'sku'       => $product->get_sku(),
+		'image_url' => $image_url ?: wc_placeholder_img_src( 'woocommerce_thumbnail' ),
+	);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4b. Section loader
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Reads the configurator_options ACF group for a product and returns all
+ * non-empty sections with validated, simple-product-only product data.
+ *
+ * Machine Packages
+ * ─────────────────
+ * Always selection_type 'single'. No separate ACF selection_type field.
+ * Returned as the first element of the array when non-empty.
+ *
+ * Additive sections
+ * ─────────────────
+ * Each has a product Relationship field and a matching *_selection_type field.
+ * selection_type is either 'single' or 'multiple'. Defaults to 'multiple' if the
+ * ACF field returns an unexpected value (matches the ACF field's default value).
+ *
+ * Validation applied to every product ID from every Relationship field:
+ *   - absint()
+ *   - wc_get_product() must return a valid object
+ *   - is_type('simple') must be true
+ * Invalid or non-simple products are silently skipped.
+ * Sections that end up with zero valid products are excluded from the return value.
+ *
+ * ACF Relationship ordering is preserved — no re-sorting is applied.
+ *
+ * @param int $product_id The configurator base product ID.
+ * @return array[] Ordered array of section arrays. Each section:
+ *   {
+ *     @type string  $key            Internal section key, e.g. 'machine_packages'.
+ *     @type string  $label          Human-readable section label.
+ *     @type string  $selection_type 'single' or 'multiple'.
+ *     @type array[] $products       Array of fhs_configurator_get_product_data() results.
+ *   }
+ */
+function fhs_configurator_get_sections( $product_id ) {
+
+	$product_id = absint( $product_id );
+
+	if ( ! $product_id || ! function_exists( 'get_field' ) ) {
+		return array();
+	}
+
+	// ── Section definitions ───────────────────────────────────────────────────
+	// Order here is the display order.
+	// machine_packages has no selection_type ACF field — hardcoded 'single'.
+	$section_defs = array(
+		array(
+			'key'              => 'machine_packages',
+			'label'            => 'Machine Packages',
+			'products_field'   => 'machine_packages',
+			'type_field'       => null,   // always single
+			'fixed_type'       => 'single',
+		),
+		array(
+			'key'              => 'liner_sets',
+			'label'            => 'Liner Sets',
+			'products_field'   => 'liner_sets',
+			'type_field'       => 'liner_sets_selection_type',
+			'fixed_type'       => null,
+		),
+		array(
+			'key'              => 'replacement_parts',
+			'label'            => 'Replacement Parts',
+			'products_field'   => 'replacement_parts',
+			'type_field'       => 'replacement_parts_selection_type',
+			'fixed_type'       => null,
+		),
+		array(
+			'key'              => 'accessories',
+			'label'            => 'Accessories',
+			'products_field'   => 'accessories',
+			'type_field'       => 'accessories_selection_type',
+			'fixed_type'       => null,
+		),
+		array(
+			'key'              => 'data_logging',
+			'label'            => 'Data Logging',
+			'products_field'   => 'data_logging',
+			'type_field'       => 'data_logging_selection_type',
+			'fixed_type'       => null,
+		),
+		array(
+			'key'              => 'consumables',
+			'label'            => 'Consumables',
+			'products_field'   => 'consumables',
+			'type_field'       => 'consumables_selection_type',
+			'fixed_type'       => null,
+		),
+		array(
+			'key'              => 'tooling_extras',
+			'label'            => 'Tooling & Extras',
+			'products_field'   => 'tooling_extras',
+			'type_field'       => 'tooling_extras_selection_type',
+			'fixed_type'       => null,
+		),
+	);
+
+	$sections = array();
+
+	foreach ( $section_defs as $def ) {
+
+		// Read the ACF Relationship field — returns array of WP_Post objects or IDs
+		// depending on ACF return format. Normalise to IDs.
+		$raw_products = get_field( $def['products_field'], $product_id );
+
+		if ( empty( $raw_products ) || ! is_array( $raw_products ) ) {
+			continue; // No products assigned — skip this section entirely.
+		}
+
+		// Validate each product: absint, wc_get_product, is_type('simple').
+		$valid_products = array();
+		foreach ( $raw_products as $raw ) {
+			// ACF Relationship can return WP_Post objects or post IDs.
+			$pid = is_object( $raw ) ? absint( $raw->ID ) : absint( $raw );
+
+			if ( ! $pid ) {
+				continue;
+			}
+
+			$data = fhs_configurator_get_product_data( $pid );
+
+			if ( empty( $data ) ) {
+				// fhs_configurator_get_product_data() already validates simple type.
+				continue;
+			}
+
+			$valid_products[] = $data;
+		}
+
+		if ( empty( $valid_products ) ) {
+			continue; // All products in this section were invalid — skip.
+		}
+
+		// Determine selection type.
+		if ( null !== $def['fixed_type'] ) {
+			$selection_type = $def['fixed_type'];
+		} else {
+			$raw_type       = get_field( $def['type_field'], $product_id );
+			$selection_type = in_array( $raw_type, array( 'single', 'multiple' ), true )
+				? $raw_type
+				: 'multiple'; // Matches ACF field default value.
+		}
+
+		$sections[] = array(
+			'key'            => $def['key'],
+			'label'          => $def['label'],
+			'selection_type' => $selection_type,
+			'products'       => $valid_products,
+		);
+	}
+
+	return $sections;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 3. Render configurator skeleton on fhs_inside_product_main_container
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -162,68 +359,17 @@ function fhs_render_configurator() {
 		return;
 	}
 
-	echo '<div class="fhs-configurator">Configurator placeholder</div>';
+	$sections = fhs_configurator_get_sections( $product->get_id() );
+
+	wc_get_template(
+		'single-product/add-to-cart/configurator-template.php',
+		array(
+			'configurator_product' => $product,
+			'sections'             => $sections,
+		)
+	);
 }
 
 add_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TEMPORARY DIAGNOSTICS — remove after debugging
-// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Writes a line to wp-content/uploads/fhs-configurator-debug.log
- *
- * @param string $message
- */
-function fhs_conf_log( $message ) {
-	$upload_dir = wp_upload_dir();
-	$log_file   = $upload_dir['basedir'] . '/fhs-configurator-debug.log';
-	$line       = '[' . date( 'Y-m-d H:i:s' ) . '] ' . $message . PHP_EOL;
-	file_put_contents( $log_file, $line, FILE_APPEND | LOCK_EX );
-}
-
-add_action( 'woocommerce_before_single_product', function() {
-
-	fhs_conf_log( '=== PAGE LOAD START (product ID: ' . get_the_ID() . ') ===' );
-
-	// 1. Which content-single-product.php is actually loaded?
-	$located = wc_locate_template( 'content-single-product.php' );
-	fhs_conf_log( '1. content-single-product.php resolved to: ' . $located );
-
-	// 2. Does the child theme woocommerce folder contain our override?
-	$child_path = get_stylesheet_directory() . '/woocommerce/content-single-product.php';
-	fhs_conf_log( '2. Child theme override path: ' . $child_path );
-	fhs_conf_log( '2. Child theme override exists: ' . ( file_exists( $child_path ) ? 'YES' : 'NO' ) );
-
-	// 3. Child theme directory itself.
-	fhs_conf_log( '3. get_stylesheet_directory(): ' . get_stylesheet_directory() );
-
-	// 4. Current product type.
-	global $product;
-	if ( ! $product instanceof WC_Product ) {
-		$product = wc_get_product( get_the_ID() );
-	}
-	$type = $product ? $product->get_type() : 'COULD NOT RESOLVE PRODUCT';
-	fhs_conf_log( '4. Product type: ' . $type );
-
-	// 5. fhs_configurator_is_active() result.
-	$active = $product ? fhs_configurator_is_active( $product ) : false;
-	fhs_conf_log( '5. fhs_configurator_is_active(): ' . ( $active ? 'TRUE' : 'FALSE' ) );
-
-	// 6. ACF raw field value.
-	if ( function_exists( 'get_field' ) && $product ) {
-		$raw = get_field( 'enable_product_configurator', $product->get_id() );
-		fhs_conf_log( '6. ACF enable_product_configurator raw: ' . var_export( $raw, true ) );
-	} else {
-		fhs_conf_log( '6. ACF get_field() not available or product not resolved.' );
-	}
-
-	// 7. Is fhs_render_configurator registered on the hook?
-	$registered = has_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
-	fhs_conf_log( '7. fhs_render_configurator registered on fhs_inside_product_main_container: ' . var_export( $registered, true ) );
-
-	fhs_conf_log( '=== PAGE LOAD END ===' );
-	fhs_conf_log( '' );
-
-} );
