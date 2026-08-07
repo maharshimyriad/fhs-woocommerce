@@ -136,6 +136,7 @@ $tabs_class = 'tabs-main-container product-main-container ' . ($show_specs ? 'sh
         </div>
 
     <?php endif; ?>
+    
     <?php /*
     <div class="spec-row">
       <span>Sizes</span>
