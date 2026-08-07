@@ -353,7 +353,19 @@ function fhs_configurator_get_sections( $product_id ) {
  */
 function fhs_render_configurator() {
 
+	$T = '[FHS-CONFIG-TRACE]';
+	$log = function( $msg ) use ( $T ) {
+		$dir  = wp_upload_dir();
+		$file = $dir['basedir'] . '/fhs-config-trace.log';
+		file_put_contents( $file, '[' . date('H:i:s') . '] ' . $msg . PHP_EOL, FILE_APPEND | LOCK_EX );
+	};
+
+	// A. ENTRY
+	$log( 'A. fhs_render_configurator() ENTRY' );
+	$log( 'A. current post ID: ' . get_the_ID() );
+
 	if ( ! is_product() ) {
+		$log( 'A. EARLY RETURN — not is_product()' );
 		return;
 	}
 
@@ -361,13 +373,29 @@ function fhs_render_configurator() {
 
 	if ( ! $product instanceof WC_Product ) {
 		$product = wc_get_product( get_the_ID() );
+		$log( 'A. global $product was null — resolved via wc_get_product()' );
 	}
 
-	if ( ! fhs_configurator_is_active( $product ) ) {
+	$log( 'A. product ID from object: ' . ( $product ? $product->get_id() : 'NULL' ) );
+	$log( 'A. product type: '          . ( $product ? $product->get_type() : 'NULL' ) );
+
+	$active = fhs_configurator_is_active( $product );
+	$log( 'A. fhs_configurator_is_active(): ' . ( $active ? 'TRUE' : 'FALSE' ) );
+
+	if ( ! $active ) {
+		$log( 'A. EARLY RETURN — configurator not active' );
 		return;
 	}
 
-	$sections = fhs_configurator_get_sections( $product->get_id() );
+	// ── delegate section loading and template inclusion to traced version ──
+	$sections = fhs_configurator_get_sections_traced( $product->get_id(), $log );
+
+	// F. BACK IN fhs_render_configurator
+	$log( 'F. count($sections) returned to fhs_render_configurator: ' . count( $sections ) );
+
+	$template_path = wc_locate_template( 'single-product/add-to-cart/configurator-template.php' );
+	$log( 'F. wc_locate_template result: ' . $template_path );
+	$log( 'F. file_exists: ' . ( file_exists( $template_path ) ? 'YES' : 'NO' ) );
 
 	wc_get_template(
 		'single-product/add-to-cart/configurator-template.php',
@@ -376,6 +404,133 @@ function fhs_render_configurator() {
 			'sections'             => $sections,
 		)
 	);
+
+	$log( 'F. wc_get_template() call completed' );
+}
+
+/**
+ * Traced version of fhs_configurator_get_sections() — identical logic,
+ * full [FHS-CONFIG-TRACE] instrumentation. Temporary, remove after debug.
+ */
+function fhs_configurator_get_sections_traced( $product_id, $log ) {
+
+	$product_id = absint( $product_id );
+
+	if ( ! $product_id || ! function_exists( 'get_field' ) ) {
+		$log( 'B. EARLY RETURN — no product_id or get_field missing' );
+		return array();
+	}
+
+	// B. ACF GROUP
+	$group = get_field( 'configurator_options', $product_id );
+	$log( 'B. get_field(configurator_options) is_array: ' . ( is_array( $group ) ? 'YES' : 'NO' ) );
+	$log( 'B. array_keys: ' . ( is_array( $group ) ? implode( ', ', array_keys( $group ) ) : 'N/A' ) );
+
+	if ( ! is_array( $group ) ) {
+		$log( 'B. EARLY RETURN — $group is not array' );
+		return array();
+	}
+
+	$section_defs = array(
+		array( 'key' => 'machine_packages',  'label' => 'Machine Packages',  'products_field' => 'machine_packages',  'type_field' => null,                           'fixed_type' => 'single' ),
+		array( 'key' => 'liner_sets',        'label' => 'Liner Sets',        'products_field' => 'liner_sets',        'type_field' => 'liner_sets_selection_type',        'fixed_type' => null ),
+		array( 'key' => 'replacement_parts', 'label' => 'Replacement Parts', 'products_field' => 'replacement_parts', 'type_field' => 'replacement_parts_selection_type', 'fixed_type' => null ),
+		array( 'key' => 'accessories',       'label' => 'Accessories',       'products_field' => 'accessories',       'type_field' => 'accessories_selection_type',       'fixed_type' => null ),
+		array( 'key' => 'data_logging',      'label' => 'Data Logging',      'products_field' => 'data_logging',      'type_field' => 'data_logging_selection_type',      'fixed_type' => null ),
+		array( 'key' => 'consumables',       'label' => 'Consumables',       'products_field' => 'consumables',       'type_field' => 'consumables_selection_type',       'fixed_type' => null ),
+		array( 'key' => 'tooling_extras',    'label' => 'Tooling & Extras',  'products_field' => 'tooling_extras',    'type_field' => 'tooling_extras_selection_type',    'fixed_type' => null ),
+	);
+
+	$sections = array();
+
+	foreach ( $section_defs as $def ) {
+
+		// C. EACH SECTION
+		$log( 'C. --- section: ' . $def['key'] );
+
+		$raw_products = isset( $group[ $def['products_field'] ] ) && is_array( $group[ $def['products_field'] ] )
+			? $group[ $def['products_field'] ]
+			: array();
+
+		$log( 'C. raw Relationship value type: ' . gettype( $group[ $def['products_field'] ] ?? null ) );
+		$log( 'C. raw product count: ' . count( $raw_products ) );
+		$log( 'C. raw_products dump: ' . print_r( $raw_products, true ) );
+
+		if ( empty( $raw_products ) ) {
+			$log( 'C. SKIPPED — no raw products' );
+			continue;
+		}
+
+		$raw_type = null !== $def['fixed_type'] ? $def['fixed_type'] : ( $group[ $def['type_field'] ] ?? 'multiple' );
+		$log( 'C. selection type raw: ' . $raw_type );
+
+		// D. EACH PRODUCT
+		$valid_products = array();
+		foreach ( $raw_products as $i => $raw ) {
+
+			$pid = is_object( $raw ) ? absint( $raw->ID ) : absint( $raw );
+			$log( 'D.   [' . $i . '] raw type=' . gettype( $raw ) . ' raw_val=' . ( is_object( $raw ) ? 'OBJ(ID=' . $raw->ID . ')' : $raw ) . ' absint_pid=' . $pid );
+
+			if ( ! $pid ) {
+				$log( 'D.   [' . $i . '] REJECTED — absint is 0' );
+				continue;
+			}
+
+			$p = wc_get_product( $pid );
+			$log( 'D.   [' . $i . '] wc_get_product(' . $pid . '): ' . ( $p ? get_class( $p ) : 'FALSE/NULL' ) );
+
+			if ( ! $p ) {
+				$log( 'D.   [' . $i . '] REJECTED — wc_get_product returned falsy' );
+				continue;
+			}
+
+			$log( 'D.   [' . $i . '] product type: ' . $p->get_type() );
+			$log( 'D.   [' . $i . '] is_type(simple): ' . ( $p->is_type( 'simple' ) ? 'TRUE' : 'FALSE' ) );
+
+			if ( ! $p->is_type( 'simple' ) ) {
+				$log( 'D.   [' . $i . '] REJECTED — not simple' );
+				continue;
+			}
+
+			$data = fhs_configurator_get_product_data( $pid );
+			$log( 'D.   [' . $i . '] fhs_configurator_get_product_data() returned: ' . ( empty( $data ) ? 'EMPTY' : 'OK — name=' . $data['name'] ) );
+
+			if ( empty( $data ) ) {
+				$log( 'D.   [' . $i . '] REJECTED — get_product_data returned empty' );
+				continue;
+			}
+
+			$log( 'D.   [' . $i . '] ACCEPTED' );
+			$valid_products[] = $data;
+		}
+
+		if ( empty( $valid_products ) ) {
+			$log( 'C. SKIPPED — all products rejected for section ' . $def['key'] );
+			continue;
+		}
+
+		$selection_type = null !== $def['fixed_type']
+			? $def['fixed_type']
+			: ( in_array( $raw_type, array( 'single', 'multiple' ), true ) ? $raw_type : 'multiple' );
+
+		$log( 'C. ADDED section ' . $def['key'] . ' with ' . count( $valid_products ) . ' products, selection_type=' . $selection_type );
+
+		$sections[] = array(
+			'key'            => $def['key'],
+			'label'          => $def['label'],
+			'selection_type' => $selection_type,
+			'products'       => $valid_products,
+		);
+	}
+
+	// E. FINAL SECTIONS
+	$log( 'E. fhs_configurator_get_sections_traced() RETURNING count=' . count( $sections ) );
+	$log( 'E. section keys: ' . implode( ', ', array_column( $sections, 'key' ) ) );
+	foreach ( $sections as $s ) {
+		$log( 'E. section "' . $s['key'] . '" product count: ' . count( $s['products'] ) );
+	}
+
+	return $sections;
 }
 
 add_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );

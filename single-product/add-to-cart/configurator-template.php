@@ -38,14 +38,28 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// ── G. TEMPLATE ENTRY TRACE ───────────────────────────────────────────────────
+$_fhs_trace_log = function( $msg ) {
+	$dir  = wp_upload_dir();
+	$file = $dir['basedir'] . '/fhs-config-trace.log';
+	file_put_contents( $file, '[' . date('H:i:s') . '] ' . $msg . PHP_EOL, FILE_APPEND | LOCK_EX );
+};
+$_fhs_trace_log( 'G. TEMPLATE ENTERED: configurator-template.php' );
+$_fhs_trace_log( 'G. isset($sections): '   . ( isset( $sections )            ? 'YES' : 'NO' ) );
+$_fhs_trace_log( 'G. is_array($sections): ' . ( isset( $sections ) && is_array( $sections ) ? 'YES' : 'NO' ) );
+$_fhs_trace_log( 'G. count($sections): '   . ( isset( $sections ) && is_array( $sections ) ? count( $sections ) : 'N/A' ) );
+$_fhs_trace_log( 'G. isset($configurator_product): ' . ( isset( $configurator_product ) ? 'YES' : 'NO' ) );
+
 // Nothing to show — fhs_configurator_get_sections() already filtered empties,
 // but guard here too so the wrapper never renders when $sections is empty.
 if ( empty( $sections ) ) {
+	$_fhs_trace_log( 'H. EARLY RETURN — $sections is empty' );
 	return;
 }
 
 // First section key — used to mark the first tab/panel active by default.
 $first_key = $sections[0]['key'];
+$_fhs_trace_log( 'G. PAST empty check — rendering HTML, first_key=' . $first_key );
 ?>
 
 <div class="fhs-configurator"
@@ -145,3 +159,5 @@ $first_key = $sections[0]['key'];
 	<!-- ── Your Configuration panel — implemented in Step 6 ─────────────── -->
 
 </div><!-- /.fhs-configurator -->
+
+<?php $_fhs_trace_log( 'G. TEMPLATE END — HTML fully output' ); ?>
