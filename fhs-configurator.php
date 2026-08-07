@@ -372,4 +372,85 @@ function fhs_render_configurator() {
 
 add_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORARY DIAGNOSTICS — Step 4 debug — remove after
+// ─────────────────────────────────────────────────────────────────────────────
+
+function fhs_conf_log( $message ) {
+	$upload_dir = wp_upload_dir();
+	$log_file   = $upload_dir['basedir'] . '/fhs-configurator-debug.log';
+	$line       = '[' . date( 'Y-m-d H:i:s' ) . '] ' . $message . PHP_EOL;
+	file_put_contents( $log_file, $line, FILE_APPEND | LOCK_EX );
+}
+
+add_action( 'fhs_inside_product_main_container', function() {
+
+	global $product;
+	if ( ! $product instanceof WC_Product ) {
+		$product = wc_get_product( get_the_ID() );
+	}
+	if ( ! $product || ! fhs_configurator_is_active( $product ) ) {
+		return;
+	}
+
+	$pid = $product->get_id();
+	fhs_conf_log( '=== STEP 4 DEBUG (product ID: ' . $pid . ') ===' );
+
+	// 1. Raw ACF value for entire configurator_options group.
+	$group = get_field( 'configurator_options', $pid );
+	fhs_conf_log( '1. get_field(configurator_options) type: ' . gettype( $group ) );
+	fhs_conf_log( '1. get_field(configurator_options) value: ' . print_r( $group, true ) );
+
+	// 2. Each individual sub-field read directly at the post level.
+	$fields = array(
+		'machine_packages',
+		'liner_sets',
+		'liner_sets_selection_type',
+		'replacement_parts',
+		'replacement_parts_selection_type',
+		'accessories',
+		'accessories_selection_type',
+		'data_logging',
+		'data_logging_selection_type',
+		'consumables',
+		'consumables_selection_type',
+		'tooling_extras',
+		'tooling_extras_selection_type',
+	);
+	foreach ( $fields as $field_name ) {
+		$val = get_field( $field_name, $pid );
+		fhs_conf_log( '2. get_field(' . $field_name . '): type=' . gettype( $val ) . ' | value=' . print_r( $val, true ) );
+	}
+
+	// 3. Result of fhs_configurator_get_sections().
+	$sections = fhs_configurator_get_sections( $pid );
+	fhs_conf_log( '3. fhs_configurator_get_sections() count: ' . count( $sections ) );
+	fhs_conf_log( '3. fhs_configurator_get_sections() value: ' . print_r( $sections, true ) );
+
+	// 4. If sections empty, test first Relationship field product IDs directly.
+	$raw_machine = get_field( 'machine_packages', $pid );
+	if ( ! empty( $raw_machine ) && is_array( $raw_machine ) ) {
+		foreach ( $raw_machine as $i => $raw ) {
+			$raw_pid = is_object( $raw ) ? absint( $raw->ID ) : absint( $raw );
+			fhs_conf_log( '4. machine_packages[' . $i . '] raw type=' . gettype( $raw ) . ' resolved_pid=' . $raw_pid );
+			$p = wc_get_product( $raw_pid );
+			fhs_conf_log( '4.   wc_get_product(' . $raw_pid . '): ' . ( $p ? get_class( $p ) . ' type=' . $p->get_type() : 'FALSE/NULL' ) );
+			if ( $p ) {
+				fhs_conf_log( '4.   is_type(simple): ' . ( $p->is_type( 'simple' ) ? 'TRUE' : 'FALSE' ) );
+			}
+		}
+	} else {
+		fhs_conf_log( '4. machine_packages raw empty or not array: ' . print_r( $raw_machine, true ) );
+	}
+
+	// 5. Confirm template file path.
+	$tpl = wc_locate_template( 'single-product/add-to-cart/configurator-template.php' );
+	fhs_conf_log( '5. wc_locate_template(configurator-template.php): ' . $tpl );
+	fhs_conf_log( '5. file_exists: ' . ( file_exists( $tpl ) ? 'YES' : 'NO' ) );
+
+	fhs_conf_log( '=== END ===' );
+	fhs_conf_log( '' );
+
+}, 5 ); // priority 5 — fires before fhs_render_configurator at priority 10
+
 
