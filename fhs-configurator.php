@@ -14,12 +14,23 @@
  *     Condition: product is a WooCommerce Simple type
  *                AND the ACF field `enable_product_configurator` is true.
  *
- *  2. fhs_maybe_suppress_add_to_cart() — hooked at priority 29 on
- *     woocommerce_single_product_summary.
- *     When the configurator is active it removes the standard
- *     woocommerce_template_single_add_to_cart callback (priority 30)
- *     so that simple.php does not render.
- *     On every other product it returns immediately without doing anything.
+ *  2. fhs_configurator_filter_astra_structure() — filters the
+ *     `astra_woo_single_product_structure` array before Astra's
+ *     single_product_content_structure() iterates it.
+ *     When the configurator is active, removes the 'add_cart' element so
+ *     Astra never calls woocommerce_template_single_add_to_cart() directly.
+ *     When the configurator is inactive, returns the array completely unchanged.
+ *
+ * Why this approach (not remove_action)
+ * ──────────────────────────────────────
+ * Astra (>= 3.9.2) removes all default woocommerce_single_product_summary
+ * callbacks on the `wp` action and replaces them with a single callback —
+ * single_product_content_structure() at priority 10 — which calls
+ * woocommerce_template_single_add_to_cart() as a direct PHP function call
+ * inside a switch/case block. remove_action() cannot intercept a direct
+ * function call. The only correct intercept point is the
+ * `astra_woo_single_product_structure` filter, which Astra applies to its
+ * structure array before iterating it.
  *
  * What this file does NOT do yet
  * ───────────────────────────────
@@ -28,10 +39,10 @@
  *  - No AJAX handlers
  *  - No asset enqueuing
  *  - No ACF field registration (fields already exist in WordPress)
- *  - No modification to woocommerce_template_single_meta (priority 40)
+ *  - No modification to woocommerce_template_single_meta behaviour
  *
  * @package FHS_WOO
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -79,45 +90,41 @@ function fhs_configurator_is_active( $product ) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Suppress woocommerce_template_single_add_to_cart when configurator is on
+// 2. Remove 'add_cart' from Astra's product structure when configurator is on
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Hooked at priority 29 on woocommerce_single_product_summary.
+ * Filters the Astra single-product structure array.
  *
- * Fires one priority step before woocommerce_template_single_add_to_cart (30).
- * If the configurator is active for the current product, removes that callback
- * so simple.php (or any other add-to-cart template) does not render.
+ * Astra iterates this array in single_product_content_structure() and calls
+ * woocommerce_template_single_add_to_cart() directly for the 'add_cart' element.
+ * Removing 'add_cart' here prevents that direct call from happening.
  *
- * On every other product this function returns immediately — no side effects.
+ * When the configurator is inactive this filter returns $structure untouched,
+ * so all existing products are completely unaffected.
+ *
+ * @param array $structure Astra's ordered structure array, e.g.
+ *                         ['title', 'price', 'short_desc', 'add_cart', 'meta'].
+ * @return array
  */
-function fhs_maybe_suppress_add_to_cart() {
+function fhs_configurator_filter_astra_structure( $structure ) {
 
-	// Only relevant on single product pages.
 	if ( ! is_product() ) {
-		return;
+		return $structure;
 	}
 
 	global $product;
 
-	// Ensure $product is populated. WooCommerce sets this during the loop
-	// in single-product.php, so it should always be available here.
 	if ( ! $product instanceof WC_Product ) {
 		$product = wc_get_product( get_the_ID() );
 	}
 
 	if ( ! fhs_configurator_is_active( $product ) ) {
-		// Not a configurator product — do nothing, let existing flow run.
-		return;
+		return $structure;
 	}
 
-	// Remove the standard add-to-cart hook that would otherwise load
-	// simple.php via woocommerce_template_single_add_to_cart().
-	remove_action(
-		'woocommerce_single_product_summary',
-		'woocommerce_template_single_add_to_cart',
-		30
-	);
+	// Strip 'add_cart' and re-index so Astra's foreach stays clean.
+	return array_values( array_diff( (array) $structure, array( 'add_cart' ) ) );
 }
 
-add_action( 'woocommerce_single_product_summary', 'fhs_maybe_suppress_add_to_cart', 29 );
+add_filter( 'astra_woo_single_product_structure', 'fhs_configurator_filter_astra_structure' );
