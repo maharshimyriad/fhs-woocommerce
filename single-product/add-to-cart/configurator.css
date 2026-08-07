@@ -10,9 +10,21 @@
  *
  * Class naming follows the existing fhs-variation-card__ convention.
  *
+ * Font-size note:
+ *   This theme sets html { font-size: 10px } so 1rem = 10px.
+ *   All rem values are scaled so they render at their intended px size:
+ *     1.6rem  = 16px   (body copy)
+ *     1.47rem = 14.7px (intro bar text)
+ *     1.44rem = 14.4px (tab icon, info icon)
+ *     1.31rem = 13.1px (tab label, help text)
+ *     1.28rem = 12.8px (select-all, optional badge)
+ *     1.25rem = 12.5px (intro number badge)
+ *     1.15rem = 11.5px (optional badge, card SKU machine)
+ *     1.12rem = 11.2px (card SKU standard)
+ *
  * Colour tokens:
  *   --fhs-blue      : #1a4f8a   (FHS brand blue, tab active + buttons)
- *   --fhs-blue-lt   : #e8f0fb   (light blue tint for hover/selected states)
+ *   --fhs-blue-lt   : #f0f4fb   (light blue tint for hover/selected states)
  *   --fhs-border    : #e0e4ea   (card + panel borders)
  *   --fhs-bg        : #f5f6f8   (outer wrapper background)
  *   --fhs-text      : #1a1a1a   (primary text)
@@ -70,7 +82,7 @@
     border: 1px solid #e0e4ea;
     border-radius: 8px;
     margin-bottom: 16px;
-    font-size: 0.92rem;
+    font-size: 1.47rem; /* 14.7px */
     color: #1a1a1a;
 }
 
@@ -83,7 +95,7 @@
     background: #1a4f8a;
     color: #fff;
     border-radius: 50%;
-    font-size: 0.78rem;
+    font-size: 1.25rem; /* 12.5px */
     font-weight: 700;
     flex-shrink: 0;
 }
@@ -94,7 +106,7 @@
 }
 
 .fhs-configurator__intro-help {
-    font-size: 0.82rem;
+    font-size: 1.31rem; /* 13.1px */
     color: #6b7280;
     white-space: nowrap;
 }
@@ -129,7 +141,7 @@
     align-items: center;
     gap: 6px;
     padding: 10px 16px;
-    font-size: 0.82rem;
+    font-size: 1.31rem; /* 13.1px */
     font-weight: 500;
     color: #374151;
     background: transparent;
@@ -147,7 +159,7 @@
 }
 
 .fhs-configurator__tab i {
-    font-size: 1rem;
+    font-size: 1.44rem; /* 14.4px */
     color: #6b7280;
     flex-shrink: 0;
     transition: color 0.15s;
@@ -203,7 +215,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1rem;
+    font-size: 1.6rem; /* 16px */
     font-weight: 700;
     color: #1a1a1a;
     margin: 0;
@@ -211,7 +223,7 @@
 
 .fhs-configurator__optional-badge {
     display: inline-block;
-    font-size: 0.72rem;
+    font-size: 1.15rem; /* 11.5px */
     font-weight: 500;
     color: #6b7280;
     background: #f3f4f6;
@@ -224,13 +236,13 @@
 
 .fhs-configurator__info-icon {
     color: #9ca3af;
-    font-size: 0.9rem;
+    font-size: 1.44rem; /* 14.4px */
     cursor: default;
     vertical-align: middle;
 }
 
 .fhs-configurator__select-all {
-    font-size: 0.8rem;
+    font-size: 1.28rem; /* 12.8px */
     color: #1a4f8a;
     background: none;
     border: none;
@@ -326,7 +338,7 @@
 }
 
 .fhs-configurator__card--machine .fhs-configurator__card-name {
-    font-size: 0.82rem;
+    font-size: 1.31rem; /* 13.1px */
     font-weight: 600;
     color: #1a1a1a;
     margin: 0 0 2px;
@@ -334,7 +346,7 @@
 }
 
 .fhs-configurator__card--machine .fhs-configurator__card-sku {
-    font-size: 0.72rem;
+    font-size: 1.15rem; /* 11.5px */
     color: #9ca3af;
     margin: 0 0 4px;
 }
@@ -432,7 +444,7 @@
 }
 
 .fhs-configurator__card--standard .fhs-configurator__card-name {
-    font-size: 0.78rem;
+    font-size: 1.25rem; /* 12.5px */
     font-weight: 600;
     color: #1a1a1a;
     margin: 0 0 2px;
@@ -440,7 +452,7 @@
 }
 
 .fhs-configurator__card--standard .fhs-configurator__card-sku {
-    font-size: 0.7rem;
+    font-size: 1.12rem; /* 11.2px */
     color: #9ca3af;
     margin: 0;
 }
