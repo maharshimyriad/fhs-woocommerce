@@ -128,3 +128,102 @@ function fhs_configurator_filter_astra_structure( $structure ) {
 }
 
 add_filter( 'astra_woo_single_product_structure', 'fhs_configurator_filter_astra_structure' );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. Render configurator skeleton on fhs_inside_product_main_container
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Outputs the configurator mount point inside .single-product-content-container,
+ * after .single-product-layout-wrap closes.
+ *
+ * Hooked to the custom fhs_inside_product_main_container action defined in
+ * content-single-product.php. That hook fires at the same level used by the
+ * variation card grid, so the configurator renders full-width below the
+ * image + summary row.
+ *
+ * When the configurator is inactive this function outputs nothing, leaving
+ * fhs_inside_product_main_container available for other callbacks (e.g. the
+ * variation card grid) without interference.
+ */
+function fhs_render_configurator() {
+
+	if ( ! is_product() ) {
+		return;
+	}
+
+	global $product;
+
+	if ( ! $product instanceof WC_Product ) {
+		$product = wc_get_product( get_the_ID() );
+	}
+
+	if ( ! fhs_configurator_is_active( $product ) ) {
+		return;
+	}
+
+	echo '<div class="fhs-configurator">Configurator placeholder</div>';
+}
+
+add_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORARY DIAGNOSTICS — remove after debugging
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Writes a line to wp-content/uploads/fhs-configurator-debug.log
+ *
+ * @param string $message
+ */
+function fhs_conf_log( $message ) {
+	$upload_dir = wp_upload_dir();
+	$log_file   = $upload_dir['basedir'] . '/fhs-configurator-debug.log';
+	$line       = '[' . date( 'Y-m-d H:i:s' ) . '] ' . $message . PHP_EOL;
+	file_put_contents( $log_file, $line, FILE_APPEND | LOCK_EX );
+}
+
+add_action( 'woocommerce_before_single_product', function() {
+
+	fhs_conf_log( '=== PAGE LOAD START (product ID: ' . get_the_ID() . ') ===' );
+
+	// 1. Which content-single-product.php is actually loaded?
+	$located = wc_locate_template( 'content-single-product.php' );
+	fhs_conf_log( '1. content-single-product.php resolved to: ' . $located );
+
+	// 2. Does the child theme woocommerce folder contain our override?
+	$child_path = get_stylesheet_directory() . '/woocommerce/content-single-product.php';
+	fhs_conf_log( '2. Child theme override path: ' . $child_path );
+	fhs_conf_log( '2. Child theme override exists: ' . ( file_exists( $child_path ) ? 'YES' : 'NO' ) );
+
+	// 3. Child theme directory itself.
+	fhs_conf_log( '3. get_stylesheet_directory(): ' . get_stylesheet_directory() );
+
+	// 4. Current product type.
+	global $product;
+	if ( ! $product instanceof WC_Product ) {
+		$product = wc_get_product( get_the_ID() );
+	}
+	$type = $product ? $product->get_type() : 'COULD NOT RESOLVE PRODUCT';
+	fhs_conf_log( '4. Product type: ' . $type );
+
+	// 5. fhs_configurator_is_active() result.
+	$active = $product ? fhs_configurator_is_active( $product ) : false;
+	fhs_conf_log( '5. fhs_configurator_is_active(): ' . ( $active ? 'TRUE' : 'FALSE' ) );
+
+	// 6. ACF raw field value.
+	if ( function_exists( 'get_field' ) && $product ) {
+		$raw = get_field( 'enable_product_configurator', $product->get_id() );
+		fhs_conf_log( '6. ACF enable_product_configurator raw: ' . var_export( $raw, true ) );
+	} else {
+		fhs_conf_log( '6. ACF get_field() not available or product not resolved.' );
+	}
+
+	// 7. Is fhs_render_configurator registered on the hook?
+	$registered = has_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
+	fhs_conf_log( '7. fhs_render_configurator registered on fhs_inside_product_main_container: ' . var_export( $registered, true ) );
+
+	fhs_conf_log( '=== PAGE LOAD END ===' );
+	fhs_conf_log( '' );
+
+} );
