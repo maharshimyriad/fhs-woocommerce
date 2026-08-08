@@ -32,7 +32,11 @@ if ( post_password_required() ) {
 }
 ?>
 <div id="product-<?php the_ID(); ?>" <?php wc_product_class( '', $product ); ?>>
-    <div class="single-product-content-container product-main-container">
+	<?php $fhs_has_configurator = function_exists( 'fhs_configurator_is_active' ) && fhs_configurator_is_active( $product ); ?>
+    <div class="single-product-content-container product-main-container<?php echo $fhs_has_configurator ? ' fhs-configurator-product-layout' : ''; ?>">
+		<?php if ( $fhs_has_configurator ) : ?>
+			<div class="fhs-configurator-product-main">
+		<?php endif; ?>
 		<div class="single-product-layout-wrap">
 		<?php
 		/**
@@ -73,6 +77,12 @@ if ( post_password_required() ) {
 		 */
 		do_action( 'fhs_inside_product_main_container' );
 		?>
+
+		<?php if ( $fhs_has_configurator ) : ?>
+			</div><!-- /.fhs-configurator-product-main -->
+
+			<?php do_action( 'fhs_configurator_sidebar_area' ); ?>
+		<?php endif; ?>
 
 	</div>
 

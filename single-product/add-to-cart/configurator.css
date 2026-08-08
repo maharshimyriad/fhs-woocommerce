@@ -32,81 +32,77 @@
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   OUTER WRAPPER
-   Scoped entirely to .fhs-configurator so nothing leaks to other products.
-
-   Root cause of width issue:
-   WooCommerce layout CSS floats div.images (48%) and div.summary (48%)
-   inside .single-product-layout-wrap. The configurator renders after that
-   wrap closes, still inside .single-product-content-container. We need
-   clear:both so we escape the float context, then width:100% so we fill
-   the container rather than collapsing to fit-content.
-
-   Root cause of vertical gap:
-   Astra outputs a min-height on div.product and the summary column has
-   margin-bottom:2em. With add_cart suppressed the summary is short, but
-   the product gallery float makes .single-product-layout-wrap as tall as
-   the gallery. The gap is that leftover height. We cannot shrink the gallery
-   but we can pull the configurator up by removing its top margin and
-   relying on the padding within .single-product-content-container.
-   We use margin-top:0 and padding-top:24px instead of the previous 32px
-   outer margin, which visually closes the gap without negative margins.
-   This rule is scoped to .fhs-configurator so it only affects configurator
-   products.
+   CONFIGURATOR PRODUCT PAGE LAYOUT
+   The configurator summary must sit beside BOTH the product gallery/summary row
+   and the configurator row below it. To do that, the overall
+   .single-product-content-container becomes the two-column layout, but only on
+   configurator-enabled products.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.fhs-configurator {
-    /* Escape the float context of .single-product-layout-wrap above */
-    clear: both;
-    /* Fill .single-product-content-container fully */
-    width: 100%;
-    /* Remove inherited box-sizing issues */
-    box-sizing: border-box;
-
-    background: #f5f6f8;
-    border-top: 1px solid #e0e4ea;
-    border-bottom: 1px solid #e0e4ea;
-    /* No top margin — gap is handled by padding so it looks intentional */
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 24px 0 40px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   TWO-COLUMN LAYOUT
-   The outer .fhs-configurator spans the full .single-product-content-container.
-   The inner __layout adds horizontal padding matching the page container,
-   then splits into left (options) + right (sidebar) columns.
-
-   .product-main-container on this site uses max-width + auto margins for
-   centring — we replicate that padding here so the content aligns with the
-   product title/images above.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.fhs-configurator__layout {
-    /* Horizontal padding matches .product-main-container on this theme */
-    padding: 0 20px;
-    box-sizing: border-box;
-
+.single-product-content-container.fhs-configurator-product-layout {
+    width: 90vw;
+    max-width: 90vw;
     display: grid;
-    /* Left: flexible options area. Right: fixed configuration sidebar ~380px */
     grid-template-columns: minmax(0, 1fr) 380px;
     gap: 24px;
     align-items: start;
+    box-sizing: border-box;
 }
 
-.fhs-configurator__left {
+.single-product-content-container.fhs-configurator-product-layout .fhs-configurator-product-main {
+    min-width: 0;
+}
+
+.fhs-configurator-sidebar {
     min-width: 0;
 }
 
 .fhs-configurator__right {
     position: sticky;
     top: 80px;
+}
+
+.fhs-configurator__summary-card {
     background: #fff;
     border: 1px solid #e0e4ea;
     border-radius: 10px;
     overflow: hidden;
     min-height: 200px;
+    padding: 24px;
+}
+
+.fhs-configurator__summary-title {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.3;
+    color: #1a1a1a;
+}
+
+.fhs-configurator__summary-placeholder {
+    min-height: 320px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONFIGURATOR MAIN AREA
+   Still clears the floated gallery/summary row above, but no longer owns the
+   page-level two-column split.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fhs-configurator {
+    clear: both;
+    width: 100%;
+    box-sizing: border-box;
+
+    background: #f5f6f8;
+    border-top: 1px solid #e0e4ea;
+    border-bottom: 1px solid #e0e4ea;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 24px 20px 40px;
+}
+
+.fhs-configurator__main {
+    min-width: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -502,13 +498,7 @@
     margin: 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   RIGHT COLUMN — Your Configuration (placeholder until Step 6)
-   ═══════════════════════════════════════════════════════════════════════════ */
 
-.fhs-configurator__right {
-    /* Structural styles already set above */
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
@@ -516,7 +506,9 @@
 
 /* Large tablet — sidebar drops below, left column takes full width */
 @media ( max-width: 1024px ) {
-    .fhs-configurator__layout {
+    .single-product-content-container.fhs-configurator-product-layout {
+        width: 100%;
+        max-width: 100%;
         grid-template-columns: 1fr;
     }
 

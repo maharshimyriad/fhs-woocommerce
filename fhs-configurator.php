@@ -351,10 +351,10 @@ function fhs_configurator_get_sections( $product_id ) {
  * fhs_inside_product_main_container available for other callbacks (e.g. the
  * variation card grid) without interference.
  */
-function fhs_render_configurator() {
+function fhs_get_current_configurator_product() {
 
 	if ( ! is_product() ) {
-		return;
+		return null;
 	}
 
 	global $product;
@@ -363,11 +363,58 @@ function fhs_render_configurator() {
 		$product = wc_get_product( get_the_ID() );
 	}
 
-	if ( ! fhs_configurator_is_active( $product ) ) {
+	if ( ! $product instanceof WC_Product || ! fhs_configurator_is_active( $product ) ) {
+		return null;
+	}
+
+	return $product;
+}
+
+/**
+ * Enqueues configurator assets once per page.
+ *
+ * Safe to call from either the main render callback or the sidebar callback.
+ * WordPress will ignore duplicate enqueue attempts for the same handles.
+ */
+function fhs_configurator_enqueue_assets() {
+
+	$asset_base = get_stylesheet_directory_uri() . '/woocommerce/single-product/add-to-cart/';
+
+	if ( ! wp_style_is( 'fhs-configurator', 'enqueued' ) ) {
+		wp_enqueue_style(
+			'fhs-configurator',
+			$asset_base . 'configurator.css',
+			array( 'woocommerce-general' ),
+			'3.1.0'
+		);
+	}
+
+	if ( ! wp_script_is( 'fhs-configurator', 'enqueued' ) ) {
+		wp_enqueue_script(
+			'fhs-configurator',
+			$asset_base . 'configurator.js',
+			array(),
+			'3.1.0',
+			true
+		);
+	}
+}
+
+function fhs_render_configurator() {
+
+	$product = fhs_get_current_configurator_product();
+
+	if ( ! $product ) {
 		return;
 	}
 
 	$sections = fhs_configurator_get_sections( $product->get_id() );
+
+	if ( empty( $sections ) ) {
+		return;
+	}
+
+	fhs_configurator_enqueue_assets();
 
 	wc_get_template(
 		'single-product/add-to-cart/configurator-template.php',
@@ -378,6 +425,41 @@ function fhs_render_configurator() {
 	);
 }
 
+/**
+ * Outputs the right-hand configuration summary column beside the full left
+ * product/configurator area.
+ *
+ * This is intentionally separate from fhs_render_configurator() so the sidebar
+ * can be rendered as a sibling of the entire left column wrapper created in
+ * content-single-product.php.
+ */
+function fhs_render_configurator_sidebar() {
+
+	$product = fhs_get_current_configurator_product();
+
+	if ( ! $product ) {
+		return;
+	}
+
+	$sections = fhs_configurator_get_sections( $product->get_id() );
+
+	if ( empty( $sections ) ) {
+		return;
+	}
+
+	fhs_configurator_enqueue_assets();
+
+	echo '<aside class="fhs-configurator-sidebar" aria-label="' . esc_attr__( 'Your Configuration', 'woocommerce' ) . '">';
+	echo '	<div class="fhs-configurator__right">';
+	echo '		<div class="fhs-configurator__summary-card">';
+	echo '			<h2 class="fhs-configurator__summary-title">' . esc_html__( 'Your Configuration', 'woocommerce' ) . '</h2>';
+	echo '			<div class="fhs-configurator__summary-placeholder"></div>';
+	echo '		</div>';
+	echo '	</div>';
+	echo '</aside>';
+}
+
 add_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
+add_action( 'fhs_configurator_sidebar_area', 'fhs_render_configurator_sidebar' );
 
 

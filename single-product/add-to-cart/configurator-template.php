@@ -1,12 +1,13 @@
 <?php
 /**
- * Product Configurator — Two-column layout
+ * Product Configurator — Main left-column layout
  *
  * Loaded by fhs_render_configurator() via wc_get_template() when
  * fhs_configurator_is_active() returns true for the current product.
  *
  * Fires on fhs_inside_product_main_container — after .single-product-layout-wrap
- * closes — so the configurator renders full-width below the image + summary row.
+ * closes — so the configurator main area renders below the image + summary row
+ * inside the left column of the configurator-enabled product layout.
  *
  * Available variables (passed via wc_get_template):
  *   $configurator_product  WC_Product  Base product for this configurator.
@@ -27,28 +28,6 @@ if ( empty( $sections ) ) {
 	return;
 }
 
-// ── Enqueue assets once per page ─────────────────────────────────────────────
-$asset_base = get_stylesheet_directory_uri() . '/woocommerce/single-product/add-to-cart/';
-
-if ( ! wp_style_is( 'fhs-configurator', 'enqueued' ) ) {
-	wp_enqueue_style(
-		'fhs-configurator',
-		$asset_base . 'configurator.css',
-		array( 'woocommerce-general' ),
-		'3.0.0'
-	);
-}
-
-if ( ! wp_script_is( 'fhs-configurator', 'enqueued' ) ) {
-	wp_enqueue_script(
-		'fhs-configurator',
-		$asset_base . 'configurator.js',
-		array(),          // no jQuery dependency — plain JS
-		'3.0.0',
-		true              // footer
-	);
-}
-
 $first_key = $sections[0]['key'];
 
 // Icon map per section key — uses icofont classes already loaded in the theme.
@@ -63,13 +42,10 @@ $section_icons = array(
 );
 ?>
 
-<div class="fhs-configurator product-main-container"
+<div class="fhs-configurator"
 	data-product-id="<?php echo absint( $configurator_product->get_id() ); ?>">
 
-	<div class="fhs-configurator__layout">
-
-		<!-- ── LEFT COLUMN ─────────────────────────────────────────────── -->
-		<div class="fhs-configurator__left">
+		<div class="fhs-configurator__main">
 
 			<!-- Intro header bar -->
 			<div class="fhs-configurator__intro-bar">
@@ -273,13 +249,6 @@ $section_icons = array(
 
 			<?php endforeach; ?>
 
-		</div><!-- /.fhs-configurator__left -->
-
-		<!-- ── RIGHT COLUMN — Your Configuration (Step 6) ──────────────── -->
-		<div class="fhs-configurator__right">
-			<!-- Your Configuration panel rendered in Step 6 -->
-		</div>
-
-	</div><!-- /.fhs-configurator__layout -->
+	</div><!-- /.fhs-configurator__main -->
 
 </div><!-- /.fhs-configurator -->
