@@ -97,8 +97,8 @@
 }
 
 .fhs-configurator__clear-all,
-.fhs-configurator__summary-edit,
-.fhs-configurator__summary-remove {
+.fhs-configurator__summary-remove,
+.fhs-configurator__commit-section {
     border: none;
     background: none;
     color: #1a4f8a;
@@ -126,12 +126,6 @@
     gap: 12px;
 }
 
-.fhs-configurator__summary-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
 
 .fhs-configurator__summary-section-title {
     margin: 0;
@@ -210,6 +204,16 @@
     margin-top: 6px;
     font-size: 1.25rem;
     color: #1a1a1a;
+}
+
+.fhs-configurator__panel-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.fhs-configurator__commit-section {
+    font-weight: 600;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

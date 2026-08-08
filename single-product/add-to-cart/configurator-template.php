@@ -44,6 +44,25 @@ $section_icons = array(
 
 $section_labels = array();
 $product_map    = array();
+$base_product   = array(
+	'id'            => absint( $configurator_product->get_id() ),
+	'section_key'   => 'base_product',
+	'section_label' => __( 'Base Product', 'woocommerce' ),
+	'name'          => $configurator_product->get_name(),
+	'sku'           => $configurator_product->get_sku(),
+	'image_url'     => wp_get_attachment_image_url( $configurator_product->get_image_id(), 'woocommerce_thumbnail' ),
+	'price_html'    => '',
+	'price_value'   => 0,
+	'price_display' => '',
+);
+
+$base_product_data = fhs_configurator_get_product_data( $configurator_product->get_id() );
+if ( ! empty( $base_product_data ) ) {
+	$base_product['image_url']     = $base_product_data['image_url'];
+	$base_product['price_html']    = isset( $base_product_data['price_html'] ) ? $base_product_data['price_html'] : '';
+	$base_product['price_value']   = isset( $base_product_data['price_value'] ) ? (float) $base_product_data['price_value'] : 0;
+	$base_product['price_display'] = isset( $base_product_data['price_display'] ) ? $base_product_data['price_display'] : '';
+}
 
 foreach ( $sections as $section ) {
 	$section_labels[ $section['key'] ] = $section['label'];
@@ -67,7 +86,8 @@ foreach ( $sections as $section ) {
 <div class="fhs-configurator"
 	data-product-id="<?php echo absint( $configurator_product->get_id() ); ?>"
 	data-section-labels="<?php echo esc_attr( wp_json_encode( $section_labels ) ); ?>"
-	data-product-map="<?php echo esc_attr( wp_json_encode( $product_map ) ); ?>">
+	data-product-map="<?php echo esc_attr( wp_json_encode( $product_map ) ); ?>"
+	data-base-product="<?php echo esc_attr( wp_json_encode( $base_product ) ); ?>">
 
 	<div class="fhs-configurator__main">
 
@@ -210,6 +230,16 @@ foreach ( $sections as $section ) {
 						</label><!-- /.fhs-configurator__card -->
 					<?php endforeach; ?>
 				</div><!-- /.fhs-configurator__grid -->
+
+				<div class="fhs-configurator__panel-actions">
+					<button
+						type="button"
+						class="fhs-configurator__commit-section"
+						data-section-key="<?php echo esc_attr( $section['key'] ); ?>"
+					>
+						<?php esc_html_e( 'Add to Configuration', 'woocommerce' ); ?>
+					</button>
+				</div>
 			</div><!-- /.fhs-configurator__panel -->
 		<?php endforeach; ?>
 
