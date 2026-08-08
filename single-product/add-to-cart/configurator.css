@@ -372,6 +372,7 @@
     max-height: 100px;
     object-fit: contain;
     display: block;
+    box-shadow: none;
 }
 
 /* Machine card body */
@@ -571,4 +572,46 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELECTION BEHAVIOUR — added in Step (selection)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide the native input visually but keep it accessible/focusable */
+.fhs-configurator__card-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Cards are now <label> elements — ensure pointer and no text selection */
+.fhs-configurator__card {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Selected card — strong blue border + light tint */
+.fhs-configurator__card.is-selected {
+    border-color: #1a4f8a;
+    background: #eef4ff;
+    box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
+}
+
+/* Active tab — .is-active replaces .fhs-configurator__tab--active */
+.fhs-configurator__tab.is-active {
+    color: #1a4f8a;
+    border-bottom-color: #1a4f8a;
+    background: #f0f4fb;
+    font-weight: 600;
+}
+
+.fhs-configurator__tab.is-active i {
+    color: #1a4f8a;
 }

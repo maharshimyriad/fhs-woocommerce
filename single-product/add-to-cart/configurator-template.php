@@ -17,19 +17,8 @@
  *       'selection_type' string   'single' | 'multiple'
  *       'products'       array[]  Each: id, name, sku, image_url
  *
- * This step renders:
- *   - Full two-column outer layout (left options, right panel placeholder)
- *   - Section intro header bar
- *   - Tab navigation with icofont icons
- *   - Machine Packages: large radio-style cards
- *   - All other sections: compact checkbox-style grid cards
- *   - "Select all" link for multiple-selection sections
- *   - Pricing placeholder comments (Step 5)
- *   - Selection / Add to Configuration placeholder comments (Step 7)
- *   - Your Configuration panel placeholder (Step 6)
- *
  * @package FHS_WOO
- * @version 2.0.0
+ * @version 3.0.0
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -38,13 +27,25 @@ if ( empty( $sections ) ) {
 	return;
 }
 
-// Enqueue configurator stylesheet once.
+// ── Enqueue assets once per page ─────────────────────────────────────────────
+$asset_base = get_stylesheet_directory_uri() . '/woocommerce/single-product/add-to-cart/';
+
 if ( ! wp_style_is( 'fhs-configurator', 'enqueued' ) ) {
 	wp_enqueue_style(
 		'fhs-configurator',
-		get_stylesheet_directory_uri() . '/woocommerce/single-product/add-to-cart/configurator.css',
+		$asset_base . 'configurator.css',
 		array( 'woocommerce-general' ),
-		'1.0.0'
+		'3.0.0'
+	);
+}
+
+if ( ! wp_script_is( 'fhs-configurator', 'enqueued' ) ) {
+	wp_enqueue_script(
+		'fhs-configurator',
+		$asset_base . 'configurator.js',
+		array(),          // no jQuery dependency — plain JS
+		'3.0.0',
+		true              // footer
 	);
 }
 
@@ -65,11 +66,6 @@ $section_icons = array(
 <div class="fhs-configurator product-main-container"
 	data-product-id="<?php echo absint( $configurator_product->get_id() ); ?>">
 
-	<!-- ════════════════════════════════════════════════════════════════════
-	     Outer two-column layout
-	     LEFT  = section tabs + product cards
-	     RIGHT = Your Configuration panel (Step 6)
-	     ════════════════════════════════════════════════════════════════════ -->
 	<div class="fhs-configurator__layout">
 
 		<!-- ── LEFT COLUMN ─────────────────────────────────────────────── -->
@@ -90,18 +86,20 @@ $section_icons = array(
 			</div>
 
 			<!-- ── Tab navigation ───────────────────────────────────────── -->
-			<nav class="fhs-configurator__tabs" role="tablist" aria-label="<?php esc_attr_e( 'Configurator sections', 'woocommerce' ); ?>">
+			<nav class="fhs-configurator__tabs" role="tablist"
+				aria-label="<?php esc_attr_e( 'Configurator sections', 'woocommerce' ); ?>">
 				<?php foreach ( $sections as $section ) :
-					$is_active  = $section['key'] === $first_key;
+					$is_first   = $section['key'] === $first_key;
 					$icon_class = $section_icons[ $section['key'] ] ?? 'icofont-box';
 				?>
 					<button
-						class="fhs-configurator__tab<?php echo $is_active ? ' fhs-configurator__tab--active' : ''; ?>"
+						class="fhs-configurator__tab<?php echo $is_first ? ' is-active' : ''; ?>"
 						role="tab"
-						data-section="<?php echo esc_attr( $section['key'] ); ?>"
-						aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
+						data-section-key="<?php echo esc_attr( $section['key'] ); ?>"
+						aria-selected="<?php echo $is_first ? 'true' : 'false'; ?>"
 						aria-controls="fhs-conf-panel-<?php echo esc_attr( $section['key'] ); ?>"
 						id="fhs-conf-tab-<?php echo esc_attr( $section['key'] ); ?>"
+						type="button"
 					>
 						<i class="icofont <?php echo esc_attr( $icon_class ); ?>" aria-hidden="true"></i>
 						<?php echo esc_html( $section['label'] ); ?>
@@ -111,21 +109,25 @@ $section_icons = array(
 
 			<!-- ── Section panels ───────────────────────────────────────── -->
 			<?php foreach ( $sections as $section ) :
-				$is_active      = $section['key'] === $first_key;
-				$is_machine     = $section['key'] === 'machine_packages';
-				$is_multiple    = $section['selection_type'] === 'multiple';
-				$panel_class    = 'fhs-configurator__panel';
-				$panel_class   .= $is_active    ? ' fhs-configurator__panel--active'  : '';
-				$panel_class   .= $is_machine   ? ' fhs-configurator__panel--machine' : '';
+				$is_first    = $section['key'] === $first_key;
+				$is_machine  = $section['key'] === 'machine_packages';
+				$is_multiple = $section['selection_type'] === 'multiple';
+
+				/*
+				 * Radio group name: unique per section so that single-selection
+				 * sections are completely independent radio groups.
+				 * e.g. "fhs_configurator_machine_packages"
+				 */
+				$input_name = 'fhs_configurator_' . $section['key'];
 			?>
 				<div
-					class="<?php echo esc_attr( $panel_class ); ?>"
+					class="fhs-configurator__panel<?php echo $is_first ? ' is-active' : ''; ?>"
 					id="fhs-conf-panel-<?php echo esc_attr( $section['key'] ); ?>"
 					role="tabpanel"
 					aria-labelledby="fhs-conf-tab-<?php echo esc_attr( $section['key'] ); ?>"
-					data-section="<?php echo esc_attr( $section['key'] ); ?>"
+					data-section-key="<?php echo esc_attr( $section['key'] ); ?>"
 					data-selection-type="<?php echo esc_attr( $section['selection_type'] ); ?>"
-					<?php if ( ! $is_active ) : ?>hidden<?php endif; ?>
+					<?php if ( ! $is_first ) : ?>hidden<?php endif; ?>
 				>
 
 					<!-- Panel heading row -->
@@ -135,42 +137,83 @@ $section_icons = array(
 							<span class="fhs-configurator__optional-badge">
 								<?php esc_html_e( 'optional', 'woocommerce' ); ?>
 							</span>
-							<span class="fhs-configurator__info-icon" aria-label="<?php esc_attr_e( 'More info', 'woocommerce' ); ?>">
+							<span class="fhs-configurator__info-icon"
+								aria-label="<?php esc_attr_e( 'More info', 'woocommerce' ); ?>">
 								<i class="icofont-info-circle" aria-hidden="true"></i>
 							</span>
 						</h3>
 
 						<?php if ( $is_multiple ) : ?>
-							<!-- Select All — wired up in Step 7 -->
 							<button
 								type="button"
 								class="fhs-configurator__select-all"
-								data-section="<?php echo esc_attr( $section['key'] ); ?>"
-								aria-label="<?php printf( esc_attr__( 'Select all %s', 'woocommerce' ), esc_attr( $section['label'] ) ); ?>"
-							>
-								<?php esc_html_e( 'Select all', 'woocommerce' ); ?>
-							</button>
+								data-section-key="<?php echo esc_attr( $section['key'] ); ?>"
+								aria-label="<?php
+									printf(
+										esc_attr__( 'Select all %s', 'woocommerce' ),
+										esc_attr( $section['label'] )
+									);
+								?>"
+							><?php esc_html_e( 'Select all', 'woocommerce' ); ?></button>
 						<?php endif; ?>
 					</div><!-- /.fhs-configurator__panel-header -->
 
 					<!-- ── Product card grid ──────────────────────────── -->
-					<div class="fhs-configurator__grid<?php echo $is_machine ? ' fhs-configurator__grid--machine' : ' fhs-configurator__grid--standard'; ?>">
+					<div class="fhs-configurator__grid<?php
+						echo $is_machine
+							? ' fhs-configurator__grid--machine'
+							: ' fhs-configurator__grid--standard';
+					?>">
 
-						<?php foreach ( $section['products'] as $product_data ) : ?>
+						<?php foreach ( $section['products'] as $product_data ) :
+							$product_id  = absint( $product_data['id'] );
+							/*
+							 * Input type drives single vs multiple behaviour:
+							 *   single   → type="radio"   (one per section radio group)
+							 *   multiple → type="checkbox" (independent toggles)
+							 *
+							 * The entire card is wrapped in a <label> so clicking
+							 * anywhere on the card activates the input.
+							 * The input itself is visually hidden; the card border/
+							 * background provides the selected state visual.
+							 */
+							$input_type  = $is_machine || ! $is_multiple ? 'radio' : 'checkbox';
+							$input_id    = 'fhs-conf-input-' . $section['key'] . '-' . $product_id;
+						?>
 
-							<div
-								class="fhs-configurator__card<?php echo $is_machine ? ' fhs-configurator__card--machine' : ' fhs-configurator__card--standard'; ?>"
-								data-product-id="<?php echo absint( $product_data['id'] ); ?>"
-								data-section="<?php echo esc_attr( $section['key'] ); ?>"
+							<label
+								class="fhs-configurator__card<?php
+									echo $is_machine
+										? ' fhs-configurator__card--machine'
+										: ' fhs-configurator__card--standard';
+								?>"
+								data-product-id="<?php echo $product_id; ?>"
+								data-section-key="<?php echo esc_attr( $section['key'] ); ?>"
+								for="<?php echo esc_attr( $input_id ); ?>"
 							>
+								<?php if ( $input_type === 'radio' ) : ?>
+									<input
+										type="radio"
+										id="<?php echo esc_attr( $input_id ); ?>"
+										name="<?php echo esc_attr( $input_name ); ?>"
+										value="<?php echo $product_id; ?>"
+										class="fhs-configurator__card-input"
+										data-product-id="<?php echo $product_id; ?>"
+										data-section-key="<?php echo esc_attr( $section['key'] ); ?>"
+									/>
+								<?php else : ?>
+									<input
+										type="checkbox"
+										id="<?php echo esc_attr( $input_id ); ?>"
+										name="<?php echo esc_attr( $input_name ); ?>[]"
+										value="<?php echo $product_id; ?>"
+										class="fhs-configurator__card-input"
+										data-product-id="<?php echo $product_id; ?>"
+										data-section-key="<?php echo esc_attr( $section['key'] ); ?>"
+									/>
+								<?php endif; ?>
 
 								<?php if ( $is_machine ) : ?>
-									<!-- Machine Package card — large, radio-style -->
-
-									<!-- Selection indicator — interactive in Step 7 -->
-									<div class="fhs-configurator__card-select-indicator" aria-hidden="true">
-										<span class="fhs-configurator__radio"></span>
-									</div>
 
 									<div class="fhs-configurator__card-img-wrap">
 										<img
@@ -194,12 +237,6 @@ $section_icons = array(
 									</div>
 
 								<?php else : ?>
-									<!-- Standard card — compact, checkbox-style -->
-
-									<!-- Selection indicator — interactive in Step 7 -->
-									<div class="fhs-configurator__card-select-indicator" aria-hidden="true">
-										<span class="fhs-configurator__checkbox"></span>
-									</div>
 
 									<div class="fhs-configurator__card-img-wrap">
 										<img
@@ -224,7 +261,7 @@ $section_icons = array(
 
 								<?php endif; ?>
 
-							</div><!-- /.fhs-configurator__card -->
+							</label><!-- /.fhs-configurator__card -->
 
 						<?php endforeach; ?>
 
