@@ -170,8 +170,12 @@ function fhs_configurator_get_product_data( $product_id ) {
 
 	if ( is_user_logged_in() ) {
 		if ( current_user_can( 'manage_woocommerce' ) ) {
-			$level_a_regular = fhs_get_level_a_regular_price( $product );
-			$level_a_sale    = fhs_get_level_a_sale_price( $product );
+			$level_a_regular = function_exists( 'fhs_get_level_a_regular_price' )
+				? fhs_get_level_a_regular_price( $product )
+				: '';
+			$level_a_sale    = function_exists( 'fhs_get_level_a_sale_price' )
+				? fhs_get_level_a_sale_price( $product )
+				: '';
 
 			if ( '' !== $level_a_regular && null !== $level_a_regular ) {
 				$level_a_regular = (float) $level_a_regular;
@@ -197,14 +201,14 @@ function fhs_configurator_get_product_data( $product_id ) {
 				} else {
 					$active_price  = $regular_price > 0 ? $regular_price : (float) $product->get_price();
 					$price_value   = $active_price;
-					$price_html    = wc_price( $active_price );
-					$price_display = wp_strip_all_tags( wc_price( $active_price ) );
+					$price_html    = $active_price > 0 ? wc_price( $active_price ) : '';
+					$price_display = $active_price > 0 ? wp_strip_all_tags( wc_price( $active_price ) ) : '';
 				}
 			}
 		} else {
 			$base_price = (float) $product->get_regular_price();
 			$tier_price = (float) $product->get_price();
-			$suffix     = $product->get_price_suffix();
+			$suffix     = method_exists( $product, 'get_price_suffix' ) ? $product->get_price_suffix() : '';
 
 			if ( $tier_price > 0 && $base_price > 0 && $tier_price < $base_price ) {
 				$price_value   = $tier_price;
@@ -213,8 +217,8 @@ function fhs_configurator_get_product_data( $product_id ) {
 			} else {
 				$active_price  = $tier_price > 0 ? $tier_price : $base_price;
 				$price_value   = $active_price;
-				$price_html    = wc_price( $active_price ) . $suffix;
-				$price_display = wp_strip_all_tags( wc_price( $active_price ) . $suffix );
+				$price_html    = $active_price > 0 ? wc_price( $active_price ) . $suffix : '';
+				$price_display = $active_price > 0 ? wp_strip_all_tags( wc_price( $active_price ) . $suffix ) : '';
 			}
 		}
 	}
