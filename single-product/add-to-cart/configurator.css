@@ -71,15 +71,145 @@
     padding: 24px;
 }
 
+.fhs-configurator__summary-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.fhs-configurator__summary-heading-group {
+    min-width: 0;
+}
+
 .fhs-configurator__summary-title {
-    margin: 0;
+    margin: 0 0 4px;
     font-size: 2rem;
     line-height: 1.3;
     color: #1a1a1a;
 }
 
-.fhs-configurator__summary-placeholder {
-    min-height: 320px;
+.fhs-configurator__summary-count {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #6b7280;
+}
+
+.fhs-configurator__clear-all,
+.fhs-configurator__summary-edit,
+.fhs-configurator__summary-remove {
+    border: none;
+    background: none;
+    color: #1a4f8a;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1.28rem;
+}
+
+.fhs-configurator__summary-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.fhs-configurator__summary-empty {
+    font-size: 1.4rem;
+    color: #6b7280;
+    padding: 12px 0;
+}
+
+.fhs-configurator__summary-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fhs-configurator__summary-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.fhs-configurator__summary-section-title {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.3;
+    color: #1a1a1a;
+}
+
+.fhs-configurator__summary-item {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e4ea;
+}
+
+.fhs-configurator__summary-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.fhs-configurator__summary-item-image {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    border: 1px solid #e0e4ea;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.fhs-configurator__summary-item-body {
+    min-width: 0;
+}
+
+.fhs-configurator__summary-item-name {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.fhs-configurator__summary-item-sku {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+    color: #6b7280;
+}
+
+.fhs-configurator__summary-item-price {
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+    color: #1a1a1a;
+}
+
+.fhs-configurator__summary-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e4ea;
+}
+
+.fhs-configurator__summary-subtotal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.fhs-configurator__summary-subtotal-label,
+.fhs-configurator__summary-subtotal-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.fhs-configurator__card-price {
+    margin-top: 6px;
+    font-size: 1.25rem;
+    color: #1a1a1a;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

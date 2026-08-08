@@ -141,10 +141,13 @@ add_filter( 'astra_woo_single_product_structure', 'fhs_configurator_filter_astra
  *
  * @param int $product_id Validated, absint product ID.
  * @return array {
- *     @type int    $id        Product ID.
- *     @type string $name      Product display name.
- *     @type string $sku       Product SKU (empty string if none).
- *     @type string $image_url Full URL to the product thumbnail, or placeholder.
+ *     @type int    $id             Product ID.
+ *     @type string $name           Product display name.
+ *     @type string $sku            Product SKU (empty string if none).
+ *     @type string $image_url      Full URL to the product thumbnail, or placeholder.
+ *     @type string $price_html     Customer-facing HTML price string.
+ *     @type float  $price_value    Numeric price used for subtotal calculation.
+ *     @type string $price_display  Plain-text display version of the active price.
  * }
  */
 function fhs_configurator_get_product_data( $product_id ) {
@@ -161,11 +164,69 @@ function fhs_configurator_get_product_data( $product_id ) {
 		? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' )
 		: wc_placeholder_img_src( 'woocommerce_thumbnail' );
 
+	$price_html    = '';
+	$price_value   = 0.0;
+	$price_display = '';
+
+	if ( is_user_logged_in() ) {
+		if ( current_user_can( 'manage_woocommerce' ) ) {
+			$level_a_regular = fhs_get_level_a_regular_price( $product );
+			$level_a_sale    = fhs_get_level_a_sale_price( $product );
+
+			if ( '' !== $level_a_regular && null !== $level_a_regular ) {
+				$level_a_regular = (float) $level_a_regular;
+				$level_a_sale    = '' !== $level_a_sale && null !== $level_a_sale ? (float) $level_a_sale : 0.0;
+
+				if ( $level_a_sale > 0 && $level_a_sale < $level_a_regular ) {
+					$price_value   = $level_a_sale;
+					$price_html    = wc_format_sale_price( $level_a_regular, $level_a_sale );
+					$price_display = wp_strip_all_tags( wc_price( $level_a_sale ) );
+				} else {
+					$price_value   = $level_a_regular;
+					$price_html    = wc_price( $level_a_regular );
+					$price_display = wp_strip_all_tags( wc_price( $level_a_regular ) );
+				}
+			} else {
+				$regular_price = (float) $product->get_regular_price();
+				$sale_price    = (float) $product->get_sale_price();
+
+				if ( $sale_price > 0 && $sale_price < $regular_price ) {
+					$price_value   = $sale_price;
+					$price_html    = wc_format_sale_price( $regular_price, $sale_price );
+					$price_display = wp_strip_all_tags( wc_price( $sale_price ) );
+				} else {
+					$active_price  = $regular_price > 0 ? $regular_price : (float) $product->get_price();
+					$price_value   = $active_price;
+					$price_html    = wc_price( $active_price );
+					$price_display = wp_strip_all_tags( wc_price( $active_price ) );
+				}
+			}
+		} else {
+			$base_price = (float) $product->get_regular_price();
+			$tier_price = (float) $product->get_price();
+			$suffix     = $product->get_price_suffix();
+
+			if ( $tier_price > 0 && $base_price > 0 && $tier_price < $base_price ) {
+				$price_value   = $tier_price;
+				$price_html    = wc_format_sale_price( $base_price, $tier_price ) . $suffix;
+				$price_display = wp_strip_all_tags( wc_price( $tier_price ) . $suffix );
+			} else {
+				$active_price  = $tier_price > 0 ? $tier_price : $base_price;
+				$price_value   = $active_price;
+				$price_html    = wc_price( $active_price ) . $suffix;
+				$price_display = wp_strip_all_tags( wc_price( $active_price ) . $suffix );
+			}
+		}
+	}
+
 	return array(
-		'id'        => $product->get_id(),
-		'name'      => $product->get_name(),
-		'sku'       => $product->get_sku(),
-		'image_url' => $image_url ?: wc_placeholder_img_src( 'woocommerce_thumbnail' ),
+		'id'            => $product->get_id(),
+		'name'          => $product->get_name(),
+		'sku'           => $product->get_sku(),
+		'image_url'     => $image_url ?: wc_placeholder_img_src( 'woocommerce_thumbnail' ),
+		'price_html'    => $price_html,
+		'price_value'   => $price_value,
+		'price_display' => $price_display,
 	);
 }
 
@@ -452,8 +513,22 @@ function fhs_render_configurator_sidebar() {
 	echo '<aside class="fhs-configurator-sidebar" aria-label="' . esc_attr__( 'Your Configuration', 'woocommerce' ) . '">';
 	echo '	<div class="fhs-configurator__right">';
 	echo '		<div class="fhs-configurator__summary-card">';
-	echo '			<h2 class="fhs-configurator__summary-title">' . esc_html__( 'Your Configuration', 'woocommerce' ) . '</h2>';
-	echo '			<div class="fhs-configurator__summary-placeholder"></div>';
+	echo '			<div class="fhs-configurator__summary-header">';
+	echo '				<div class="fhs-configurator__summary-heading-group">';
+	echo '					<h2 class="fhs-configurator__summary-title">' . esc_html__( 'Your Configuration', 'woocommerce' ) . '</h2>';
+	echo '					<p class="fhs-configurator__summary-count" data-fhs-config-count>0 items</p>';
+	echo '				</div>';
+	echo '				<button type="button" class="fhs-configurator__clear-all" data-fhs-config-clear>' . esc_html__( 'Clear all', 'woocommerce' ) . '</button>';
+	echo '			</div>';
+	echo '			<div class="fhs-configurator__summary-body" data-fhs-config-body>';
+	echo '				<div class="fhs-configurator__summary-empty" data-fhs-config-empty>' . esc_html__( 'No optional configurator items selected yet.', 'woocommerce' ) . '</div>';
+	echo '			</div>';
+	echo '			<div class="fhs-configurator__summary-footer">';
+	echo '				<div class="fhs-configurator__summary-subtotal-row">';
+	echo '					<span class="fhs-configurator__summary-subtotal-label">' . esc_html__( 'Subtotal', 'woocommerce' ) . '</span>';
+	echo '					<span class="fhs-configurator__summary-subtotal-value" data-fhs-config-subtotal>' . wp_kses_post( wc_price( 0 ) ) . '</span>';
+	echo '				</div>';
+	echo '			</div>';
 	echo '		</div>';
 	echo '	</div>';
 	echo '</aside>';
