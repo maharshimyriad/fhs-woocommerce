@@ -56,9 +56,9 @@ foreach ( $sections as $section ) {
 			'name'          => $product_data['name'],
 			'sku'           => $product_data['sku'],
 			'image_url'     => $product_data['image_url'],
-			'price_html'    => $product_data['price_html'] ?? '',
+			'price_html'    => isset( $product_data['price_html'] ) ? $product_data['price_html'] : '',
 			'price_value'   => isset( $product_data['price_value'] ) ? (float) $product_data['price_value'] : 0,
-			'price_display' => $product_data['price_display'] ?? '',
+			'price_display' => isset( $product_data['price_display'] ) ? $product_data['price_display'] : '',
 		);
 	}
 }
@@ -90,7 +90,7 @@ foreach ( $sections as $section ) {
 			aria-label="<?php esc_attr_e( 'Configurator sections', 'woocommerce' ); ?>">
 			<?php foreach ( $sections as $section ) :
 				$is_first   = $section['key'] === $first_key;
-				$icon_class = $section_icons[ $section['key'] ] ?? 'icofont-box';
+				$icon_class = isset( $section_icons[ $section['key'] ] ) ? $section_icons[ $section['key'] ] : 'icofont-box';
 			?>
 				<button
 					class="fhs-configurator__tab<?php echo $is_first ? ' is-active' : ''; ?>"

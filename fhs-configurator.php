@@ -378,7 +378,7 @@ function fhs_configurator_get_sections( $product_id ) {
 		if ( null !== $def['fixed_type'] ) {
 			$selection_type = $def['fixed_type'];
 		} else {
-			$raw_type       = $group[ $def['type_field'] ] ?? 'multiple';
+			$raw_type       = isset( $group[ $def['type_field'] ] ) ? $group[ $def['type_field'] ] : 'multiple';
 			$selection_type = in_array( $raw_type, array( 'single', 'multiple' ), true )
 				? $raw_type
 				: 'multiple'; // Matches ACF field default value.
