@@ -87,7 +87,10 @@ foreach ( $sections as $section ) {
 	data-product-id="<?php echo absint( $configurator_product->get_id() ); ?>"
 	data-section-labels="<?php echo esc_attr( wp_json_encode( $section_labels ) ); ?>"
 	data-product-map="<?php echo esc_attr( wp_json_encode( $product_map ) ); ?>"
-	data-base-product="<?php echo esc_attr( wp_json_encode( $base_product ) ); ?>">
+	data-base-product="<?php echo esc_attr( wp_json_encode( $base_product ) ); ?>"
+	data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>"
+	data-cart-url="<?php echo esc_url( wc_get_cart_url() ); ?>"
+	data-cart-nonce="<?php echo esc_attr( wp_create_nonce( 'fhs_configurator_add_all_to_cart' ) ); ?>">
 
 	<div class="fhs-configurator__main">
 

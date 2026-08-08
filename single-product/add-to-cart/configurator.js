@@ -5,7 +5,7 @@
  * (right side) are intentionally separate.
  *
  * @package FHS_WOO
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 ( function () {
@@ -34,6 +34,7 @@
 		var summary = getSummaryElements( wrapper );
 
 		wrapper.fhsCommittedConfiguration = createInitialCommittedConfiguration( wrapper );
+		wrapper.fhsCartRequestInFlight = false;
 
 		tabs.forEach( function ( tab ) {
 			tab.addEventListener( 'click', function () {
@@ -80,6 +81,12 @@
 				var clearBtn = event.target.closest( '[data-fhs-config-clear]' );
 				if ( clearBtn ) {
 					clearConfiguration( wrapper );
+					return;
+				}
+
+				var addAllBtn = event.target.closest( '[data-fhs-config-add-all]' );
+				if ( addAllBtn ) {
+					handleAddAllToCart( wrapper, addAllBtn );
 				}
 			} );
 		}
@@ -251,6 +258,77 @@
 
 		renderCommittedConfigurationPanel( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
+		clearSummaryMessage( wrapper );
+	}
+
+	function handleAddAllToCart( wrapper, button ) {
+		if ( wrapper.fhsCartRequestInFlight ) {
+			return;
+		}
+
+		var ajaxUrl = wrapper.getAttribute( 'data-ajax-url' );
+		var nonce = wrapper.getAttribute( 'data-cart-nonce' );
+		var baseProductId = parseInt( wrapper.getAttribute( 'data-product-id' ), 10 ) || 0;
+		var committed = cloneCommittedConfiguration( getCommittedConfiguration( wrapper ) );
+
+		if ( ! ajaxUrl || ! nonce || ! baseProductId ) {
+			setSummaryMessage( wrapper, 'Unable to add this configuration to the cart. Please refresh the page and try again.' );
+			return;
+		}
+
+		wrapper.fhsCartRequestInFlight = true;
+		setAddAllButtonState( button, true );
+		setSummaryMessage( wrapper, '' );
+
+		var formData = new FormData();
+		formData.append( 'action', 'fhs_configurator_add_all_to_cart' );
+		formData.append( 'nonce', nonce );
+		formData.append( 'base_product_id', String( baseProductId ) );
+		formData.append( 'configuration', JSON.stringify( committed ) );
+
+		fetch( ajaxUrl, {
+			method: 'POST',
+			credentials: 'same-origin',
+			body: formData,
+		} )
+			.then( function ( response ) {
+				return response.json().catch( function () {
+					return {
+						success: false,
+						data: {
+							message: 'Unable to add this configuration to the cart. Please refresh the page and try again.',
+						},
+					};
+				} );
+			} )
+			.then( function ( result ) {
+				if ( ! result || ! result.success || ! result.data || ! result.data.cart_url ) {
+					var message = result && result.data && result.data.message
+						? result.data.message
+						: 'Unable to add this configuration to the cart. Please refresh the page and try again.';
+					throw new Error( message );
+				}
+
+				window.location.href = result.data.cart_url;
+			} )
+			.catch( function ( error ) {
+				setSummaryMessage( wrapper, error && error.message ? error.message : 'Unable to add this configuration to the cart. Please refresh the page and try again.' );
+				wrapper.fhsCartRequestInFlight = false;
+				setAddAllButtonState( button, false );
+			} );
+	}
+
+	function setAddAllButtonState( button, isLoading ) {
+		if ( ! button ) {
+			return;
+		}
+
+		if ( ! button.getAttribute( 'data-default-label' ) ) {
+			button.setAttribute( 'data-default-label', button.textContent );
+		}
+
+		button.disabled = isLoading;
+		button.textContent = isLoading ? 'Adding…' : button.getAttribute( 'data-default-label' );
 	}
 
 	function renderCommittedConfigurationPanel( wrapper ) {
@@ -437,7 +515,19 @@
 			body: sidebar ? sidebar.querySelector( '[data-fhs-config-body]' ) : null,
 			count: sidebar ? sidebar.querySelector( '[data-fhs-config-count]' ) : null,
 			subtotal: sidebar ? sidebar.querySelector( '[data-fhs-config-subtotal]' ) : null,
+			message: sidebar ? sidebar.querySelector( '[data-fhs-config-message]' ) : null,
 		};
+	}
+
+	function setSummaryMessage( wrapper, message ) {
+		var summary = getSummaryElements( wrapper );
+		if ( summary.message ) {
+			summary.message.textContent = message || '';
+		}
+	}
+
+	function clearSummaryMessage( wrapper ) {
+		setSummaryMessage( wrapper, '' );
 	}
 
 	function getProductMap( wrapper ) {

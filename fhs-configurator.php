@@ -514,6 +514,10 @@ function fhs_render_configurator_sidebar() {
 
 	fhs_configurator_enqueue_assets();
 
+	$current_url = get_permalink( $product->get_id() );
+	$login_url   = add_query_arg( 'redirect_to', urlencode( $current_url ), site_url( '/my-account' ) );
+	$can_add_to_cart = is_user_logged_in() && $product->is_purchasable() && $product->is_in_stock();
+
 	echo '<aside class="fhs-configurator-sidebar" aria-label="' . esc_attr__( 'Your Configuration', 'woocommerce' ) . '">';
 	echo '	<div class="fhs-configurator__right">';
 	echo '		<div class="fhs-configurator__summary-card">';
@@ -530,11 +534,267 @@ function fhs_render_configurator_sidebar() {
 	echo '					<span class="fhs-configurator__summary-subtotal-label">' . esc_html__( 'Subtotal', 'woocommerce' ) . '</span>';
 	echo '					<span class="fhs-configurator__summary-subtotal-value" data-fhs-config-subtotal></span>';
 	echo '				</div>';
+	echo '				<div class="fhs-configurator__summary-cart-actions">';
+	if ( $can_add_to_cart ) {
+		echo '					<button type="button" class="fhs-configurator__add-all-to-cart" data-fhs-config-add-all>' . esc_html__( 'Add All to Cart', 'woocommerce' ) . '</button>';
+	} else {
+		echo '					<div class="login-prompt fhs-configurator__login-prompt">';
+		echo '						<span>' . esc_html__( 'Login or register to view prices.', 'woocommerce' ) . '</span>';
+		echo '						<a href="' . esc_url( $login_url ) . '">';
+		echo '							<i class="icofont icofont-ui-user"></i>';
+		echo '							' . esc_html__( 'Login / Register to see pricing', 'woocommerce' );
+		echo '						</a>';
+		echo '					</div>';
+	}
+	echo '					<p class="fhs-configurator__summary-message" data-fhs-config-message aria-live="polite"></p>';
+	echo '				</div>';
 	echo '			</div>';
 	echo '		</div>';
 	echo '	</div>';
 	echo '</aside>';
 }
+
+/**
+ * Return the raw configurator_options group for a validated configurator base product.
+ *
+ * @param int $base_product_id
+ * @return array
+ */
+function fhs_configurator_get_options_group( $base_product_id ) {
+
+	$base_product_id = absint( $base_product_id );
+	$base_product    = wc_get_product( $base_product_id );
+
+	if ( ! $base_product || ! fhs_configurator_is_active( $base_product ) || ! function_exists( 'get_field' ) ) {
+		return array();
+	}
+
+	$group = get_field( 'configurator_options', $base_product_id );
+
+	return is_array( $group ) ? $group : array();
+}
+
+/**
+ * Validate and normalize a submitted configurator cart request.
+ *
+ * @param int   $base_product_id Base configurator product ID.
+ * @param array $submitted_state Submitted committed configuration identifiers.
+ * @return array|WP_Error
+ */
+function fhs_configurator_validate_committed_request( $base_product_id, $submitted_state ) {
+
+	$base_product_id = absint( $base_product_id );
+	$base_product    = wc_get_product( $base_product_id );
+
+	if ( ! $base_product || ! $base_product->is_type( 'simple' ) || ! fhs_configurator_is_active( $base_product ) ) {
+		return new WP_Error( 'invalid_base_product', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	}
+
+	if ( ! is_array( $submitted_state ) ) {
+		return new WP_Error( 'invalid_configuration', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	}
+
+	$group = fhs_configurator_get_options_group( $base_product_id );
+	if ( empty( $group ) ) {
+		return new WP_Error( 'invalid_configuration', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	}
+
+	$definitions = array(
+		'machine_packages' => array(
+			'products_field' => 'machine_packages',
+			'selection_type' => 'single',
+		),
+		'liner_sets' => array(
+			'products_field' => 'liner_sets',
+			'type_field'     => 'liner_sets_selection_type',
+		),
+		'replacement_parts' => array(
+			'products_field' => 'replacement_parts',
+			'type_field'     => 'replacement_parts_selection_type',
+		),
+		'accessories' => array(
+			'products_field' => 'accessories',
+			'type_field'     => 'accessories_selection_type',
+		),
+		'data_logging' => array(
+			'products_field' => 'data_logging',
+			'type_field'     => 'data_logging_selection_type',
+		),
+		'consumables' => array(
+			'products_field' => 'consumables',
+			'type_field'     => 'consumables_selection_type',
+		),
+		'tooling_extras' => array(
+			'products_field' => 'tooling_extras',
+			'type_field'     => 'tooling_extras_selection_type',
+		),
+	);
+
+	$machine_source = isset( $submitted_state['activeMachineSource'] ) ? sanitize_key( $submitted_state['activeMachineSource'] ) : 'base_product';
+	$machine_id     = isset( $submitted_state['activeMachineProductId'] ) ? absint( $submitted_state['activeMachineProductId'] ) : 0;
+	$submitted_sections = isset( $submitted_state['sections'] ) && is_array( $submitted_state['sections'] )
+		? $submitted_state['sections']
+		: array();
+
+	$validated = array(
+		'base_product_id'         => $base_product_id,
+		'active_machine_source'   => 'base_product',
+		'active_machine_product_id' => $base_product_id,
+		'sections'                => array(),
+		'product_ids'             => array(),
+	);
+
+	if ( 'machine_packages' === $machine_source ) {
+		$allowed_machine_ids = array();
+		$raw_machine_ids     = isset( $group['machine_packages'] ) && is_array( $group['machine_packages'] ) ? $group['machine_packages'] : array();
+
+		foreach ( $raw_machine_ids as $raw_machine_id ) {
+			$allowed_machine_ids[] = is_object( $raw_machine_id ) ? absint( $raw_machine_id->ID ) : absint( $raw_machine_id );
+		}
+
+		$allowed_machine_ids = array_values( array_filter( array_unique( $allowed_machine_ids ) ) );
+
+		if ( ! $machine_id || ! in_array( $machine_id, $allowed_machine_ids, true ) ) {
+			return new WP_Error( 'invalid_machine_package', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		}
+
+		$machine_product = wc_get_product( $machine_id );
+		if ( ! $machine_product || ! $machine_product->is_type( 'simple' ) ) {
+			return new WP_Error( 'invalid_machine_package', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		}
+
+		$validated['active_machine_source']     = 'machine_packages';
+		$validated['active_machine_product_id'] = $machine_id;
+	} elseif ( $machine_id && $machine_id !== $base_product_id ) {
+		return new WP_Error( 'invalid_machine_source', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	}
+
+	$validated['product_ids'][] = $validated['active_machine_product_id'];
+
+	foreach ( $definitions as $section_key => $definition ) {
+		$submitted_ids = isset( $submitted_sections[ $section_key ] ) && is_array( $submitted_sections[ $section_key ] )
+			? array_values( array_unique( array_map( 'absint', $submitted_sections[ $section_key ] ) ) )
+			: array();
+
+		$submitted_ids = array_values( array_filter( $submitted_ids ) );
+
+		if ( 'machine_packages' === $section_key ) {
+			if ( count( $submitted_ids ) > 1 ) {
+				return new WP_Error( 'invalid_machine_count', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+			}
+
+			if ( 'machine_packages' === $validated['active_machine_source'] ) {
+				if ( 1 !== count( $submitted_ids ) || $submitted_ids[0] !== $validated['active_machine_product_id'] ) {
+					return new WP_Error( 'invalid_machine_state', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+				}
+			} elseif ( ! empty( $submitted_ids ) ) {
+				return new WP_Error( 'invalid_machine_state', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+			}
+
+			$validated['sections'][ $section_key ] = $submitted_ids;
+			continue;
+		}
+
+		$selection_type = 'multiple';
+		if ( isset( $definition['type_field'] ) ) {
+			$raw_type = isset( $group[ $definition['type_field'] ] ) ? $group[ $definition['type_field'] ] : 'multiple';
+			$selection_type = in_array( $raw_type, array( 'single', 'multiple' ), true ) ? $raw_type : 'multiple';
+		}
+
+		if ( 'single' === $selection_type && count( $submitted_ids ) > 1 ) {
+			return new WP_Error( 'invalid_selection_count', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		}
+
+		$raw_allowed_ids = isset( $group[ $definition['products_field'] ] ) && is_array( $group[ $definition['products_field'] ] )
+			? $group[ $definition['products_field'] ]
+			: array();
+		$allowed_ids = array();
+
+		foreach ( $raw_allowed_ids as $raw_allowed_id ) {
+			$allowed_ids[] = is_object( $raw_allowed_id ) ? absint( $raw_allowed_id->ID ) : absint( $raw_allowed_id );
+		}
+
+		$allowed_ids = array_values( array_filter( array_unique( $allowed_ids ) ) );
+		$validated_ids = array();
+
+		foreach ( $submitted_ids as $submitted_id ) {
+			if ( ! in_array( $submitted_id, $allowed_ids, true ) ) {
+				return new WP_Error( 'invalid_section_product', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+			}
+
+			$submitted_product = wc_get_product( $submitted_id );
+			if ( ! $submitted_product || ! $submitted_product->is_type( 'simple' ) ) {
+				return new WP_Error( 'invalid_section_product', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+			}
+
+			$validated_ids[] = $submitted_id;
+		}
+
+		$validated['sections'][ $section_key ] = $validated_ids;
+		$validated['product_ids']             = array_merge( $validated['product_ids'], $validated_ids );
+	}
+
+	$validated['product_ids'] = array_values( array_unique( array_filter( array_map( 'absint', $validated['product_ids'] ) ) ) );
+
+	if ( empty( $validated['product_ids'] ) ) {
+		return new WP_Error( 'empty_configuration', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	}
+
+	return $validated;
+}
+
+/**
+ * AJAX: Add committed configurator products to cart.
+ */
+function fhs_configurator_add_all_to_cart() {
+
+	if ( ! check_ajax_referer( 'fhs_configurator_add_all_to_cart', 'nonce', false ) ) {
+		wp_send_json_error( array(
+			'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
+		), 403 );
+	}
+
+	$base_product_id = isset( $_POST['base_product_id'] ) ? absint( wp_unslash( $_POST['base_product_id'] ) ) : 0;
+	$configuration_json = isset( $_POST['configuration'] ) ? wp_unslash( $_POST['configuration'] ) : '';
+	$configuration = json_decode( $configuration_json, true );
+
+	if ( ! $base_product_id || ! is_array( $configuration ) ) {
+		wp_send_json_error( array(
+			'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
+		), 400 );
+	}
+
+	$validated = fhs_configurator_validate_committed_request( $base_product_id, $configuration );
+	if ( is_wp_error( $validated ) ) {
+		wp_send_json_error( array(
+			'message' => $validated->get_error_message(),
+		), 400 );
+	}
+
+	if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+		wp_send_json_error( array(
+			'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
+		), 500 );
+	}
+
+	$cart_keys = array();
+	foreach ( $validated['product_ids'] as $product_id ) {
+		$cart_key = WC()->cart->add_to_cart( $product_id, 1 );
+		if ( ! $cart_key ) {
+			wp_send_json_error( array(
+				'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
+			), 500 );
+		}
+		$cart_keys[] = $cart_key;
+	}
+
+	wp_send_json_success( array(
+		'cart_url' => wc_get_cart_url(),
+	) );
+}
+
+add_action( 'wp_ajax_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart' );
+add_action( 'wp_ajax_nopriv_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart' );
 
 add_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
 add_action( 'fhs_configurator_sidebar_area', 'fhs_render_configurator_sidebar' );
