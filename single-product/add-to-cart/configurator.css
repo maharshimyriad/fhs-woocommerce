@@ -178,6 +178,11 @@
     margin: 0 0 8px;
     font-size: 1.3rem;
     color: #1a1a1a;
+    display: none;
+}
+
+body.logged-in .fhs-configurator__summary-item-price{
+    display: block;
 }
 
 .fhs-configurator__summary-footer {
