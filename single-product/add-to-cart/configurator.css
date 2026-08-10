@@ -196,6 +196,11 @@ body.logged-in .fhs-configurator__summary-item-price{
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    display: none;
+}
+
+body.logged-in .fhs-configurator__summary-subtotal-row {
+    display: flex;
 }
 
 .fhs-configurator__summary-subtotal-label,
