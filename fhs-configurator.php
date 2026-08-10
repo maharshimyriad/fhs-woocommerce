@@ -1,4 +1,5 @@
 <?php
+
 /**
  * FHS Product Configurator — Bootstrap
  *
@@ -45,7 +46,7 @@
  * @version 1.1.0
  */
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Activation guard
@@ -64,29 +65,30 @@ defined( 'ABSPATH' ) || exit;
  * @param WC_Product|int $product WC_Product object or product post ID.
  * @return bool
  */
-function fhs_configurator_is_active( $product ) {
+function fhs_configurator_is_active($product)
+{
 
 	// Resolve product object if an ID was passed.
-	if ( is_int( $product ) || ( is_string( $product ) && ctype_digit( $product ) ) ) {
-		$product = wc_get_product( (int) $product );
+	if (is_int($product) || (is_string($product) && ctype_digit($product))) {
+		$product = wc_get_product((int) $product);
 	}
 
 	// Must be a valid WC_Product.
-	if ( ! $product instanceof WC_Product ) {
+	if (! $product instanceof WC_Product) {
 		return false;
 	}
 
 	// Must be a Simple product.
-	if ( ! $product->is_type( 'simple' ) ) {
+	if (! $product->is_type('simple')) {
 		return false;
 	}
 
 	// ACF must be available and the field must be truthy.
-	if ( ! function_exists( 'get_field' ) ) {
+	if (! function_exists('get_field')) {
 		return false;
 	}
 
-	return (bool) get_field( 'enable_product_configurator', $product->get_id() );
+	return (bool) get_field('enable_product_configurator', $product->get_id());
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -107,27 +109,28 @@ function fhs_configurator_is_active( $product ) {
  *                         ['title', 'price', 'short_desc', 'add_cart', 'meta'].
  * @return array
  */
-function fhs_configurator_filter_astra_structure( $structure ) {
+function fhs_configurator_filter_astra_structure($structure)
+{
 
-	if ( ! is_product() ) {
+	if (! is_product()) {
 		return $structure;
 	}
 
 	global $product;
 
-	if ( ! $product instanceof WC_Product ) {
-		$product = wc_get_product( get_the_ID() );
+	if (! $product instanceof WC_Product) {
+		$product = wc_get_product(get_the_ID());
 	}
 
-	if ( ! fhs_configurator_is_active( $product ) ) {
+	if (! fhs_configurator_is_active($product)) {
 		return $structure;
 	}
 
 	// Strip 'add_cart' and re-index so Astra's foreach stays clean.
-	return array_values( array_diff( (array) $structure, array( 'add_cart' ) ) );
+	return array_values(array_diff((array) $structure, array('add_cart')));
 }
 
-add_filter( 'astra_woo_single_product_structure', 'fhs_configurator_filter_astra_structure' );
+add_filter('astra_woo_single_product_structure', 'fhs_configurator_filter_astra_structure');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4a. Product data helper
@@ -150,75 +153,76 @@ add_filter( 'astra_woo_single_product_structure', 'fhs_configurator_filter_astra
  *     @type string $price_display  Plain-text display version of the active price.
  * }
  */
-function fhs_configurator_get_product_data( $product_id ) {
+function fhs_configurator_get_product_data($product_id)
+{
 
-	$product = wc_get_product( absint( $product_id ) );
+	$product = wc_get_product(absint($product_id));
 
-	if ( ! $product || ! $product->is_type( 'simple' ) ) {
+	if (! $product || ! $product->is_type('simple')) {
 		return array();
 	}
 
 	// Image: product thumbnail → parent fallback → WC placeholder.
 	$image_id  = $product->get_image_id();
 	$image_url = $image_id
-		? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' )
-		: wc_placeholder_img_src( 'woocommerce_thumbnail' );
+		? wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail')
+		: wc_placeholder_img_src('woocommerce_thumbnail');
 
 	$price_html    = '';
 	$price_value   = 0.0;
 	$price_display = '';
 
-	if ( is_user_logged_in() ) {
-		if ( current_user_can( 'manage_woocommerce' ) ) {
-			$level_a_regular = function_exists( 'fhs_get_level_a_regular_price' )
-				? fhs_get_level_a_regular_price( $product )
+	if (is_user_logged_in()) {
+		if (current_user_can('manage_woocommerce')) {
+			$level_a_regular = function_exists('fhs_get_level_a_regular_price')
+				? fhs_get_level_a_regular_price($product)
 				: '';
-			$level_a_sale    = function_exists( 'fhs_get_level_a_sale_price' )
-				? fhs_get_level_a_sale_price( $product )
+			$level_a_sale    = function_exists('fhs_get_level_a_sale_price')
+				? fhs_get_level_a_sale_price($product)
 				: '';
 
-			if ( '' !== $level_a_regular && null !== $level_a_regular ) {
+			if ('' !== $level_a_regular && null !== $level_a_regular) {
 				$level_a_regular = (float) $level_a_regular;
 				$level_a_sale    = '' !== $level_a_sale && null !== $level_a_sale ? (float) $level_a_sale : 0.0;
 
-				if ( $level_a_sale > 0 && $level_a_sale < $level_a_regular ) {
+				if ($level_a_sale > 0 && $level_a_sale < $level_a_regular) {
 					$price_value   = $level_a_sale;
-					$price_html    = wc_format_sale_price( $level_a_regular, $level_a_sale );
-					$price_display = wp_strip_all_tags( wc_price( $level_a_sale ) );
+					$price_html    = wc_format_sale_price($level_a_regular, $level_a_sale);
+					$price_display = wp_strip_all_tags(wc_price($level_a_sale));
 				} else {
 					$price_value   = $level_a_regular;
-					$price_html    = wc_price( $level_a_regular );
-					$price_display = wp_strip_all_tags( wc_price( $level_a_regular ) );
+					$price_html    = wc_price($level_a_regular);
+					$price_display = wp_strip_all_tags(wc_price($level_a_regular));
 				}
 			} else {
 				$regular_price = (float) $product->get_regular_price();
 				$sale_price    = (float) $product->get_sale_price();
 
-				if ( $sale_price > 0 && $sale_price < $regular_price ) {
+				if ($sale_price > 0 && $sale_price < $regular_price) {
 					$price_value   = $sale_price;
-					$price_html    = wc_format_sale_price( $regular_price, $sale_price );
-					$price_display = wp_strip_all_tags( wc_price( $sale_price ) );
+					$price_html    = wc_format_sale_price($regular_price, $sale_price);
+					$price_display = wp_strip_all_tags(wc_price($sale_price));
 				} else {
 					$active_price  = $regular_price > 0 ? $regular_price : (float) $product->get_price();
 					$price_value   = $active_price;
-					$price_html    = $active_price > 0 ? wc_price( $active_price ) : '';
-					$price_display = $active_price > 0 ? wp_strip_all_tags( wc_price( $active_price ) ) : '';
+					$price_html    = $active_price > 0 ? wc_price($active_price) : '';
+					$price_display = $active_price > 0 ? wp_strip_all_tags(wc_price($active_price)) : '';
 				}
 			}
 		} else {
 			$base_price = (float) $product->get_regular_price();
 			$tier_price = (float) $product->get_price();
-			$suffix     = method_exists( $product, 'get_price_suffix' ) ? $product->get_price_suffix() : '';
+			$suffix     = method_exists($product, 'get_price_suffix') ? $product->get_price_suffix() : '';
 
-			if ( $tier_price > 0 && $base_price > 0 && $tier_price < $base_price ) {
+			if ($tier_price > 0 && $base_price > 0 && $tier_price < $base_price) {
 				$price_value   = $tier_price;
-				$price_html    = wc_format_sale_price( $base_price, $tier_price ) . $suffix;
-				$price_display = wp_strip_all_tags( wc_price( $tier_price ) . $suffix );
+				$price_html    = wc_format_sale_price($base_price, $tier_price) . $suffix;
+				$price_display = wp_strip_all_tags(wc_price($tier_price) . $suffix);
 			} else {
 				$active_price  = $tier_price > 0 ? $tier_price : $base_price;
 				$price_value   = $active_price;
-				$price_html    = $active_price > 0 ? wc_price( $active_price ) . $suffix : '';
-				$price_display = $active_price > 0 ? wp_strip_all_tags( wc_price( $active_price ) . $suffix ) : '';
+				$price_html    = $active_price > 0 ? wc_price($active_price) . $suffix : '';
+				$price_display = $active_price > 0 ? wp_strip_all_tags(wc_price($active_price) . $suffix) : '';
 			}
 		}
 	}
@@ -227,7 +231,7 @@ function fhs_configurator_get_product_data( $product_id ) {
 		'id'            => $product->get_id(),
 		'name'          => $product->get_name(),
 		'sku'           => $product->get_sku(),
-		'image_url'     => $image_url ?: wc_placeholder_img_src( 'woocommerce_thumbnail' ),
+		'image_url'     => $image_url ?: wc_placeholder_img_src('woocommerce_thumbnail'),
 		'price_html'    => $price_html,
 		'price_value'   => $price_value,
 		'price_display' => $price_display,
@@ -271,18 +275,19 @@ function fhs_configurator_get_product_data( $product_id ) {
  *     @type array[] $products       Array of fhs_configurator_get_product_data() results.
  *   }
  */
-function fhs_configurator_get_sections( $product_id ) {
+function fhs_configurator_get_sections($product_id)
+{
 
-	$product_id = absint( $product_id );
+	$product_id = absint($product_id);
 
-	if ( ! $product_id || ! function_exists( 'get_field' ) ) {
+	if (! $product_id || ! function_exists('get_field')) {
 		return array();
 	}
 
 	// Read the ACF Group field once — all sub-fields are keys in this array.
-	$group = get_field( 'configurator_options', $product_id );
+	$group = get_field('configurator_options', $product_id);
 
-	if ( ! is_array( $group ) ) {
+	if (! is_array($group)) {
 		return array();
 	}
 
@@ -343,30 +348,30 @@ function fhs_configurator_get_sections( $product_id ) {
 
 	$sections = array();
 
-	foreach ( $section_defs as $def ) {
+	foreach ($section_defs as $def) {
 
 		// Read the Relationship value from the group array.
-		$raw_products = isset( $group[ $def['products_field'] ] ) && is_array( $group[ $def['products_field'] ] )
-			? $group[ $def['products_field'] ]
+		$raw_products = isset($group[$def['products_field']]) && is_array($group[$def['products_field']])
+			? $group[$def['products_field']]
 			: array();
 
-		if ( empty( $raw_products ) || ! is_array( $raw_products ) ) {
+		if (empty($raw_products) || ! is_array($raw_products)) {
 			continue; // No products assigned — skip this section entirely.
 		}
 
 		// Validate each product: absint, wc_get_product, is_type('simple').
 		$valid_products = array();
-		foreach ( $raw_products as $raw ) {
+		foreach ($raw_products as $raw) {
 			// ACF Relationship can return WP_Post objects or post IDs.
-			$pid = is_object( $raw ) ? absint( $raw->ID ) : absint( $raw );
+			$pid = is_object($raw) ? absint($raw->ID) : absint($raw);
 
-			if ( ! $pid ) {
+			if (! $pid) {
 				continue;
 			}
 
-			$data = fhs_configurator_get_product_data( $pid );
+			$data = fhs_configurator_get_product_data($pid);
 
-			if ( empty( $data ) ) {
+			if (empty($data)) {
 				// fhs_configurator_get_product_data() already validates simple type.
 				continue;
 			}
@@ -374,16 +379,16 @@ function fhs_configurator_get_sections( $product_id ) {
 			$valid_products[] = $data;
 		}
 
-		if ( empty( $valid_products ) ) {
+		if (empty($valid_products)) {
 			continue; // All products in this section were invalid — skip.
 		}
 
 		// Determine selection type.
-		if ( null !== $def['fixed_type'] ) {
+		if (null !== $def['fixed_type']) {
 			$selection_type = $def['fixed_type'];
 		} else {
-			$raw_type       = isset( $group[ $def['type_field'] ] ) ? $group[ $def['type_field'] ] : 'multiple';
-			$selection_type = in_array( $raw_type, array( 'single', 'multiple' ), true )
+			$raw_type       = isset($group[$def['type_field']]) ? $group[$def['type_field']] : 'multiple';
+			$selection_type = in_array($raw_type, array('single', 'multiple'), true)
 				? $raw_type
 				: 'multiple'; // Matches ACF field default value.
 		}
@@ -416,19 +421,20 @@ function fhs_configurator_get_sections( $product_id ) {
  * fhs_inside_product_main_container available for other callbacks (e.g. the
  * variation card grid) without interference.
  */
-function fhs_get_current_configurator_product() {
+function fhs_get_current_configurator_product()
+{
 
-	if ( ! is_product() ) {
+	if (! is_product()) {
 		return null;
 	}
 
 	global $product;
 
-	if ( ! $product instanceof WC_Product ) {
-		$product = wc_get_product( get_the_ID() );
+	if (! $product instanceof WC_Product) {
+		$product = wc_get_product(get_the_ID());
 	}
 
-	if ( ! $product instanceof WC_Product || ! fhs_configurator_is_active( $product ) ) {
+	if (! $product instanceof WC_Product || ! fhs_configurator_is_active($product)) {
 		return null;
 	}
 
@@ -441,20 +447,21 @@ function fhs_get_current_configurator_product() {
  * Safe to call from either the main render callback or the sidebar callback.
  * WordPress will ignore duplicate enqueue attempts for the same handles.
  */
-function fhs_configurator_enqueue_assets() {
+function fhs_configurator_enqueue_assets()
+{
 
 	$asset_base = get_stylesheet_directory_uri() . '/woocommerce/single-product/add-to-cart/';
 
-	if ( ! wp_style_is( 'fhs-configurator', 'enqueued' ) ) {
+	if (! wp_style_is('fhs-configurator', 'enqueued')) {
 		wp_enqueue_style(
 			'fhs-configurator',
 			$asset_base . 'configurator.css',
-			array( 'woocommerce-general' ),
+			array('woocommerce-general'),
 			'3.1.0'
 		);
 	}
 
-	if ( ! wp_script_is( 'fhs-configurator', 'enqueued' ) ) {
+	if (! wp_script_is('fhs-configurator', 'enqueued')) {
 		wp_enqueue_script(
 			'fhs-configurator',
 			$asset_base . 'configurator.js',
@@ -465,17 +472,18 @@ function fhs_configurator_enqueue_assets() {
 	}
 }
 
-function fhs_render_configurator() {
+function fhs_render_configurator()
+{
 
 	$product = fhs_get_current_configurator_product();
 
-	if ( ! $product ) {
+	if (! $product) {
 		return;
 	}
 
-	$sections = fhs_configurator_get_sections( $product->get_id() );
+	$sections = fhs_configurator_get_sections($product->get_id());
 
-	if ( empty( $sections ) ) {
+	if (empty($sections)) {
 		return;
 	}
 
@@ -498,53 +506,52 @@ function fhs_render_configurator() {
  * can be rendered as a sibling of the entire left column wrapper created in
  * content-single-product.php.
  */
-function fhs_render_configurator_sidebar() {
+function fhs_render_configurator_sidebar()
+{
 
 	$product = fhs_get_current_configurator_product();
 
-	if ( ! $product ) {
+	if (! $product) {
 		return;
 	}
 
-	$sections = fhs_configurator_get_sections( $product->get_id() );
+	$sections = fhs_configurator_get_sections($product->get_id());
 
-	if ( empty( $sections ) ) {
+	if (empty($sections)) {
 		return;
 	}
 
 	fhs_configurator_enqueue_assets();
 
-	$current_url = get_permalink( $product->get_id() );
-	$login_url   = add_query_arg( 'redirect_to', urlencode( $current_url ), site_url( '/my-account' ) );
+	$current_url = get_permalink($product->get_id());
+	$login_url   = add_query_arg('redirect_to', urlencode($current_url), site_url('/my-account'));
 	$can_add_to_cart = is_user_logged_in() && $product->is_purchasable() && $product->is_in_stock();
 
-	echo '<aside class="fhs-configurator-sidebar" aria-label="' . esc_attr__( 'Your Configuration', 'woocommerce' ) . '">';
+	echo '<aside class="fhs-configurator-sidebar" aria-label="' . esc_attr__('Your Configuration', 'woocommerce') . '">';
 	echo '	<div class="fhs-configurator__right">';
 	echo '		<div class="fhs-configurator__summary-card">';
 	echo '			<div class="fhs-configurator__summary-header">';
 	echo '				<div class="fhs-configurator__summary-heading-group">';
-	echo '					<h2 class="fhs-configurator__summary-title">' . esc_html__( 'Your Configuration', 'woocommerce' ) . '</h2>';
+	echo '					<h2 class="fhs-configurator__summary-title">' . esc_html__('Your Configuration', 'woocommerce') . '</h2>';
 	echo '					<p class="fhs-configurator__summary-count" data-fhs-config-count>1 item</p>';
 	echo '				</div>';
-	echo '				<button type="button" class="fhs-configurator__clear-all" data-fhs-config-clear>' . esc_html__( 'Clear all', 'woocommerce' ) . '</button>';
+	echo '				<button type="button" class="fhs-configurator__clear-all" data-fhs-config-clear>' . esc_html__('Clear all', 'woocommerce') . '</button>';
 	echo '			</div>';
 	echo '			<div class="fhs-configurator__summary-body" data-fhs-config-body></div>';
 	echo '			<div class="fhs-configurator__summary-footer">';
-	if ( $can_add_to_cart ) {
 	echo '				<div class="fhs-configurator__summary-subtotal-row">';
-	echo '					<span class="fhs-configurator__summary-subtotal-label">' . esc_html__( 'Subtotal', 'woocommerce' ) . '</span>';
+	echo '					<span class="fhs-configurator__summary-subtotal-label">' . esc_html__('Subtotal', 'woocommerce') . '</span>';
 	echo '					<span class="fhs-configurator__summary-subtotal-value" data-fhs-config-subtotal></span>';
 	echo '				</div>';
-	}
 	echo '				<div class="fhs-configurator__summary-cart-actions">';
-	if ( $can_add_to_cart ) {
-		echo '					<button type="button" class="fhs-configurator__add-all-to-cart" data-fhs-config-add-all>' . esc_html__( 'Add All to Cart', 'woocommerce' ) . '</button>';
+	if ($can_add_to_cart) {
+		echo '					<button type="button" class="fhs-configurator__add-all-to-cart" data-fhs-config-add-all>' . esc_html__('Add All to Cart', 'woocommerce') . '</button>';
 	} else {
 		echo '					<div class="login-prompt fhs-configurator__login-prompt">';
-		echo '						<span>' . esc_html__( 'Login or register to view prices.', 'woocommerce' ) . '</span>';
-		echo '						<a href="' . esc_url( $login_url ) . '">';
+		echo '						<span>' . esc_html__('Login or register to view prices.', 'woocommerce') . '</span>';
+		echo '						<a href="' . esc_url($login_url) . '">';
 		echo '							<i class="icofont icofont-ui-user"></i>';
-		echo '							' . esc_html__( 'Login / Register to see pricing', 'woocommerce' );
+		echo '							' . esc_html__('Login / Register to see pricing', 'woocommerce');
 		echo '						</a>';
 		echo '					</div>';
 	}
@@ -562,18 +569,19 @@ function fhs_render_configurator_sidebar() {
  * @param int $base_product_id
  * @return array
  */
-function fhs_configurator_get_options_group( $base_product_id ) {
+function fhs_configurator_get_options_group($base_product_id)
+{
 
-	$base_product_id = absint( $base_product_id );
-	$base_product    = wc_get_product( $base_product_id );
+	$base_product_id = absint($base_product_id);
+	$base_product    = wc_get_product($base_product_id);
 
-	if ( ! $base_product || ! fhs_configurator_is_active( $base_product ) || ! function_exists( 'get_field' ) ) {
+	if (! $base_product || ! fhs_configurator_is_active($base_product) || ! function_exists('get_field')) {
 		return array();
 	}
 
-	$group = get_field( 'configurator_options', $base_product_id );
+	$group = get_field('configurator_options', $base_product_id);
 
-	return is_array( $group ) ? $group : array();
+	return is_array($group) ? $group : array();
 }
 
 /**
@@ -583,22 +591,23 @@ function fhs_configurator_get_options_group( $base_product_id ) {
  * @param array $submitted_state Submitted committed configuration identifiers.
  * @return array|WP_Error
  */
-function fhs_configurator_validate_committed_request( $base_product_id, $submitted_state ) {
+function fhs_configurator_validate_committed_request($base_product_id, $submitted_state)
+{
 
-	$base_product_id = absint( $base_product_id );
-	$base_product    = wc_get_product( $base_product_id );
+	$base_product_id = absint($base_product_id);
+	$base_product    = wc_get_product($base_product_id);
 
-	if ( ! $base_product || ! $base_product->is_type( 'simple' ) || ! fhs_configurator_is_active( $base_product ) ) {
-		return new WP_Error( 'invalid_base_product', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	if (! $base_product || ! $base_product->is_type('simple') || ! fhs_configurator_is_active($base_product)) {
+		return new WP_Error('invalid_base_product', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 	}
 
-	if ( ! is_array( $submitted_state ) ) {
-		return new WP_Error( 'invalid_configuration', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	if (! is_array($submitted_state)) {
+		return new WP_Error('invalid_configuration', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 	}
 
-	$group = fhs_configurator_get_options_group( $base_product_id );
-	if ( empty( $group ) ) {
-		return new WP_Error( 'invalid_configuration', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	$group = fhs_configurator_get_options_group($base_product_id);
+	if (empty($group)) {
+		return new WP_Error('invalid_configuration', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 	}
 
 	$definitions = array(
@@ -632,9 +641,9 @@ function fhs_configurator_validate_committed_request( $base_product_id, $submitt
 		),
 	);
 
-	$machine_source = isset( $submitted_state['activeMachineSource'] ) ? sanitize_key( $submitted_state['activeMachineSource'] ) : 'base_product';
-	$machine_id     = isset( $submitted_state['activeMachineProductId'] ) ? absint( $submitted_state['activeMachineProductId'] ) : 0;
-	$submitted_sections = isset( $submitted_state['sections'] ) && is_array( $submitted_state['sections'] )
+	$machine_source = isset($submitted_state['activeMachineSource']) ? sanitize_key($submitted_state['activeMachineSource']) : 'base_product';
+	$machine_id     = isset($submitted_state['activeMachineProductId']) ? absint($submitted_state['activeMachineProductId']) : 0;
+	$submitted_sections = isset($submitted_state['sections']) && is_array($submitted_state['sections'])
 		? $submitted_state['sections']
 		: array();
 
@@ -646,100 +655,100 @@ function fhs_configurator_validate_committed_request( $base_product_id, $submitt
 		'product_ids'             => array(),
 	);
 
-	if ( 'machine_packages' === $machine_source ) {
+	if ('machine_packages' === $machine_source) {
 		$allowed_machine_ids = array();
-		$raw_machine_ids     = isset( $group['machine_packages'] ) && is_array( $group['machine_packages'] ) ? $group['machine_packages'] : array();
+		$raw_machine_ids     = isset($group['machine_packages']) && is_array($group['machine_packages']) ? $group['machine_packages'] : array();
 
-		foreach ( $raw_machine_ids as $raw_machine_id ) {
-			$allowed_machine_ids[] = is_object( $raw_machine_id ) ? absint( $raw_machine_id->ID ) : absint( $raw_machine_id );
+		foreach ($raw_machine_ids as $raw_machine_id) {
+			$allowed_machine_ids[] = is_object($raw_machine_id) ? absint($raw_machine_id->ID) : absint($raw_machine_id);
 		}
 
-		$allowed_machine_ids = array_values( array_filter( array_unique( $allowed_machine_ids ) ) );
+		$allowed_machine_ids = array_values(array_filter(array_unique($allowed_machine_ids)));
 
-		if ( ! $machine_id || ! in_array( $machine_id, $allowed_machine_ids, true ) ) {
-			return new WP_Error( 'invalid_machine_package', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		if (! $machine_id || ! in_array($machine_id, $allowed_machine_ids, true)) {
+			return new WP_Error('invalid_machine_package', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 		}
 
-		$machine_product = wc_get_product( $machine_id );
-		if ( ! $machine_product || ! $machine_product->is_type( 'simple' ) ) {
-			return new WP_Error( 'invalid_machine_package', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		$machine_product = wc_get_product($machine_id);
+		if (! $machine_product || ! $machine_product->is_type('simple')) {
+			return new WP_Error('invalid_machine_package', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 		}
 
 		$validated['active_machine_source']     = 'machine_packages';
 		$validated['active_machine_product_id'] = $machine_id;
-	} elseif ( $machine_id && $machine_id !== $base_product_id ) {
-		return new WP_Error( 'invalid_machine_source', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	} elseif ($machine_id && $machine_id !== $base_product_id) {
+		return new WP_Error('invalid_machine_source', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 	}
 
 	$validated['product_ids'][] = $validated['active_machine_product_id'];
 
-	foreach ( $definitions as $section_key => $definition ) {
-		$submitted_ids = isset( $submitted_sections[ $section_key ] ) && is_array( $submitted_sections[ $section_key ] )
-			? array_values( array_unique( array_map( 'absint', $submitted_sections[ $section_key ] ) ) )
+	foreach ($definitions as $section_key => $definition) {
+		$submitted_ids = isset($submitted_sections[$section_key]) && is_array($submitted_sections[$section_key])
+			? array_values(array_unique(array_map('absint', $submitted_sections[$section_key])))
 			: array();
 
-		$submitted_ids = array_values( array_filter( $submitted_ids ) );
+		$submitted_ids = array_values(array_filter($submitted_ids));
 
-		if ( 'machine_packages' === $section_key ) {
-			if ( count( $submitted_ids ) > 1 ) {
-				return new WP_Error( 'invalid_machine_count', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		if ('machine_packages' === $section_key) {
+			if (count($submitted_ids) > 1) {
+				return new WP_Error('invalid_machine_count', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 			}
 
-			if ( 'machine_packages' === $validated['active_machine_source'] ) {
-				if ( 1 !== count( $submitted_ids ) || $submitted_ids[0] !== $validated['active_machine_product_id'] ) {
-					return new WP_Error( 'invalid_machine_state', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+			if ('machine_packages' === $validated['active_machine_source']) {
+				if (1 !== count($submitted_ids) || $submitted_ids[0] !== $validated['active_machine_product_id']) {
+					return new WP_Error('invalid_machine_state', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 				}
-			} elseif ( ! empty( $submitted_ids ) ) {
-				return new WP_Error( 'invalid_machine_state', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+			} elseif (! empty($submitted_ids)) {
+				return new WP_Error('invalid_machine_state', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 			}
 
-			$validated['sections'][ $section_key ] = $submitted_ids;
+			$validated['sections'][$section_key] = $submitted_ids;
 			continue;
 		}
 
 		$selection_type = 'multiple';
-		if ( isset( $definition['type_field'] ) ) {
-			$raw_type = isset( $group[ $definition['type_field'] ] ) ? $group[ $definition['type_field'] ] : 'multiple';
-			$selection_type = in_array( $raw_type, array( 'single', 'multiple' ), true ) ? $raw_type : 'multiple';
+		if (isset($definition['type_field'])) {
+			$raw_type = isset($group[$definition['type_field']]) ? $group[$definition['type_field']] : 'multiple';
+			$selection_type = in_array($raw_type, array('single', 'multiple'), true) ? $raw_type : 'multiple';
 		}
 
-		if ( 'single' === $selection_type && count( $submitted_ids ) > 1 ) {
-			return new WP_Error( 'invalid_selection_count', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		if ('single' === $selection_type && count($submitted_ids) > 1) {
+			return new WP_Error('invalid_selection_count', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 		}
 
-		$raw_allowed_ids = isset( $group[ $definition['products_field'] ] ) && is_array( $group[ $definition['products_field'] ] )
-			? $group[ $definition['products_field'] ]
+		$raw_allowed_ids = isset($group[$definition['products_field']]) && is_array($group[$definition['products_field']])
+			? $group[$definition['products_field']]
 			: array();
 		$allowed_ids = array();
 
-		foreach ( $raw_allowed_ids as $raw_allowed_id ) {
-			$allowed_ids[] = is_object( $raw_allowed_id ) ? absint( $raw_allowed_id->ID ) : absint( $raw_allowed_id );
+		foreach ($raw_allowed_ids as $raw_allowed_id) {
+			$allowed_ids[] = is_object($raw_allowed_id) ? absint($raw_allowed_id->ID) : absint($raw_allowed_id);
 		}
 
-		$allowed_ids = array_values( array_filter( array_unique( $allowed_ids ) ) );
+		$allowed_ids = array_values(array_filter(array_unique($allowed_ids)));
 		$validated_ids = array();
 
-		foreach ( $submitted_ids as $submitted_id ) {
-			if ( ! in_array( $submitted_id, $allowed_ids, true ) ) {
-				return new WP_Error( 'invalid_section_product', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+		foreach ($submitted_ids as $submitted_id) {
+			if (! in_array($submitted_id, $allowed_ids, true)) {
+				return new WP_Error('invalid_section_product', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 			}
 
-			$submitted_product = wc_get_product( $submitted_id );
-			if ( ! $submitted_product || ! $submitted_product->is_type( 'simple' ) ) {
-				return new WP_Error( 'invalid_section_product', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+			$submitted_product = wc_get_product($submitted_id);
+			if (! $submitted_product || ! $submitted_product->is_type('simple')) {
+				return new WP_Error('invalid_section_product', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 			}
 
 			$validated_ids[] = $submitted_id;
 		}
 
-		$validated['sections'][ $section_key ] = $validated_ids;
-		$validated['product_ids']             = array_merge( $validated['product_ids'], $validated_ids );
+		$validated['sections'][$section_key] = $validated_ids;
+		$validated['product_ids']             = array_merge($validated['product_ids'], $validated_ids);
 	}
 
-	$validated['product_ids'] = array_values( array_unique( array_filter( array_map( 'absint', $validated['product_ids'] ) ) ) );
+	$validated['product_ids'] = array_values(array_unique(array_filter(array_map('absint', $validated['product_ids']))));
 
-	if ( empty( $validated['product_ids'] ) ) {
-		return new WP_Error( 'empty_configuration', __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ) );
+	if (empty($validated['product_ids'])) {
+		return new WP_Error('empty_configuration', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
 	}
 
 	return $validated;
@@ -748,57 +757,56 @@ function fhs_configurator_validate_committed_request( $base_product_id, $submitt
 /**
  * AJAX: Add committed configurator products to cart.
  */
-function fhs_configurator_add_all_to_cart() {
+function fhs_configurator_add_all_to_cart()
+{
 
-	if ( ! check_ajax_referer( 'fhs_configurator_add_all_to_cart', 'nonce', false ) ) {
-		wp_send_json_error( array(
-			'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
-		), 403 );
+	if (! check_ajax_referer('fhs_configurator_add_all_to_cart', 'nonce', false)) {
+		wp_send_json_error(array(
+			'message' => __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'),
+		), 403);
 	}
 
-	$base_product_id = isset( $_POST['base_product_id'] ) ? absint( wp_unslash( $_POST['base_product_id'] ) ) : 0;
-	$configuration_json = isset( $_POST['configuration'] ) ? wp_unslash( $_POST['configuration'] ) : '';
-	$configuration = json_decode( $configuration_json, true );
+	$base_product_id = isset($_POST['base_product_id']) ? absint(wp_unslash($_POST['base_product_id'])) : 0;
+	$configuration_json = isset($_POST['configuration']) ? wp_unslash($_POST['configuration']) : '';
+	$configuration = json_decode($configuration_json, true);
 
-	if ( ! $base_product_id || ! is_array( $configuration ) ) {
-		wp_send_json_error( array(
-			'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
-		), 400 );
+	if (! $base_product_id || ! is_array($configuration)) {
+		wp_send_json_error(array(
+			'message' => __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'),
+		), 400);
 	}
 
-	$validated = fhs_configurator_validate_committed_request( $base_product_id, $configuration );
-	if ( is_wp_error( $validated ) ) {
-		wp_send_json_error( array(
+	$validated = fhs_configurator_validate_committed_request($base_product_id, $configuration);
+	if (is_wp_error($validated)) {
+		wp_send_json_error(array(
 			'message' => $validated->get_error_message(),
-		), 400 );
+		), 400);
 	}
 
-	if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
-		wp_send_json_error( array(
-			'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
-		), 500 );
+	if (! function_exists('WC') || ! WC()->cart) {
+		wp_send_json_error(array(
+			'message' => __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'),
+		), 500);
 	}
 
 	$cart_keys = array();
-	foreach ( $validated['product_ids'] as $product_id ) {
-		$cart_key = WC()->cart->add_to_cart( $product_id, 1 );
-		if ( ! $cart_key ) {
-			wp_send_json_error( array(
-				'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
-			), 500 );
+	foreach ($validated['product_ids'] as $product_id) {
+		$cart_key = WC()->cart->add_to_cart($product_id, 1);
+		if (! $cart_key) {
+			wp_send_json_error(array(
+				'message' => __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'),
+			), 500);
 		}
 		$cart_keys[] = $cart_key;
 	}
 
-	wp_send_json_success( array(
+	wp_send_json_success(array(
 		'cart_url' => wc_get_cart_url(),
-	) );
+	));
 }
 
-add_action( 'wp_ajax_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart' );
-add_action( 'wp_ajax_nopriv_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart' );
+add_action('wp_ajax_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart');
+add_action('wp_ajax_nopriv_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart');
 
-add_action( 'fhs_inside_product_main_container', 'fhs_render_configurator' );
-add_action( 'fhs_configurator_sidebar_area', 'fhs_render_configurator_sidebar' );
-
-
+add_action('fhs_inside_product_main_container', 'fhs_render_configurator');
+add_action('fhs_configurator_sidebar_area', 'fhs_render_configurator_sidebar');
