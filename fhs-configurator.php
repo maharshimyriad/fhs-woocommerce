@@ -530,10 +530,12 @@ function fhs_render_configurator_sidebar() {
 	echo '			</div>';
 	echo '			<div class="fhs-configurator__summary-body" data-fhs-config-body></div>';
 	echo '			<div class="fhs-configurator__summary-footer">';
+	if ( $can_add_to_cart ) {
 	echo '				<div class="fhs-configurator__summary-subtotal-row">';
 	echo '					<span class="fhs-configurator__summary-subtotal-label">' . esc_html__( 'Subtotal', 'woocommerce' ) . '</span>';
 	echo '					<span class="fhs-configurator__summary-subtotal-value" data-fhs-config-subtotal></span>';
 	echo '				</div>';
+	}
 	echo '				<div class="fhs-configurator__summary-cart-actions">';
 	if ( $can_add_to_cart ) {
 		echo '					<button type="button" class="fhs-configurator__add-all-to-cart" data-fhs-config-add-all>' . esc_html__( 'Add All to Cart', 'woocommerce' ) . '</button>';
