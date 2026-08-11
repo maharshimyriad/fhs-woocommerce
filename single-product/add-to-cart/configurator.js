@@ -355,9 +355,18 @@
 
 		var data = buildCommittedConfigurationViewModel( wrapper );
 		clearElement( summary.body );
-		data.sections.forEach( function ( section ) {
-			summary.body.appendChild( renderCommittedSection( section ) );
-		} );
+
+		if ( data.itemCount === 0 ) {
+			var empty = document.createElement( 'p' );
+			empty.className = 'fhs-configurator__summary-empty';
+			empty.textContent = 'No products added yet.';
+			summary.body.appendChild( empty );
+		} else {
+			data.sections.forEach( function ( section ) {
+				summary.body.appendChild( renderCommittedSection( section ) );
+			} );
+		}
+
 		summary.count.textContent = formatItemCount( data.itemCount );
 		summary.subtotal.innerHTML = data.subtotalHtml;
 	}

@@ -125,10 +125,12 @@
 }
 
 .fhs-configurator__summary-empty {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     color: #9ca3af;
-    padding: 8px 0;
+    padding: 16px 0 8px;
+    text-align: center;
     font-style: italic;
+    line-height: 1.5;
 }
 
 /* ─── Summary section ───────────────────────────────────────────────────── */
