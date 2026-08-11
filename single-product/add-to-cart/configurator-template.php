@@ -168,6 +168,57 @@ foreach ($sections as $section) {
 				</div><!-- /.fhs-configurator__panel-header -->
 
 				<div class="fhs-configurator__grid<?php echo $is_machine ? ' fhs-configurator__grid--machine' : ' fhs-configurator__grid--standard'; ?>">
+					<?php
+					// For the machine packages section, prepend the base product as a
+					// "Standard" card. It is NOT pre-selected — the user must actively choose it.
+					if ($is_machine) :
+						$base_input_id = 'fhs-conf-input-' . $section['key'] . '-' . absint($base_product['id']);
+					?>
+						<label
+							class="fhs-configurator__card fhs-configurator__card--machine fhs-configurator__card--base-product"
+							data-product-id="<?php echo absint($base_product['id']); ?>"
+							data-section-key="<?php echo esc_attr($section['key']); ?>"
+							for="<?php echo esc_attr($base_input_id); ?>">
+
+							<input
+								type="radio"
+								id="<?php echo esc_attr($base_input_id); ?>"
+								name="<?php echo esc_attr($input_name); ?>"
+								value="<?php echo absint($base_product['id']); ?>"
+								class="fhs-configurator__card-input"
+								data-product-id="<?php echo absint($base_product['id']); ?>"
+								data-section-key="<?php echo esc_attr($section['key']); ?>" />
+
+							<span class="fhs-configurator__standard-badge">
+								<?php esc_html_e('Standard', 'woocommerce'); ?>
+							</span>
+
+							<div class="fhs-configurator__card-img-wrap">
+								<?php if (! empty($base_product['image_url'])) : ?>
+									<img
+										src="<?php echo esc_url($base_product['image_url']); ?>"
+										alt="<?php echo esc_attr($base_product['name']); ?>"
+										class="fhs-configurator__card-img"
+										loading="lazy" />
+								<?php endif; ?>
+							</div>
+
+							<div class="fhs-configurator__card-body">
+								<p class="fhs-configurator__card-name">
+									<?php echo esc_html($base_product['name']); ?>
+								</p>
+								<?php if (! empty($base_product['sku'])) : ?>
+									<p class="fhs-configurator__card-sku">
+										<?php echo esc_html($base_product['sku']); ?>
+									</p>
+								<?php endif; ?>
+								<?php if (! empty($base_product['price_html'])) : ?>
+									<div class="fhs-configurator__card-price"><?php echo wp_kses_post($base_product['price_html']); ?></div>
+								<?php endif; ?>
+							</div>
+						</label><!-- /.fhs-configurator__card--base-product -->
+					<?php endif; ?>
+
 					<?php foreach ($section['products'] as $product_data) :
 						$product_id = absint($product_data['id']);
 						$input_type = $is_machine || ! $is_multiple ? 'radio' : 'checkbox';

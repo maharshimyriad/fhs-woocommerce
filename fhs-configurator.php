@@ -533,7 +533,7 @@ function fhs_render_configurator_sidebar()
 	echo '			<div class="fhs-configurator__summary-header">';
 	echo '				<div class="fhs-configurator__summary-heading-group">';
 	echo '					<h2 class="fhs-configurator__summary-title">' . esc_html__('Your Configuration', 'woocommerce') . '</h2>';
-	echo '					<p class="fhs-configurator__summary-count" data-fhs-config-count>1 item</p>';
+	echo '					<p class="fhs-configurator__summary-count" data-fhs-config-count>0 items</p>';
 	echo '				</div>';
 	echo '				<button type="button" class="fhs-configurator__clear-all" data-fhs-config-clear>' . esc_html__('Clear all', 'woocommerce') . '</button>';
 	echo '			</div>';
