@@ -1,55 +1,36 @@
 /**
  * FHS Product Configurator — Styles
+ * Matches reference design screenshot.
  *
- * Matches the reference design:
- *   - Full-width outer wrapper, light grey background
- *   - Two-column layout: left options area + right configuration panel
- *   - Horizontal tab bar with icons
- *   - Machine Packages: large radio-style cards in a row
- *   - All other sections: compact checkbox-style grid
- *
- * Font-size note:
- *   This theme sets html { font-size: 10px } so 1rem = 10px.
- *   All rem values are scaled so they render at their intended px size:
- *     1.6rem  = 16px
- *     1.47rem = 14.7px
- *     1.44rem = 14.4px
- *     1.31rem = 13.1px
- *     1.28rem = 12.8px
- *     1.25rem = 12.5px
- *     1.15rem = 11.5px
- *     1.12rem = 11.2px
- *
- * Colour tokens:
- *   --fhs-blue      : #1a4f8a
- *   --fhs-blue-lt   : #f0f4fb
- *   --fhs-border    : #e0e4ea
- *   --fhs-bg        : #f5f6f8
- *   --fhs-text      : #1a1a1a
- *   --fhs-muted     : #6b7280
+ * Font base: html { font-size: 10px } → 1rem = 10px
+ * Colours:
+ *   #1a4f8a  FHS blue
+ *   #e0e4ea  border
+ *   #f5f6f8  page bg
+ *   #f3f4f6  light grey bg
+ *   #1a1a1a  primary text
+ *   #6b7280  muted text
+ *   #9ca3af  placeholder/icon
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PAGE-LEVEL TWO-COLUMN LAYOUT
-   .single-product-content-container becomes the grid when the configurator
-   is active, splitting left content and the sticky right sidebar.
+   PAGE LAYOUT — two-column grid wrapping left content + sticky right sidebar
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .single-product-content-container.fhs-configurator-product-layout {
     width: 90vw;
     max-width: 90vw;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-columns: minmax(0, 1fr) 300px;
     gap: 24px;
     align-items: start;
     box-sizing: border-box;
 }
 
-.single-product-content-container.fhs-configurator-product-layout .fhs-configurator-product-main {
+.single-product-content-container.fhs-configurator-product-layout
+.fhs-configurator-product-main {
     min-width: 0;
 }
-
-/* ─── Sticky right sidebar ──────────────────────────────────────────────── */
 
 .fhs-configurator-sidebar {
     min-width: 0;
@@ -57,100 +38,111 @@
 
 .fhs-configurator__right {
     position: sticky;
-    top: 80px;
+    top: 24px;
 }
 
-/* ─── Summary card shell ────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   RIGHT PANEL — summary card
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator__summary-card {
     background: #fff;
     border: 1px solid #e0e4ea;
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
-    padding: 20px;
+    font-size: 1.3rem;
 }
+
+/* ── Header: title + count badge + clear all ────────────────────────────── */
 
 .fhs-configurator__summary-header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 14px;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px 12px;
     border-bottom: 1px solid #e0e4ea;
 }
 
-.fhs-configurator__summary-heading-group {
-    min-width: 0;
-}
-
 .fhs-configurator__summary-title {
-    margin: 0 0 3px;
-    font-size: 1.8rem;
-    line-height: 1.3;
+    margin: 0;
+    font-size: 1.6rem;
     font-weight: 700;
     color: #1a1a1a;
+    line-height: 1.2;
+    flex-shrink: 0;
 }
 
-.fhs-configurator__summary-count {
-    margin: 0;
-    font-size: 1.3rem;
-    color: #6b7280;
-    font-weight: 400;
+.fhs-configurator__summary-count-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #e8f0fb;
+    color: #1a4f8a;
+    font-size: 1.15rem;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 2px 8px;
+    line-height: 1.5;
+    flex-shrink: 0;
 }
 
 .fhs-configurator__clear-all {
+    margin-left: auto;
     border: none;
     background: none;
     color: #1a4f8a;
-    text-decoration: underline;
+    font-size: 1.25rem;
     cursor: pointer;
     padding: 0;
-    font-size: 1.28rem;
     white-space: nowrap;
+    text-decoration: none;
+    font-weight: 400;
     flex-shrink: 0;
 }
 
 .fhs-configurator__clear-all:hover {
+    text-decoration: underline;
     color: #0d3566;
 }
 
-/* ─── Summary body ──────────────────────────────────────────────────────── */
+/* ── Scrollable body ────────────────────────────────────────────────────── */
 
 .fhs-configurator__summary-body {
+    padding: 0 16px;
+    max-height: 420px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    min-height: 60px;
 }
 
 .fhs-configurator__summary-empty {
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     color: #9ca3af;
-    padding: 16px 0 8px;
+    padding: 20px 0;
     text-align: center;
     font-style: italic;
-    line-height: 1.5;
 }
 
-/* ─── Summary section ───────────────────────────────────────────────────── */
+/* ── Section group ──────────────────────────────────────────────────────── */
 
 .fhs-configurator__summary-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    padding: 12px 0 4px;
+    border-bottom: 1px solid #f0f1f3;
+}
+
+.fhs-configurator__summary-section:last-child {
+    border-bottom: none;
 }
 
 .fhs-configurator__summary-section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .fhs-configurator__summary-section-title {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     font-weight: 700;
     color: #1a1a1a;
     line-height: 1.3;
@@ -160,48 +152,47 @@
     border: none;
     background: none;
     color: #1a4f8a;
-    text-decoration: underline;
+    font-size: 1.2rem;
     cursor: pointer;
     padding: 0;
-    font-size: 1.2rem;
+    font-weight: 500;
 }
 
-/* ─── Summary item row ──────────────────────────────────────────────────── */
+.fhs-configurator__summary-section-edit:hover {
+    text-decoration: underline;
+}
+
+/* ── Item row: image | body (name/sku/price/×) ──────────────────────────── */
 
 .fhs-configurator__summary-item {
     display: grid;
-    grid-template-columns: 56px minmax(0, 1fr) 20px;
+    grid-template-columns: 44px minmax(0, 1fr);
     gap: 10px;
     align-items: start;
-    padding: 10px 0;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.fhs-configurator__summary-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+    padding: 8px 0;
 }
 
 .fhs-configurator__summary-item-image {
-    width: 56px;
-    height: 56px;
+    width: 44px;
+    height: 44px;
     object-fit: contain;
     border: 1px solid #e0e4ea;
-    border-radius: 6px;
+    border-radius: 4px;
     background: #fafafa;
-    padding: 4px;
+    padding: 3px;
+    flex-shrink: 0;
 }
 
 .fhs-configurator__summary-item-body {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .fhs-configurator__summary-item-name {
     margin: 0;
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: #1a1a1a;
     line-height: 1.3;
@@ -209,7 +200,7 @@
 
 .fhs-configurator__summary-item-sku {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     color: #6b7280;
 }
 
@@ -225,62 +216,75 @@ body.logged-in .fhs-configurator__summary-item-price {
     display: block;
 }
 
+/* × remove button — sits below price, right-aligned as text */
 .fhs-configurator__summary-remove {
     border: none;
     background: none;
     color: #9ca3af;
     cursor: pointer;
     padding: 0;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     line-height: 1;
-    font-weight: 300;
-    margin-top: 2px;
+    font-weight: 400;
     align-self: flex-start;
+    margin-top: 2px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
 }
 
 .fhs-configurator__summary-remove:hover {
     color: #dc2626;
 }
 
-/* ─── Summary footer ────────────────────────────────────────────────────── */
+/* ── Footer: totals + CTA buttons ──────────────────────────────────────── */
 
 .fhs-configurator__summary-footer {
-    margin-top: 16px;
-    padding-top: 14px;
+    padding: 12px 16px 16px;
     border-top: 1px solid #e0e4ea;
 }
 
-.fhs-configurator__summary-subtotal-row {
+.fhs-configurator__summary-totals {
     display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 6px;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
 }
 
-body.logged-in .fhs-configurator__summary-subtotal-row {
+body.logged-in .fhs-configurator__summary-totals {
     display: flex;
 }
 
-.fhs-configurator__summary-subtotal-label {
-    font-size: 1.3rem;
+.fhs-configurator__summary-totals-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.fhs-configurator__summary-totals-label {
+    font-size: 1.25rem;
     color: #6b7280;
 }
 
-.fhs-configurator__summary-subtotal-value {
-    font-size: 1.5rem;
+.fhs-configurator__summary-totals-value {
+    font-size: 1.25rem;
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.fhs-configurator__summary-totals-row--total .fhs-configurator__summary-totals-label,
+.fhs-configurator__summary-totals-row--total .fhs-configurator__summary-totals-value {
+    font-size: 1.4rem;
     font-weight: 700;
     color: #1a1a1a;
 }
 
 .fhs-configurator__summary-cart-actions {
-    margin-top: 14px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
-
-/* ─── Add All to Cart button ────────────────────────────────────────────── */
 
 .fhs-configurator__add-all-to-cart {
     width: 100%;
@@ -288,15 +292,15 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 46px;
+    min-height: 44px;
     border: none;
     background: #1a4f8a;
     color: #fff;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 600;
-    padding: 0 20px;
+    padding: 0 16px;
     transition: background 0.15s;
 }
 
@@ -309,20 +313,56 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     cursor: not-allowed;
 }
 
-/* ─── Login prompt ──────────────────────────────────────────────────────── */
+.fhs-configurator__request-quote {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    border: 1px solid #1a4f8a;
+    background: #fff;
+    color: #1a4f8a;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 600;
+    padding: 0 16px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.fhs-configurator__request-quote:hover {
+    background: #f0f4fb;
+}
+
+.fhs-configurator__save-config {
+    border: none;
+    background: none;
+    color: #1a4f8a;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 4px 0 0;
+    text-align: center;
+    width: 100%;
+    text-decoration: none;
+}
+
+.fhs-configurator__save-config:hover {
+    text-decoration: underline;
+}
 
 .fhs-configurator__login-prompt {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 14px;
+    padding: 12px;
     border: 1px solid #e0e4ea;
-    border-radius: 8px;
+    border-radius: 6px;
     background: #f8fafc;
 }
 
 .fhs-configurator__login-prompt span {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     color: #374151;
 }
 
@@ -337,22 +377,18 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__login-prompt a:hover {
-    color: #0d3566;
     text-decoration: underline;
 }
 
-/* ─── Error/status message ──────────────────────────────────────────────── */
-
 .fhs-configurator__summary-message {
-    margin: 0;
-    min-height: 18px;
-    font-size: 1.25rem;
+    margin: 4px 0 0;
+    min-height: 16px;
+    font-size: 1.2rem;
     color: #a02020;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CONFIGURATOR MAIN AREA
-   Clears the floated gallery/summary row above it.
+   LEFT PANEL — configurator main area
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator {
@@ -361,9 +397,6 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     box-sizing: border-box;
     background: #f5f6f8;
     border-top: 1px solid #e0e4ea;
-    border-bottom: 1px solid #e0e4ea;
-    margin-top: 0;
-    margin-bottom: 0;
     padding: 20px 20px 36px;
 }
 
@@ -371,20 +404,18 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     min-width: 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   INTRO HEADER BAR
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Intro bar ──────────────────────────────────────────────────────────── */
 
 .fhs-configurator__intro-bar {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 18px;
+    padding: 11px 16px;
     background: #fff;
     border: 1px solid #e0e4ea;
-    border-radius: 8px;
-    margin-bottom: 14px;
-    font-size: 1.47rem;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 1.4rem;
     color: #1a1a1a;
 }
 
@@ -392,12 +423,12 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     background: #1a4f8a;
     color: #fff;
     border-radius: 50%;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
     flex-shrink: 0;
 }
@@ -408,7 +439,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__intro-help {
-    font-size: 1.31rem;
+    font-size: 1.25rem;
     color: #6b7280;
     white-space: nowrap;
 }
@@ -423,32 +454,29 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     color: #0d3566;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   TAB NAVIGATION
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Tab bar ────────────────────────────────────────────────────────────── */
 
 .fhs-configurator__tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0;
     background: #fff;
     border: 1px solid #e0e4ea;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .fhs-configurator__tab {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    font-size: 1.31rem;
+    gap: 5px;
+    padding: 9px 14px;
+    font-size: 1.25rem;
     font-weight: 500;
     color: #374151;
     background: transparent;
     border: none;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
     border-right: 1px solid #e0e4ea;
     cursor: pointer;
     white-space: nowrap;
@@ -461,22 +489,21 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__tab i {
-    font-size: 1.44rem;
-    color: #6b7280;
+    font-size: 1.35rem;
+    color: #9ca3af;
     flex-shrink: 0;
     transition: color 0.15s;
 }
 
 .fhs-configurator__tab:hover {
     color: #1a4f8a;
-    background: #f0f4fb;
+    background: #f5f8fd;
 }
 
 .fhs-configurator__tab:hover i {
     color: #1a4f8a;
 }
 
-/* Active tab — JS adds .is-active */
 .fhs-configurator__tab.is-active {
     color: #1a4f8a;
     border-bottom-color: #1a4f8a;
@@ -488,81 +515,74 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     color: #1a4f8a;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   SECTION PANELS
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Section panel ──────────────────────────────────────────────────────── */
 
 .fhs-configurator__panel {
     background: #fff;
     border: 1px solid #e0e4ea;
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 6px;
+    padding: 18px;
 }
 
 .fhs-configurator__panel[hidden] {
     display: none;
 }
 
-/* ── Panel heading row ──────────────────────────────────────────────────── */
-
 .fhs-configurator__panel-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     gap: 12px;
 }
 
 .fhs-configurator__panel-heading {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 1.6rem;
+    gap: 7px;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #1a1a1a;
     margin: 0;
 }
 
 .fhs-configurator__optional-badge {
-    display: inline-block;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 500;
     color: #6b7280;
     background: #f3f4f6;
     border: 1px solid #d1d5db;
     border-radius: 20px;
-    padding: 1px 8px;
+    padding: 1px 7px;
     line-height: 1.6;
     vertical-align: middle;
+    display: inline-block;
 }
 
 .fhs-configurator__info-icon {
     color: #9ca3af;
-    font-size: 1.44rem;
+    font-size: 1.35rem;
     cursor: default;
-    vertical-align: middle;
 }
 
 .fhs-configurator__select-all {
-    font-size: 1.28rem;
+    font-size: 1.2rem;
     color: #1a4f8a;
     background: none;
     border: none;
     padding: 0;
     cursor: pointer;
-    text-decoration: underline;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 .fhs-configurator__select-all:hover {
+    text-decoration: underline;
     color: #0d3566;
 }
 
-/* ── Panel actions (Add to Configuration button) ────────────────────────── */
-
 .fhs-configurator__panel-actions {
-    margin-top: 18px;
+    margin-top: 16px;
     display: flex;
     justify-content: flex-start;
 }
@@ -571,25 +591,25 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: none;
     background: none;
     color: #1a4f8a;
-    text-decoration: underline;
+    font-size: 1.25rem;
+    font-weight: 600;
     cursor: pointer;
     padding: 0;
-    font-size: 1.28rem;
-    font-weight: 600;
 }
 
 .fhs-configurator__commit-section:hover {
+    text-decoration: underline;
     color: #0d3566;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MACHINE PACKAGES — large radio-style cards
+   MACHINE PACKAGES — radio cards with selector circle top-left
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator__grid--machine {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
 }
 
 .fhs-configurator__card--machine {
@@ -598,49 +618,68 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     flex-direction: column;
     background: #fff;
     border: 2px solid #e0e4ea;
-    border-radius: 8px;
-    padding: 14px 12px 12px;
+    border-radius: 6px;
+    padding: 10px 10px 10px;
     cursor: pointer;
     transition: border-color 0.15s, box-shadow 0.15s;
-    min-height: 200px;
+    min-height: 180px;
     user-select: none;
 }
 
 .fhs-configurator__card--machine:hover {
     border-color: #1a4f8a;
-    box-shadow: 0 2px 10px rgba(26, 79, 138, 0.12);
+    box-shadow: 0 2px 8px rgba(26, 79, 138, 0.12);
 }
 
 .fhs-configurator__card--machine.is-selected {
     border-color: #1a4f8a;
     background: #eef4ff;
-    box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
+    box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.2);
 }
 
-/* Machine card image */
+/* Radio circle — top-left, rendered via CSS on the label using the hidden input */
+.fhs-configurator__card--machine::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #9ca3af;
+    background: #fff;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+}
+
+.fhs-configurator__card--machine.is-selected::before {
+    border-color: #1a4f8a;
+    background: #1a4f8a;
+    box-shadow: inset 0 0 0 3px #fff;
+}
+
 .fhs-configurator__card--machine .fhs-configurator__card-img-wrap {
     display: flex;
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: 10px 0 8px;
-    min-height: 110px;
+    padding: 20px 6px 6px;
+    min-height: 100px;
 }
 
 .fhs-configurator__card--machine .fhs-configurator__card-img {
     max-width: 100%;
-    max-height: 100px;
+    max-height: 90px;
     object-fit: contain;
     display: block;
 }
 
-/* Machine card body text */
 .fhs-configurator__card--machine .fhs-configurator__card-body {
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
 .fhs-configurator__card--machine .fhs-configurator__card-name {
-    font-size: 1.31rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: #1a1a1a;
     margin: 0 0 2px;
@@ -648,49 +687,45 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__card--machine .fhs-configurator__card-sku {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     color: #9ca3af;
-    margin: 0 0 4px;
+    margin: 0 0 3px;
 }
 
 .fhs-configurator__card--machine .fhs-configurator__card-price {
-    font-size: 1.28rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: #1a1a1a;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
-/* ── "Standard" badge on the base product card ──────────────────────────── */
-
-.fhs-configurator__card--base-product {
-    /* Slightly distinct to signal "this is the default option" */
-}
-
+/* "Standard" badge on the base product card */
 .fhs-configurator__standard-badge {
     display: inline-flex;
-    align-items: center;
     align-self: flex-start;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
+    font-size: 1.0rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #1a4f8a;
     background: #e8f0fb;
     border: 1px solid #b8cff0;
-    border-radius: 4px;
-    padding: 2px 7px;
+    border-radius: 3px;
+    padding: 1px 6px;
     line-height: 1.5;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    /* indent past the radio circle */
+    margin-left: 20px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   STANDARD SECTIONS — compact checkbox-style grid
+   STANDARD SECTIONS — checkbox cards
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fhs-configurator__grid--standard {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
 }
 
 .fhs-configurator__card--standard {
@@ -699,8 +734,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     flex-direction: column;
     background: #fff;
     border: 2px solid #e0e4ea;
-    border-radius: 8px;
-    padding: 10px 10px 8px;
+    border-radius: 6px;
+    padding: 8px 8px 6px;
     cursor: pointer;
     transition: border-color 0.15s, box-shadow 0.15s;
     user-select: none;
@@ -708,16 +743,50 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__card--standard:hover {
     border-color: #1a4f8a;
-    box-shadow: 0 2px 8px rgba(26, 79, 138, 0.10);
+    box-shadow: 0 2px 6px rgba(26, 79, 138, 0.10);
 }
 
 .fhs-configurator__card--standard.is-selected {
     border-color: #1a4f8a;
     background: #eef4ff;
-    box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
+    box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.2);
 }
 
-/* Standard card image */
+/* Checkbox — top-left via CSS pseudo-element */
+.fhs-configurator__card--standard::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 13px;
+    height: 13px;
+    border-radius: 2px;
+    border: 2px solid #9ca3af;
+    background: #fff;
+    transition: border-color 0.15s, background 0.15s;
+    box-sizing: border-box;
+}
+
+.fhs-configurator__card--standard.is-selected::before {
+    border-color: #1a4f8a;
+    background: #1a4f8a;
+}
+
+/* Checkmark */
+.fhs-configurator__card--standard.is-selected::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 11px;
+    width: 4px;
+    height: 7px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+    box-sizing: border-box;
+}
+
 .fhs-configurator__card--standard .fhs-configurator__card-img-wrap {
     display: flex;
     align-items: center;
@@ -725,7 +794,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     width: 100%;
     aspect-ratio: 1 / 1;
     overflow: hidden;
-    padding: 8px;
+    padding: 16px 6px 4px;
 }
 
 .fhs-configurator__card--standard .fhs-configurator__card-img {
@@ -735,37 +804,35 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     display: block;
 }
 
-/* Standard card body */
 .fhs-configurator__card--standard .fhs-configurator__card-body {
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 .fhs-configurator__card--standard .fhs-configurator__card-name {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: #1a1a1a;
-    margin: 0 0 2px;
+    margin: 0 0 1px;
     line-height: 1.3;
 }
 
 .fhs-configurator__card--standard .fhs-configurator__card-sku {
-    font-size: 1.12rem;
+    font-size: 1.05rem;
     color: #9ca3af;
     margin: 0;
 }
 
 .fhs-configurator__card--standard .fhs-configurator__card-price {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 600;
     color: #1a1a1a;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SELECTION BEHAVIOUR
+   SELECTION — hidden native input, selected card state
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Hide the native input visually but keep it accessible and focusable */
 .fhs-configurator__card-input {
     position: absolute;
     width: 1px;
@@ -778,24 +845,21 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: 0;
 }
 
-/* Cards are <label> elements */
 .fhs-configurator__card {
     cursor: pointer;
     user-select: none;
 }
 
-/* Selected card — strong blue border + light tint (covers both card types) */
 .fhs-configurator__card.is-selected {
     border-color: #1a4f8a;
     background: #eef4ff;
-    box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
+    box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.2);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Large tablet — sidebar stacks below, left column takes full width */
 @media (max-width: 1100px) {
     .single-product-content-container.fhs-configurator-product-layout {
         width: 100%;
@@ -806,20 +870,22 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     .fhs-configurator__right {
         position: static;
     }
+
+    .fhs-configurator__summary-body {
+        max-height: none;
+    }
 }
 
-/* Tablet — machine packages 3 cols */
 @media (max-width: 900px) {
     .fhs-configurator__grid--machine {
         grid-template-columns: repeat(3, 1fr);
     }
 
     .fhs-configurator__grid--standard {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
 }
 
-/* Tabs — allow horizontal scroll on narrow screens */
 @media (max-width: 700px) {
     .fhs-configurator__tabs {
         flex-wrap: nowrap;
@@ -841,7 +907,6 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 }
 
-/* Mobile — machine packages 2 cols */
 @media (max-width: 480px) {
     .fhs-configurator__grid--machine {
         grid-template-columns: repeat(2, 1fr);

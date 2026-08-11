@@ -84,6 +84,13 @@
 					return;
 				}
 
+				var editBtn = event.target.closest( '[data-fhs-config-edit-section]' );
+				if ( editBtn ) {
+					var sectionKey = editBtn.getAttribute( 'data-fhs-config-edit-section' );
+					switchTab( wrapper, tabs, panels, sectionKey );
+					return;
+				}
+
 				var addAllBtn = event.target.closest( '[data-fhs-config-add-all]' );
 				if ( addAllBtn ) {
 					handleAddAllToCart( wrapper, addAllBtn );
@@ -369,6 +376,16 @@
 
 		summary.count.textContent = formatItemCount( data.itemCount );
 		summary.subtotal.innerHTML = data.subtotalHtml;
+
+		// GST (10%) and Total
+		var gstAmount = data.subtotal * 0.1;
+		var totalAmount = data.subtotal + gstAmount;
+		if ( summary.gst ) {
+			summary.gst.innerHTML = formatCurrency( gstAmount );
+		}
+		if ( summary.total ) {
+			summary.total.innerHTML = formatCurrency( totalAmount );
+		}
 	}
 
 	function buildCommittedConfigurationViewModel( wrapper ) {
@@ -444,6 +461,14 @@
 		title.textContent = section.label;
 		header.appendChild( title );
 
+		// "Edit" button — switches back to that section tab on click
+		var edit = document.createElement( 'button' );
+		edit.type = 'button';
+		edit.className = 'fhs-configurator__summary-section-edit';
+		edit.setAttribute( 'data-fhs-config-edit-section', section.key );
+		edit.textContent = 'Edit';
+		header.appendChild( edit );
+
 		sectionEl.appendChild( header );
 
 		section.items.forEach( function ( item ) {
@@ -484,9 +509,6 @@
 		}
 		body.appendChild( price );
 
-		article.appendChild( img );
-		article.appendChild( body );
-
 		if ( sectionKey !== 'base_product' ) {
 			var remove = document.createElement( 'button' );
 			remove.type = 'button';
@@ -495,9 +517,12 @@
 			remove.setAttribute( 'data-section-key', sectionKey );
 			remove.setAttribute( 'data-product-id', String( item.id ) );
 			remove.setAttribute( 'aria-label', 'Remove ' + ( item.name || '' ) );
-			remove.textContent = '×';
-			article.appendChild( remove );
+			remove.innerHTML = '&times;';
+			body.appendChild( remove );
 		}
+
+		article.appendChild( img );
+		article.appendChild( body );
 
 		return article;
 	}
@@ -545,11 +570,13 @@
 		var pageContainer = wrapper.closest( '.single-product-content-container' ) || document;
 		var sidebar = pageContainer.querySelector( '.fhs-configurator-sidebar' );
 		return {
-			root: sidebar,
-			body: sidebar ? sidebar.querySelector( '[data-fhs-config-body]' ) : null,
-			count: sidebar ? sidebar.querySelector( '[data-fhs-config-count]' ) : null,
+			root:     sidebar,
+			body:     sidebar ? sidebar.querySelector( '[data-fhs-config-body]' )     : null,
+			count:    sidebar ? sidebar.querySelector( '[data-fhs-config-count]' )    : null,
 			subtotal: sidebar ? sidebar.querySelector( '[data-fhs-config-subtotal]' ) : null,
-			message: sidebar ? sidebar.querySelector( '[data-fhs-config-message]' ) : null,
+			gst:      sidebar ? sidebar.querySelector( '[data-fhs-config-gst]' )      : null,
+			total:    sidebar ? sidebar.querySelector( '[data-fhs-config-total]' )    : null,
+			message:  sidebar ? sidebar.querySelector( '[data-fhs-config-message]' )  : null,
 		};
 	}
 

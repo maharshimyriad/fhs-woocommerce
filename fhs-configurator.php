@@ -530,33 +530,60 @@ function fhs_render_configurator_sidebar()
 	echo '<aside class="fhs-configurator-sidebar" aria-label="' . esc_attr__('Your Configuration', 'woocommerce') . '">';
 	echo '	<div class="fhs-configurator__right">';
 	echo '		<div class="fhs-configurator__summary-card">';
+
+	// ── Header ──────────────────────────────────────────────────────────────
 	echo '			<div class="fhs-configurator__summary-header">';
-	echo '				<div class="fhs-configurator__summary-heading-group">';
-	echo '					<h2 class="fhs-configurator__summary-title">' . esc_html__('Your Configuration', 'woocommerce') . '</h2>';
-	echo '					<p class="fhs-configurator__summary-count" data-fhs-config-count>0 items</p>';
-	echo '				</div>';
+	echo '				<h2 class="fhs-configurator__summary-title">' . esc_html__('Your Configuration', 'woocommerce') . '</h2>';
+	echo '				<span class="fhs-configurator__summary-count-badge" data-fhs-config-count>0 items</span>';
 	echo '				<button type="button" class="fhs-configurator__clear-all" data-fhs-config-clear>' . esc_html__('Clear all', 'woocommerce') . '</button>';
 	echo '			</div>';
+
+	// ── Scrollable body ──────────────────────────────────────────────────────
 	echo '			<div class="fhs-configurator__summary-body" data-fhs-config-body></div>';
+
+	// ── Footer ───────────────────────────────────────────────────────────────
 	echo '			<div class="fhs-configurator__summary-footer">';
-	echo '				<div class="fhs-configurator__summary-subtotal-row">';
-	echo '					<span class="fhs-configurator__summary-subtotal-label">' . esc_html__('Subtotal', 'woocommerce') . '</span>';
-	echo '					<span class="fhs-configurator__summary-subtotal-value" data-fhs-config-subtotal></span>';
+
+	// Pricing rows — only visible when logged in (CSS handles this)
+	echo '				<div class="fhs-configurator__summary-totals">';
+	echo '					<div class="fhs-configurator__summary-totals-row">';
+	echo '						<span class="fhs-configurator__summary-totals-label">' . esc_html__('Subtotal (Ex. GST)', 'woocommerce') . '</span>';
+	echo '						<span class="fhs-configurator__summary-totals-value" data-fhs-config-subtotal></span>';
+	echo '					</div>';
+	echo '					<div class="fhs-configurator__summary-totals-row">';
+	echo '						<span class="fhs-configurator__summary-totals-label">' . esc_html__('GST', 'woocommerce') . '</span>';
+	echo '						<span class="fhs-configurator__summary-totals-value" data-fhs-config-gst></span>';
+	echo '					</div>';
+	echo '					<div class="fhs-configurator__summary-totals-row fhs-configurator__summary-totals-row--total">';
+	echo '						<span class="fhs-configurator__summary-totals-label">' . esc_html__('Total (Inc. GST)', 'woocommerce') . '</span>';
+	echo '						<span class="fhs-configurator__summary-totals-value" data-fhs-config-total></span>';
+	echo '					</div>';
 	echo '				</div>';
+
+	// Cart actions
 	echo '				<div class="fhs-configurator__summary-cart-actions">';
 	if ($can_add_to_cart) {
-		echo '					<button type="button" class="fhs-configurator__add-all-to-cart" data-fhs-config-add-all>' . esc_html__('Add All to Cart', 'woocommerce') . '</button>';
+		echo '					<button type="button" class="fhs-configurator__add-all-to-cart" data-fhs-config-add-all>';
+		echo '						<i class="icofont icofont-cart" aria-hidden="true"></i>';
+		echo '						' . esc_html__('Add All to Cart', 'woocommerce');
+		echo '					</button>';
+		echo '					<button type="button" class="fhs-configurator__request-quote">';
+		echo '						<i class="icofont icofont-document-folder" aria-hidden="true"></i>';
+		echo '						' . esc_html__('Request a Quote', 'woocommerce');
+		echo '					</button>';
+		echo '					<button type="button" class="fhs-configurator__save-config">' . esc_html__('Save configuration', 'woocommerce') . '</button>';
 	} else {
-		echo '					<div class="login-prompt fhs-configurator__login-prompt">';
+		echo '					<div class="fhs-configurator__login-prompt">';
 		echo '						<span>' . esc_html__('Login or register to view prices.', 'woocommerce') . '</span>';
 		echo '						<a href="' . esc_url($login_url) . '">';
-		echo '							<i class="icofont icofont-ui-user"></i>';
+		echo '							<i class="icofont icofont-ui-user" aria-hidden="true"></i>';
 		echo '							' . esc_html__('Login / Register to see pricing', 'woocommerce');
 		echo '						</a>';
 		echo '					</div>';
 	}
 	echo '					<p class="fhs-configurator__summary-message" data-fhs-config-message aria-live="polite"></p>';
 	echo '				</div>';
+
 	echo '			</div>';
 	echo '		</div>';
 	echo '	</div>';
