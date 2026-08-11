@@ -187,56 +187,56 @@ foreach ($sections as $section) {
 									class="fhs-configurator__card-input"
 									data-product-id="<?php echo $product_id; ?>"
 									data-section-key="<?php echo esc_attr($section['key']); ?>" />
-							<span class="fhs-configurator__card-select-indicator">
-								<span class="fhs-configurator__radio"></span>
-							</span>
-						<?php else : ?>
-							<input
-								type="checkbox"
-								id="<?php echo esc_attr($input_id); ?>"
-								name="<?php echo esc_attr($input_name); ?>[]"
-								value="<?php echo $product_id; ?>"
-								class="fhs-configurator__card-input"
-								data-product-id="<?php echo $product_id; ?>"
-								data-section-key="<?php echo esc_attr($section['key']); ?>" />
-							<span class="fhs-configurator__card-select-indicator">
-								<span class="fhs-configurator__checkbox"></span>
-							</span>
-						<?php endif; ?>
-
-						<div class="fhs-configurator__card-img-wrap">
-							<img
-								src="<?php echo esc_url($product_data['image_url']); ?>"
-								alt="<?php echo esc_attr($product_data['name']); ?>"
-								class="fhs-configurator__card-img"
-								loading="lazy" />
-						</div>
-
-						<div class="fhs-configurator__card-body">
-							<p class="fhs-configurator__card-name">
-								<?php echo esc_html($product_data['name']); ?>
-							</p>
-							<?php if (! empty($product_data['sku'])) : ?>
-								<p class="fhs-configurator__card-sku">
-									<?php echo esc_html($product_data['sku']); ?>
+							<?php else : ?>
+								<input
+									type="checkbox"
+									id="<?php echo esc_attr($input_id); ?>"
+									name="<?php echo esc_attr($input_name); ?>[]"
+									value="<?php echo $product_id; ?>"
+									class="fhs-configurator__card-input"
+									data-product-id="<?php echo $product_id; ?>"
+									data-section-key="<?php echo esc_attr($section['key']); ?>" />
+							<?php endif; ?>
+							
+							<div class="fhs-configurator__card-body">
+								<p class="fhs-configurator__card-name">
+									<?php echo esc_html($product_data['name']); ?>
 								</p>
-							<?php endif; ?>
-							<?php if (! empty($product_data['price_html'])) : ?>
-								<div class="fhs-configurator__card-price"><?php echo wp_kses_post($product_data['price_html']); ?></div>
-							<?php endif; ?>
-						</div>
-				</label><!-- /.fhs-configurator__card -->
-			<?php endforeach; ?>
+								<?php if (! empty($product_data['sku'])) : ?>
+									<p class="fhs-configurator__card-sku">
+										<?php echo esc_html($product_data['sku']); ?>
+									</p>
+								<?php endif; ?>
+							</div>
 
-			</div><!-- /.fhs-configurator__grid -->
+							<div class="fhs-configurator__card-img-wrap">
+								<img
+									src="<?php echo esc_url($product_data['image_url']); ?>"
+									alt="<?php echo esc_attr($product_data['name']); ?>"
+									class="fhs-configurator__card-img"
+									loading="lazy" />
 
-			<div class="fhs-configurator__panel-actions">
-				<button
-					type="button"
-					class="fhs-configurator__commit-section"
-					data-section-key="<?php echo esc_attr($section['key']); ?>">
-					<?php esc_html_e('Add to Configuration', 'woocommerce'); ?>
-				</button>
-			</div>
-		</div><!-- /.fhs-configurator__panel -->
+								<?php if (! empty($product_data['price_html'])) : ?>
+									<div class="fhs-configurator__card-price"><?php echo wp_kses_post($product_data['price_html']); ?></div>
+								<?php endif; ?>
+
+							</div>
+
+						</label><!-- /.fhs-configurator__card -->
+					<?php endforeach; ?>
+				</div><!-- /.fhs-configurator__grid -->
+
+				<div class="fhs-configurator__panel-actions">
+					<button
+						type="button"
+						class="fhs-configurator__commit-section"
+						data-section-key="<?php echo esc_attr($section['key']); ?>">
+						<?php esc_html_e('Add to Configuration', 'woocommerce'); ?>
+					</button>
+				</div>
+			</div><!-- /.fhs-configurator__panel -->
+		<?php endforeach; ?>
+
+	</div><!-- /.fhs-configurator__main -->
+
 </div><!-- /.fhs-configurator -->
