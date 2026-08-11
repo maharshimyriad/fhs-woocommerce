@@ -390,9 +390,7 @@
 		if ( machineProduct ) {
 			sections.push( {
 				key: committed.activeMachineSource === 'machine_packages' ? 'machine_packages' : 'base_product',
-				label: committed.activeMachineSource === 'machine_packages'
-					? ( sectionLabels.machine_packages || 'Machine Packages' )
-					: 'Base Product',
+				label: sectionLabels.machine_packages || 'Machine Packages',
 				items: [ machineProduct ],
 			} );
 			subtotal += getNumericPrice( machineProduct.price_value );
