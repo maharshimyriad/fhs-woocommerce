@@ -101,10 +101,8 @@
 		var baseProduct = getBaseProduct( wrapper );
 		return {
 			baseProductId: baseProduct ? baseProduct.id : 0,
-			// No machine is pre-committed — right panel starts empty.
-			// activeMachineProductId is 0 until the user actively commits a choice.
-			activeMachineProductId: 0,
-			activeMachineSource: 'none',
+			activeMachineProductId: baseProduct ? baseProduct.id : 0,
+			activeMachineSource: 'base_product',
 			sections: createEmptySectionsState(),
 		};
 	}
@@ -212,27 +210,13 @@
 		var selectedIds = Array.isArray( temporarySelections[ sectionKey ] ) ? temporarySelections[ sectionKey ].slice() : [];
 
 		if ( sectionKey === 'machine_packages' ) {
-			var baseProduct = getBaseProduct( wrapper );
-			var baseProductId = baseProduct ? baseProduct.id : 0;
-
-			if ( selectedIds.length ) {
-				var chosenId = selectedIds[0];
-				if ( chosenId === baseProductId ) {
-					// User chose the base product card — treat as base_product source.
-					committed.sections.machine_packages = [];
-					committed.activeMachineProductId = baseProductId;
-					committed.activeMachineSource = 'base_product';
-				} else {
-					// User chose an actual machine package.
-					committed.sections.machine_packages = [ chosenId ];
-					committed.activeMachineProductId = chosenId;
-					committed.activeMachineSource = 'machine_packages';
-				}
+			committed.sections.machine_packages = selectedIds.slice( 0, 1 );
+			if ( committed.sections.machine_packages.length ) {
+				committed.activeMachineProductId = committed.sections.machine_packages[0];
+				committed.activeMachineSource = 'machine_packages';
 			} else {
-				// Nothing selected — clear machine entirely.
-				committed.sections.machine_packages = [];
-				committed.activeMachineProductId = 0;
-				committed.activeMachineSource = 'none';
+				committed.activeMachineProductId = committed.baseProductId;
+				committed.activeMachineSource = 'base_product';
 			}
 		} else {
 			committed.sections[ sectionKey ] = selectedIds;
@@ -244,10 +228,10 @@
 
 	function removeCommittedProduct( wrapper, sectionKey, productId ) {
 		var committed = getCommittedConfiguration( wrapper );
-		if ( sectionKey === 'machine_packages' || sectionKey === 'base_product' ) {
+		if ( sectionKey === 'machine_packages' ) {
 			committed.sections.machine_packages = [];
-			committed.activeMachineProductId = 0;
-			committed.activeMachineSource = 'none';
+			committed.activeMachineProductId = committed.baseProductId;
+			committed.activeMachineSource = 'base_product';
 		} else if ( Array.isArray( committed.sections[ sectionKey ] ) ) {
 			committed.sections[ sectionKey ] = committed.sections[ sectionKey ].filter( function ( id ) {
 				return id !== productId;
@@ -269,8 +253,8 @@
 
 		var committed = getCommittedConfiguration( wrapper );
 		committed.sections = createEmptySectionsState();
-		committed.activeMachineProductId = 0;
-		committed.activeMachineSource = 'none';
+		committed.activeMachineProductId = committed.baseProductId;
+		committed.activeMachineSource = 'base_product';
 
 		renderCommittedConfigurationPanel( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
@@ -355,18 +339,9 @@
 
 		var data = buildCommittedConfigurationViewModel( wrapper );
 		clearElement( summary.body );
-
-		if ( data.itemCount === 0 ) {
-			var empty = document.createElement( 'p' );
-			empty.className = 'fhs-configurator__summary-empty';
-			empty.textContent = 'No products added yet.';
-			summary.body.appendChild( empty );
-		} else {
-			data.sections.forEach( function ( section ) {
-				summary.body.appendChild( renderCommittedSection( section ) );
-			} );
-		}
-
+		data.sections.forEach( function ( section ) {
+			summary.body.appendChild( renderCommittedSection( section ) );
+		} );
 		summary.count.textContent = formatItemCount( data.itemCount );
 		summary.subtotal.innerHTML = data.subtotalHtml;
 	}
@@ -379,19 +354,16 @@
 		var sections = [];
 		var subtotal = 0;
 		var itemCount = 0;
-		var machineProduct = null;
-		if ( committed.activeMachineSource === 'machine_packages' ) {
-			machineProduct = productMap[ String( committed.activeMachineProductId ) ] || null;
-		} else if ( committed.activeMachineSource === 'base_product' ) {
-			machineProduct = baseProduct || null;
-		}
-		// activeMachineSource === 'none' → machineProduct stays null → nothing rendered.
+		var machineProduct = committed.activeMachineSource === 'machine_packages'
+			? productMap[ String( committed.activeMachineProductId ) ]
+			: baseProduct;
 
 		if ( machineProduct ) {
 			sections.push( {
 				key: committed.activeMachineSource === 'machine_packages' ? 'machine_packages' : 'base_product',
 				label: committed.activeMachineSource === 'machine_packages'
-					? ( sectionLabels.machine_packages === 'Machine Packages' ),
+					? ( sectionLabels.machine_packages || 'Machine Packages' )
+					: 'Base Product',
 				items: [ machineProduct ],
 			} );
 			subtotal += getNumericPrice( machineProduct.price_value );
@@ -437,15 +409,10 @@
 		var sectionEl = document.createElement( 'section' );
 		sectionEl.className = 'fhs-configurator__summary-section';
 
-		var header = document.createElement( 'div' );
-		header.className = 'fhs-configurator__summary-section-header';
-
 		var title = document.createElement( 'h3' );
 		title.className = 'fhs-configurator__summary-section-title';
 		title.textContent = section.label;
-		header.appendChild( title );
-
-		sectionEl.appendChild( header );
+		sectionEl.appendChild( title );
 
 		section.items.forEach( function ( item ) {
 			sectionEl.appendChild( renderCommittedItem( section.key, item ) );
@@ -485,9 +452,6 @@
 		}
 		body.appendChild( price );
 
-		article.appendChild( img );
-		article.appendChild( body );
-
 		if ( sectionKey !== 'base_product' ) {
 			var remove = document.createElement( 'button' );
 			remove.type = 'button';
@@ -495,11 +459,12 @@
 			remove.setAttribute( 'data-fhs-config-remove', '1' );
 			remove.setAttribute( 'data-section-key', sectionKey );
 			remove.setAttribute( 'data-product-id', String( item.id ) );
-			remove.setAttribute( 'aria-label', 'Remove ' + ( item.name || '' ) );
-			remove.textContent = '×';
-			article.appendChild( remove );
+			remove.textContent = 'Remove';
+			body.appendChild( remove );
 		}
 
+		article.appendChild( img );
+		article.appendChild( body );
 		return article;
 	}
 
