@@ -197,15 +197,7 @@ foreach ($sections as $section) {
 									data-product-id="<?php echo $product_id; ?>"
 									data-section-key="<?php echo esc_attr($section['key']); ?>" />
 							<?php endif; ?>
-
-							<div class="fhs-configurator__card-img-wrap">
-								<img
-									src="<?php echo esc_url($product_data['image_url']); ?>"
-									alt="<?php echo esc_attr($product_data['name']); ?>"
-									class="fhs-configurator__card-img"
-									loading="lazy" />
-							</div>
-
+							
 							<div class="fhs-configurator__card-body">
 								<p class="fhs-configurator__card-name">
 									<?php echo esc_html($product_data['name']); ?>
