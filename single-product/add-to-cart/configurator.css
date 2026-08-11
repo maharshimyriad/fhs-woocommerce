@@ -40,8 +40,8 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .single-product-content-container.fhs-configurator-product-layout {
-    width: 90vw;
-    max-width: 90vw;
+    width: 100%;
+    max-width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 380px;
     gap: 24px;
@@ -787,17 +787,42 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 /* Hide the native input visually but keep it accessible/focusable */
 .fhs-configurator__card-input {
     position: absolute;
-    padding: 0;
+    width: 1px;
+    height: 1px;
     margin: 0;
-    white-space: nowrap;
+    padding: 0;
     border: 0;
-    z-index: 99;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
 }
 
-/* Cards are now <label> elements — ensure pointer and no text selection */
 .fhs-configurator__card {
+    position: relative;
     cursor: pointer;
     user-select: none;
+}
+
+.fhs-configurator__card-select-indicator {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+}
+
+.fhs-configurator__card--standard .fhs-configurator__card-select-indicator {
+    top: 10px;
+    left: 10px;
 }
 
 /* Selected card — strong blue border + light tint */
