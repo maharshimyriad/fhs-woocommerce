@@ -3320,26 +3320,6 @@ add_filter('woocommerce_checkout_fields', function($fields) {
     unset($fields['billing']['thwma_hidden_field_billing']);
     unset($fields['billing']['thwma_checkbox_shipping']);
 
-    // Keep Address line 2 out of checkout validation when it's not rendered.
-    if (isset($fields['shipping']['shipping_address_2'])) {
-        $fields['shipping']['shipping_address_2']['required'] = false;
-
-        if (isset($fields['shipping']['shipping_address_2']['custom_attributes']['required'])) {
-            unset($fields['shipping']['shipping_address_2']['custom_attributes']['required']);
-        }
-
-        if (isset($fields['shipping']['shipping_address_2']['validate']) && is_array($fields['shipping']['shipping_address_2']['validate'])) {
-            $fields['shipping']['shipping_address_2']['validate'] = array_values(array_filter(
-                $fields['shipping']['shipping_address_2']['validate'],
-                function($rule) {
-                    return 'required' !== $rule;
-                }
-            ));
-        }
-
-        unset($fields['shipping']['shipping_address_2']);
-    }
-
     if (isset($fields['billing']['billing_phone'])) {
         $fields['billing']['billing_phone']['required'] = true;
         $fields['billing']['billing_phone']['custom_attributes']['required'] = 'required';
