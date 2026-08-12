@@ -141,15 +141,13 @@ if (is_user_logged_in()) {
 							$field['label'] = esc_html__('Address Line 2', 'woocommerce');
 						}
 
-						// Pre-fill from customer data, but country defaults to AU if empty
-						$value = $checkout->get_value($key);
-						if ('shipping_country' === $key && empty($value)) {
-							$value = get_option('woocommerce_default_country', 'AU');
-						}
+						// Never pre-fill shipping fields from the saved customer profile on render.
+						// See JS below for why — fields are filled once after the first
+						// updated_checkout settles, via localStorage.
+						$value = ( 'shipping_country' === $key ) ? ( $checkout->get_value( 'shipping_country' ) ?: get_option( 'woocommerce_default_country', 'AU' ) ) : '';
 						woocommerce_form_field($key, $field, $value);
 					}
 					?>
-				</div>
 				</div>
 
 				<?php if (is_user_logged_in()): ?>
