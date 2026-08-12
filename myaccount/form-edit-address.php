@@ -43,8 +43,9 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 				// this code for desired address line 2 column 
 				        unset($address['shipping_address_2']);
                         $address['shipping_address_2'] = array(
-                            'label'       => 'Street address Line 2',
-                            'placeholder' => 'Street address Line 2',
+                            'label'       => 'Address Line 2',
+                            'placeholder' => 'Address Line 2',
+                            'required'    => 'false',
                             'class'       => array(
                                 'form-row-wide',
                                 'address-field',
