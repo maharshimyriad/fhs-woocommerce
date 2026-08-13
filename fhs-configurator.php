@@ -1,5 +1,4 @@
 <?php
-
 /**
  * FHS Product Configurator — Bootstrap
  *
