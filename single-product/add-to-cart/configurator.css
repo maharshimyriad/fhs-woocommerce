@@ -21,7 +21,7 @@
  *     1.12rem = 11.2px
  *
  * Colour tokens:
- *   --fhs-blue      : #1a4f8a
+ *   --fhs-blue      : #00587d
  *   --fhs-blue-lt   : #f0f4fb
  *   --fhs-border    : #e0e4ea
  *   --fhs-bg        : #f5f6f8
@@ -102,7 +102,7 @@
 .fhs-configurator__clear-all {
     border: none;
     background: none;
-    color: #1a4f8a;
+    color: #00587d;
     text-decoration: underline;
     cursor: pointer;
     padding: 0;
@@ -159,7 +159,7 @@
 .fhs-configurator__summary-section-edit {
     border: none;
     background: none;
-    color: #1a4f8a;
+    color: #00587d;
     text-decoration: underline;
     cursor: pointer;
     padding: 0;
@@ -290,7 +290,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     gap: 8px;
     min-height: 46px;
     border: none;
-    background: #1a4f8a;
+    background: #00587d;
     color: #fff;
     border-radius: 8px;
     cursor: pointer;
@@ -332,7 +332,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     gap: 6px;
     font-size: 1.3rem;
     font-weight: 600;
-    color: #1a4f8a;
+    color: #00587d;
     text-decoration: none;
 }
 
@@ -394,7 +394,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     justify-content: center;
     width: 24px;
     height: 24px;
-    background: #1a4f8a;
+    background: #00587d;
     color: #fff;
     border-radius: 50%;
     font-size: 1.25rem;
@@ -414,7 +414,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__intro-help-link {
-    color: #1a4f8a;
+    color: #00587d;
     text-decoration: underline;
     margin-left: 4px;
 }
@@ -468,24 +468,24 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__tab:hover {
-    color: #1a4f8a;
+    color: #00587d;
     background: #f0f4fb;
 }
 
 .fhs-configurator__tab:hover i {
-    color: #1a4f8a;
+    color: #00587d;
 }
 
 /* Active tab — JS adds .is-active */
 .fhs-configurator__tab.is-active {
-    color: #1a4f8a;
-    border-bottom-color: #1a4f8a;
+    color: #00587d;
+    border-bottom-color: #00587d;
     background: #f0f4fb;
     font-weight: 600;
 }
 
 .fhs-configurator__tab.is-active i {
-    color: #1a4f8a;
+    color: #00587d;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -545,7 +545,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__select-all {
     font-size: 1.28rem;
-    color: #1a4f8a;
+    color: #00587d;
     background: none;
     border: none;
     padding: 0;
@@ -570,16 +570,16 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 .fhs-configurator__commit-section {
     border: none;
     background: none;
-    color: #1a4f8a;
+    background: #00587d;
     text-decoration: underline;
     cursor: pointer;
-    padding: 0;
+    padding: 14px 16px;
     font-size: 1.28rem;
     font-weight: 600;
 }
 
 .fhs-configurator__commit-section:hover {
-    color: #0d3566;
+    color: white;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -607,12 +607,12 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__card--machine:hover {
-    border-color: #1a4f8a;
+    border-color: #00587d;
     box-shadow: 0 2px 10px rgba(26, 79, 138, 0.12);
 }
 
 .fhs-configurator__card--machine.is-selected {
-    border-color: #1a4f8a;
+    border-color: #00587d;
     background: #eef4ff;
     box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
 }
@@ -674,7 +674,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     font-weight: 600;
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: #1a4f8a;
+    color: #00587d;
     background: #e8f0fb;
     border: 1px solid #b8cff0;
     border-radius: 4px;
@@ -707,12 +707,12 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__card--standard:hover {
-    border-color: #1a4f8a;
+    border-color: #00587d;
     box-shadow: 0 2px 8px rgba(26, 79, 138, 0.10);
 }
 
 .fhs-configurator__card--standard.is-selected {
-    border-color: #1a4f8a;
+    border-color: #00587d;
     background: #eef4ff;
     box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
 }
@@ -786,7 +786,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 /* Selected card — strong blue border + light tint (covers both card types) */
 .fhs-configurator__card.is-selected {
-    border-color: #1a4f8a;
+    border-color: #00587d;
     background: #eef4ff;
     box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
 }
