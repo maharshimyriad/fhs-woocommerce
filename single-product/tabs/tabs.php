@@ -53,11 +53,13 @@ if ( ! empty( $product_tabs ) ) : ?>
 $post_id = isset($post_id) ? $post_id : get_the_ID();
 $show_specs = get_field('showhide_product_specifications', $post_id);
 $tabs_class = 'tabs-main-container product-main-container ' . ($show_specs ? 'show-tabs' : 'hide-tabs');
+$tabs_class = 'tabs-main-container product-main-container ' . ($show_specs ? 'show-tabs' : 'hide-tabs');
 ?>
 <div class="<?php echo esc_attr($tabs_class); ?>">
 
 	
 
+    <div class="custom-ms-tab mobile-hidden product-main-containr">
     <div class="custom-ms-tab mobile-hidden product-main-containr">
         <div class="custom-ms-nav-item" data-tab="custom-ms-specs">
             <div><i class="icofont icofont-file-alt"></i></div>Product Specifications
@@ -160,6 +162,14 @@ $tabs_class = 'tabs-main-container product-main-container ' . ($show_specs ? 'sh
         </span>
     </div>
 
+
+    <div class="spec-row">
+        <span>SKU:</span>
+        <span>
+            <?php echo esc_html( get_post_meta(get_the_ID(), '_sku', true) ?: '-' ); ?>
+        </span>
+    </div>
+
     <div class="spec-row">
       <span>Width</span>
       <span><?php echo get_field('product_specs_width') ?: '-'; ?></span>
@@ -174,6 +184,8 @@ $tabs_class = 'tabs-main-container product-main-container ' . ($show_specs ? 'sh
       <span>Weight</span>
       <span><?php echo get_field('product_specs_weight') ?: '-'; ?></span>
     </div>
+    */ ?>
+</div></div>
     */ ?>
 </div></div>
 <style>/* Wrapper */
@@ -392,4 +404,5 @@ $product_description = $product->get_description();
     <div><?php echo do_shortcode('[elementor-template id="13889"]'); ?></div>
 
 
+e
 e

@@ -56,8 +56,19 @@
 				
 					<h2 class="woocommerce-column__title shipping_address_title"><?php esc_html_e( 'Shipping address', 'woocommerce' ); ?></h2>
 			
-				<address>
-					<?php echo wp_kses_post( $order->get_formatted_shipping_address( esc_html__( 'N/A', 'woocommerce' ) ) ); ?>
+				<address class="shipping_address">
+					<?php
+					echo wp_kses_post(
+						$order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name() . '<br>' .
+						( $order->get_shipping_address_1() ? $order->get_shipping_address_1() . '<br>' : '' ) .
+						( $order->get_shipping_address_2() ? $order->get_shipping_address_2() . '<br>' : '' ) .
+						$order->get_shipping_city() . ', ' .
+						$order->get_shipping_state() . ' ' .
+						$order->get_shipping_postcode() . '<br>' .
+						$order->get_shipping_country()
+					);
+					?>
+				</address>
 
 					<?php if ( $order->get_shipping_phone() ) : ?>
 						<p class="woocommerce-customer-details--phone"><?php echo esc_html( $order->get_shipping_phone() ); ?></p>
@@ -73,7 +84,6 @@
 						 */
 						do_action( 'woocommerce_order_details_after_customer_address', 'shipping', $order );
 					?>
-				</address>
 			</div>
 			<div>
 				<h2 class="woocommerce-column__title billing_address_title"><?php esc_html_e( 'Billing address', 'woocommerce' ); ?></h2>

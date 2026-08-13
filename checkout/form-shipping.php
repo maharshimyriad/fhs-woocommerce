@@ -104,12 +104,13 @@ if (is_user_logged_in()) {
 					<?php
 					$fields = $checkout->get_checkout_fields('shipping');
 
-					unset($fields['shipping_address_2'], $fields['shipping_company']);
+					unset($fields['shipping_company']);
 
 					$shipping_field_order = [
 						'shipping_first_name' => 10,
 						'shipping_last_name' => 20,
 						'shipping_address_1' => 30,
+						'shipping_address_2' => 35,
 						'shipping_city' => 40,
 						'shipping_state' => 50,
 						'shipping_postcode' => 60,
@@ -133,7 +134,11 @@ if (is_user_logged_in()) {
 						}
 
 						if ('shipping_address_1' === $key) {
-							$field['label'] = esc_html__('Address', 'woocommerce');
+							$field['label'] = esc_html__('Address Line 1', 'woocommerce');
+						}
+
+						if ('shipping_address_2' === $key) {
+							$field['label'] = esc_html__('Address Line 2', 'woocommerce');
 						}
 
 						// Never pre-fill shipping fields from the saved customer profile on render.
@@ -208,7 +213,7 @@ if (is_user_logged_in()) {
 		const FHS_SHIPPING_PREFILL_KEY = 'fhs_shipping_prefill';
 		const savedShippingAddress = <?php
 			$prefill = [];
-			foreach ( ['first_name','last_name','address_1','city','state','postcode','country'] as $f ) {
+			foreach ( ['first_name','last_name','address_1','address_2','city','state','postcode','country'] as $f ) {
 				$val = $checkout->get_value( 'shipping_' . $f );
 				$prefill[ 'shipping_' . $f ] = $val ? $val : '';
 			}
@@ -290,6 +295,7 @@ if (is_user_logged_in()) {
 			'billing_last_name',
 			'billing_country',
 			'billing_address_1',
+			'billing_address_2',
 			'billing_city',
 			// 		'billing_state',
 			'billing_postcode'
@@ -428,6 +434,7 @@ if (is_user_logged_in()) {
 				['billing_last_name', 'shipping_last_name'],
 				['billing_country', 'shipping_country'],
 				['billing_address_1', 'shipping_address_1'],
+				['billing_address_2', 'shipping_address_2'],
 				['billing_city', 'shipping_city'],
 				// 			['billing_state', 'shipping_state'],
 				['billing_postcode', 'shipping_postcode']
@@ -493,7 +500,7 @@ if (is_user_logged_in()) {
 					sameAsBilling.checked = false;
 				}
 
-				['first_name', 'last_name', 'address_1', 'city', 'postcode', 'country', 'state'].forEach(function (field) {
+				['first_name', 'last_name', 'address_1', 'address_2', 'city', 'postcode', 'country', 'state'].forEach(function (field) {
 					const input = document.getElementById('shipping_' + field);
 					const value = selected['shipping_' + field] || '';
 					if (!input) return;

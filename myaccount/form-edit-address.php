@@ -40,29 +40,29 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 			
 			<div class="woocommerce-address-fields__field-wrapper">
 				<?php
-				// this code for desired address line 2 column 
-				        unset($address['shipping_address_2']);
-                        $address['shipping_address_2'] = array(
-                            'label'       => 'Street address Line 2',
-                            'placeholder' => 'Street address Line 2',
-                            'class'       => array(
-                                'form-row-wide',
-                                'address-field',
-                            ),
-                            'autocomplete' => 'address-line2',
-                            'priority'     => 60,
-                        );
-                        uasort($address, function ($a, $b) {
-                            $priorityA = isset($a['priority']) ? $a['priority'] : 0;
-                            $priorityB = isset($b['priority']) ? $b['priority'] : 0;
-                            if ($priorityA == $priorityB) {
-                                return 0;
-                            }
-                            return ($priorityA < $priorityB) ? -1 : 1;
-                        });
-                        // echo "<pre>";
-                        // print_r($address);
-				// code bloack end     
+				// Ensure Address Line 2 is properly configured for both billing and shipping
+				$address_2_key = $load_address . '_address_2';
+				if ( isset( $address[ $address_2_key ] ) ) {
+					$address[ $address_2_key ]['label'] = esc_html__( 'Address Line 2', 'woocommerce' );
+					$address[ $address_2_key ]['placeholder'] = esc_html__( 'Address Line 2', 'woocommerce' );
+				}
+
+				// Also ensure Address Line 1 has proper label
+				$address_1_key = $load_address . '_address_1';
+				if ( isset( $address[ $address_1_key ] ) ) {
+					$address[ $address_1_key ]['label'] = esc_html__( 'Address Line 1', 'woocommerce' );
+				}
+
+				// Sort by priority if it exists
+				uasort( $address, function ( $a, $b ) {
+					$priorityA = isset( $a['priority'] ) ? $a['priority'] : 0;
+					$priorityB = isset( $b['priority'] ) ? $b['priority'] : 0;
+					if ( $priorityA == $priorityB ) {
+						return 0;
+					}
+					return ( $priorityA < $priorityB ) ? -1 : 1;
+				} );
+
 				foreach ( $address as $key => $field ) {
 					woocommerce_form_field( $key, $field, wc_get_post_data_by_key( $key, $field['value'] ) );
 				}
