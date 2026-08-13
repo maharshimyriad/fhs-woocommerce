@@ -113,6 +113,7 @@
 
 .fhs-configurator__clear-all:hover {
     color: #0d3566;
+    background: none;
 }
 
 /* ─── Summary body ──────────────────────────────────────────────────────── */
@@ -448,8 +449,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     color: #374151;
     background: transparent;
     border: none;
-    border-bottom: 3px solid transparent;
-    border-right: 1px solid #e0e4ea;
+    border-bottom: 2px solid transparent;
     cursor: pointer;
     white-space: nowrap;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
@@ -469,7 +469,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__tab:hover {
     color: #00587d;
-    background: #f0f4fb;
+    background: none;
+    border-color: transparent;
 }
 
 .fhs-configurator__tab:hover i {
@@ -571,7 +572,6 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: none;
     background: none;
     background: #00587d;
-    text-decoration: underline;
     cursor: pointer;
     padding: 14px 16px;
     font-size: 1.28rem;
@@ -632,6 +632,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     max-height: 100px;
     object-fit: contain;
     display: block;
+    box-shadow: none;
 }
 
 /* Machine card body text */

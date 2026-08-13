@@ -369,6 +369,12 @@
 
 		summary.count.textContent = formatItemCount( data.itemCount );
 		summary.subtotal.innerHTML = data.subtotalHtml;
+
+		// Disable/enable Add All to Cart button based on item count
+		var addAllBtn = summary.root ? summary.root.querySelector( '[data-fhs-config-add-all]' ) : null;
+		if ( addAllBtn ) {
+			addAllBtn.disabled = data.itemCount === 0;
+		}
 	}
 
 	function buildCommittedConfigurationViewModel( wrapper ) {
