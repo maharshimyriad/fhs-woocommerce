@@ -484,9 +484,6 @@
 		}
 		body.appendChild( price );
 
-		article.appendChild( img );
-		article.appendChild( body );
-
 		if ( sectionKey !== 'base_product' ) {
 			var remove = document.createElement( 'button' );
 			remove.type = 'button';
@@ -494,11 +491,12 @@
 			remove.setAttribute( 'data-fhs-config-remove', '1' );
 			remove.setAttribute( 'data-section-key', sectionKey );
 			remove.setAttribute( 'data-product-id', String( item.id ) );
-			remove.setAttribute( 'aria-label', 'Remove ' + ( item.name || '' ) );
-			remove.textContent = '×';
-			article.appendChild( remove );
+			remove.textContent = 'Remove';
+			body.appendChild( remove );
 		}
 
+		article.appendChild( img );
+		article.appendChild( body );
 		return article;
 	}
 
