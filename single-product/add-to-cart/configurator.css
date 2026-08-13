@@ -21,7 +21,7 @@
     width: 90vw;
     max-width: 90vw;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 380px;
     gap: 24px;
     align-items: start;
     box-sizing: border-box;
@@ -148,7 +148,7 @@
     line-height: 1.3;
 }
 
-.fhs-configurator__summary-section-edit {
+.fhs-configurator__summary-section-remove {
     border: none;
     background: none;
     color: #1a4f8a;
@@ -158,8 +158,9 @@
     font-weight: 500;
 }
 
-.fhs-configurator__summary-section-edit:hover {
+.fhs-configurator__summary-section-remove:hover {
     text-decoration: underline;
+    color: #dc2626;
 }
 
 /* ── Item row: image | body (name/sku/price/×) ──────────────────────────── */
@@ -244,42 +245,6 @@ body.logged-in .fhs-configurator__summary-item-price {
     border-top: 1px solid #e0e4ea;
 }
 
-.fhs-configurator__summary-totals {
-    display: none;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 14px;
-}
-
-body.logged-in .fhs-configurator__summary-totals {
-    display: flex;
-}
-
-.fhs-configurator__summary-totals-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.fhs-configurator__summary-totals-label {
-    font-size: 1.25rem;
-    color: #6b7280;
-}
-
-.fhs-configurator__summary-totals-value {
-    font-size: 1.25rem;
-    color: #1a1a1a;
-    font-weight: 500;
-}
-
-.fhs-configurator__summary-totals-row--total .fhs-configurator__summary-totals-label,
-.fhs-configurator__summary-totals-row--total .fhs-configurator__summary-totals-value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #1a1a1a;
-}
-
 .fhs-configurator__summary-cart-actions {
     display: flex;
     flex-direction: column;
@@ -311,44 +276,6 @@ body.logged-in .fhs-configurator__summary-totals {
 .fhs-configurator__add-all-to-cart:disabled {
     opacity: 0.65;
     cursor: not-allowed;
-}
-
-.fhs-configurator__request-quote {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 44px;
-    border: 1px solid #1a4f8a;
-    background: #fff;
-    color: #1a4f8a;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1.4rem;
-    font-weight: 600;
-    padding: 0 16px;
-    transition: background 0.15s, color 0.15s;
-}
-
-.fhs-configurator__request-quote:hover {
-    background: #f0f4fb;
-}
-
-.fhs-configurator__save-config {
-    border: none;
-    background: none;
-    color: #1a4f8a;
-    font-size: 1.25rem;
-    cursor: pointer;
-    padding: 4px 0 0;
-    text-align: center;
-    width: 100%;
-    text-decoration: none;
-}
-
-.fhs-configurator__save-config:hover {
-    text-decoration: underline;
 }
 
 .fhs-configurator__login-prompt {

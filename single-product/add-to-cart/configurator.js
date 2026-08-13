@@ -78,16 +78,16 @@
 					return;
 				}
 
-				var clearBtn = event.target.closest( '[data-fhs-config-clear]' );
-				if ( clearBtn ) {
-					clearConfiguration( wrapper );
+				var removeSectionBtn = event.target.closest( '[data-fhs-config-remove-section]' );
+				if ( removeSectionBtn ) {
+					var sectionKey = removeSectionBtn.getAttribute( 'data-fhs-config-remove-section' );
+					removeCommittedSection( wrapper, sectionKey );
 					return;
 				}
 
-				var editBtn = event.target.closest( '[data-fhs-config-edit-section]' );
-				if ( editBtn ) {
-					var sectionKey = editBtn.getAttribute( 'data-fhs-config-edit-section' );
-					switchTab( wrapper, tabs, panels, sectionKey );
+				var clearBtn = event.target.closest( '[data-fhs-config-clear]' );
+				if ( clearBtn ) {
+					clearConfiguration( wrapper );
 					return;
 				}
 
@@ -265,6 +265,20 @@
 		dispatchCommittedChangeEvent( wrapper );
 	}
 
+	function removeCommittedSection( wrapper, sectionKey ) {
+		var committed = getCommittedConfiguration( wrapper );
+		if ( sectionKey === 'machine_packages' || sectionKey === 'base_product' ) {
+			committed.sections.machine_packages = [];
+			committed.activeMachineProductId = 0;
+			committed.activeMachineSource = 'none';
+		} else if ( Array.isArray( committed.sections[ sectionKey ] ) ) {
+			committed.sections[ sectionKey ] = [];
+		}
+
+		renderCommittedConfigurationPanel( wrapper );
+		dispatchCommittedChangeEvent( wrapper );
+	}
+
 	function clearConfiguration( wrapper ) {
 		wrapper.querySelectorAll( '.fhs-configurator__card-input' ).forEach( function ( input ) {
 			input.checked = false;
@@ -376,16 +390,6 @@
 
 		summary.count.textContent = formatItemCount( data.itemCount );
 		summary.subtotal.innerHTML = data.subtotalHtml;
-
-		// GST (10%) and Total
-		var gstAmount = data.subtotal * 0.1;
-		var totalAmount = data.subtotal + gstAmount;
-		if ( summary.gst ) {
-			summary.gst.innerHTML = formatCurrency( gstAmount );
-		}
-		if ( summary.total ) {
-			summary.total.innerHTML = formatCurrency( totalAmount );
-		}
 	}
 
 	function buildCommittedConfigurationViewModel( wrapper ) {
@@ -461,13 +465,13 @@
 		title.textContent = section.label;
 		header.appendChild( title );
 
-		// "Edit" button — switches back to that section tab on click
-		var edit = document.createElement( 'button' );
-		edit.type = 'button';
-		edit.className = 'fhs-configurator__summary-section-edit';
-		edit.setAttribute( 'data-fhs-config-edit-section', section.key );
-		edit.textContent = 'Edit';
-		header.appendChild( edit );
+		// "Remove" button — clears this entire section from the configuration
+		var removeSection = document.createElement( 'button' );
+		removeSection.type = 'button';
+		removeSection.className = 'fhs-configurator__summary-section-remove';
+		removeSection.setAttribute( 'data-fhs-config-remove-section', section.key );
+		removeSection.textContent = 'Remove';
+		header.appendChild( removeSection );
 
 		sectionEl.appendChild( header );
 
@@ -574,8 +578,6 @@
 			body:     sidebar ? sidebar.querySelector( '[data-fhs-config-body]' )     : null,
 			count:    sidebar ? sidebar.querySelector( '[data-fhs-config-count]' )    : null,
 			subtotal: sidebar ? sidebar.querySelector( '[data-fhs-config-subtotal]' ) : null,
-			gst:      sidebar ? sidebar.querySelector( '[data-fhs-config-gst]' )      : null,
-			total:    sidebar ? sidebar.querySelector( '[data-fhs-config-total]' )    : null,
 			message:  sidebar ? sidebar.querySelector( '[data-fhs-config-message]' )  : null,
 		};
 	}

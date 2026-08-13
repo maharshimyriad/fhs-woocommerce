@@ -544,22 +544,6 @@ function fhs_render_configurator_sidebar()
 	// ── Footer ───────────────────────────────────────────────────────────────
 	echo '			<div class="fhs-configurator__summary-footer">';
 
-	// Pricing rows — only visible when logged in (CSS handles this)
-	echo '				<div class="fhs-configurator__summary-totals">';
-	echo '					<div class="fhs-configurator__summary-totals-row">';
-	echo '						<span class="fhs-configurator__summary-totals-label">' . esc_html__('Subtotal (Ex. GST)', 'woocommerce') . '</span>';
-	echo '						<span class="fhs-configurator__summary-totals-value" data-fhs-config-subtotal></span>';
-	echo '					</div>';
-	echo '					<div class="fhs-configurator__summary-totals-row">';
-	echo '						<span class="fhs-configurator__summary-totals-label">' . esc_html__('GST', 'woocommerce') . '</span>';
-	echo '						<span class="fhs-configurator__summary-totals-value" data-fhs-config-gst></span>';
-	echo '					</div>';
-	echo '					<div class="fhs-configurator__summary-totals-row fhs-configurator__summary-totals-row--total">';
-	echo '						<span class="fhs-configurator__summary-totals-label">' . esc_html__('Total (Inc. GST)', 'woocommerce') . '</span>';
-	echo '						<span class="fhs-configurator__summary-totals-value" data-fhs-config-total></span>';
-	echo '					</div>';
-	echo '				</div>';
-
 	// Cart actions
 	echo '				<div class="fhs-configurator__summary-cart-actions">';
 	if ($can_add_to_cart) {
@@ -567,11 +551,6 @@ function fhs_render_configurator_sidebar()
 		echo '						<i class="icofont icofont-cart" aria-hidden="true"></i>';
 		echo '						' . esc_html__('Add All to Cart', 'woocommerce');
 		echo '					</button>';
-		echo '					<button type="button" class="fhs-configurator__request-quote">';
-		echo '						<i class="icofont icofont-document-folder" aria-hidden="true"></i>';
-		echo '						' . esc_html__('Request a Quote', 'woocommerce');
-		echo '					</button>';
-		echo '					<button type="button" class="fhs-configurator__save-config">' . esc_html__('Save configuration', 'woocommerce') . '</button>';
 	} else {
 		echo '					<div class="fhs-configurator__login-prompt">';
 		echo '						<span>' . esc_html__('Login or register to view prices.', 'woocommerce') . '</span>';
