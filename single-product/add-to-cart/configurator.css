@@ -683,7 +683,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 .fhs-configurator__standard-badge {
     display: inline-flex;
     align-items: center;
-    align-self: flex-start;
+    align-self: flex-end;
     font-size: 1.1rem;
     font-weight: 600;
     letter-spacing: 0.03em;
@@ -737,7 +737,6 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     align-items: center;
     justify-content: center;
     width: 100%;
-    aspect-ratio: 1 / 1;
     overflow: hidden;
     padding: 8px;
 }
@@ -747,6 +746,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     max-height: 100%;
     object-fit: contain;
     display: block;
+    box-shadow: none;
+    max-width: 70%;
 }
 
 /* Standard card body */
@@ -782,14 +783,9 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 /* Hide the native input visually but keep it accessible and focusable */
 .fhs-configurator__card-input {
     position: absolute;
-    width: 1px;
-    height: 1px;
     padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
     border: 0;
+    left:30px;
 }
 
 /* Cards are <label> elements */
