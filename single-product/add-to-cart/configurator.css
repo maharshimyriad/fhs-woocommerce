@@ -721,13 +721,13 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__card--standard:hover {
-    border-color: #00587d;
+    border-color: #eef4ff82;
     box-shadow: 0 2px 8px rgba(26, 79, 138, 0.10);
 }
 
 .fhs-configurator__card--standard.is-selected {
-    border-color: #00587d;
-    background: #eef4ff;
+    border-color: #eef4ff82;
+    background: #eef4ff82;
     box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
 }
 
