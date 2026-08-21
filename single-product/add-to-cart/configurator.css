@@ -785,7 +785,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     position: absolute;
     padding: 0;
     border: 0;
-    left:30px;
+    left:14px;
+    scale: 1.25;
 }
 
 /* Cards are <label> elements */
@@ -796,8 +797,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 /* Selected card — strong blue border + light tint (covers both card types) */
 .fhs-configurator__card.is-selected {
-    border-color: #00587d;
-    background: #eef4ff;
+    border-color: #eef4ff82;
+    background: #eef4ff82;
     box-shadow: 0 0 0 2px rgba(26, 79, 138, 0.25);
 }
 
