@@ -52,17 +52,16 @@
 			syncSectionSelectedState( wrapper, sectionKey );
 			updateSelectAllButton( wrapper, sectionKey );
 			dispatchTemporaryChangeEvent( wrapper );
+
+			// Auto-commit on every change and show a status indicator.
+			setSectionStatus( wrapper, sectionKey, 'updating' );
+			commitSectionSelection( wrapper, sectionKey );
+			setSectionStatus( wrapper, sectionKey, 'updated' );
 		} );
 
 		wrapper.querySelectorAll( '.fhs-configurator__select-all' ).forEach( function ( btn ) {
 			btn.addEventListener( 'click', function () {
 				handleSelectAll( wrapper, btn.getAttribute( 'data-section-key' ) );
-			} );
-		} );
-
-		wrapper.querySelectorAll( '.fhs-configurator__commit-section' ).forEach( function ( btn ) {
-			btn.addEventListener( 'click', function () {
-				commitSectionSelection( wrapper, btn.getAttribute( 'data-section-key' ) );
 			} );
 		} );
 
@@ -165,6 +164,11 @@
 		syncSectionSelectedState( wrapper, sectionKey );
 		updateSelectAllButton( wrapper, sectionKey );
 		dispatchTemporaryChangeEvent( wrapper );
+
+		// Auto-commit and show status indicator.
+		setSectionStatus( wrapper, sectionKey, 'updating' );
+		commitSectionSelection( wrapper, sectionKey );
+		setSectionStatus( wrapper, sectionKey, 'updated' );
 	}
 
 	function updateSelectAllButton( wrapper, sectionKey ) {
@@ -648,6 +652,50 @@
 		return Array.prototype.slice.call(
 			wrapper.querySelectorAll( '.fhs-configurator__card-input[data-section-key="' + sectionKey + '"]' )
 		);
+	}
+
+	// ── Section status indicator ─────────────────────────────────────────────
+
+	var sectionStatusTimers = {};
+
+	/**
+	 * Set the status indicator next to a section heading.
+	 *
+	 * @param {Element} wrapper
+	 * @param {string}  sectionKey
+	 * @param {'updating'|'updated'|''} state
+	 */
+	function setSectionStatus( wrapper, sectionKey, state ) {
+		var el = wrapper.querySelector(
+			'[data-section-status="' + sectionKey + '"]'
+		);
+		if ( ! el ) {
+			return;
+		}
+
+		// Clear any pending auto-hide timer for this section.
+		if ( sectionStatusTimers[ sectionKey ] ) {
+			clearTimeout( sectionStatusTimers[ sectionKey ] );
+			sectionStatusTimers[ sectionKey ] = null;
+		}
+
+		el.className = 'fhs-configurator__section-status';
+
+		if ( state === 'updating' ) {
+			el.classList.add( 'is-updating' );
+			el.textContent = 'Updating…';
+		} else if ( state === 'updated' ) {
+			el.classList.add( 'is-updated' );
+			el.textContent = 'Updated ✓';
+			// Auto-hide after 2.5 s.
+			sectionStatusTimers[ sectionKey ] = setTimeout( function () {
+				el.classList.remove( 'is-updated' );
+				el.textContent = '';
+				sectionStatusTimers[ sectionKey ] = null;
+			}, 2500 );
+		} else {
+			el.textContent = '';
+		}
 	}
 
 	window.fhsConfigurator = {

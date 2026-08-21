@@ -151,6 +151,10 @@ foreach ($sections as $section) {
 						<span class="fhs-configurator__optional-badge">
 							<?php esc_html_e('optional', 'woocommerce'); ?>
 						</span>
+						<span
+							class="fhs-configurator__section-status"
+							data-section-status="<?php echo esc_attr($section['key']); ?>"
+							aria-live="polite"></span>
 					</h3>
 
 					<?php if ($is_multiple) : ?>
@@ -274,14 +278,6 @@ foreach ($sections as $section) {
 					<?php endforeach; ?>
 				</div><!-- /.fhs-configurator__grid -->
 
-				<div class="fhs-configurator__panel-actions">
-					<button
-						type="button"
-						class="fhs-configurator__commit-section"
-						data-section-key="<?php echo esc_attr($section['key']); ?>">
-						<?php esc_html_e('Add to Configuration', 'woocommerce'); ?>
-					</button>
-				</div>
 			</div><!-- /.fhs-configurator__panel -->
 		<?php endforeach; ?>
 
