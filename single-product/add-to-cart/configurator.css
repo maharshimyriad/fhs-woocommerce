@@ -572,7 +572,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border-radius: 20px;
     vertical-align: middle;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.3s ease;
     pointer-events: none;
     white-space: nowrap;
 }
@@ -589,6 +589,10 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     color: #166534;
     background: #dcfce7;
     border: 1px solid #86efac;
+}
+
+.fhs-configurator__section-status.is-hiding {
+    opacity: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

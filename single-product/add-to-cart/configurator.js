@@ -53,10 +53,8 @@
 			updateSelectAllButton( wrapper, sectionKey );
 			dispatchTemporaryChangeEvent( wrapper );
 
-			// Auto-commit on every change and show a status indicator.
-			setSectionStatus( wrapper, sectionKey, 'updating' );
-			commitSectionSelection( wrapper, sectionKey );
-			setSectionStatus( wrapper, sectionKey, 'updated' );
+			// Show "Updating…" immediately; commit fires after debounce.
+			scheduleSectionCommit( wrapper, sectionKey );
 		} );
 
 		wrapper.querySelectorAll( '.fhs-configurator__select-all' ).forEach( function ( btn ) {
@@ -165,10 +163,8 @@
 		updateSelectAllButton( wrapper, sectionKey );
 		dispatchTemporaryChangeEvent( wrapper );
 
-		// Auto-commit and show status indicator.
-		setSectionStatus( wrapper, sectionKey, 'updating' );
-		commitSectionSelection( wrapper, sectionKey );
-		setSectionStatus( wrapper, sectionKey, 'updated' );
+		// Show "Updating…" immediately; commit fires after debounce.
+		scheduleSectionCommit( wrapper, sectionKey );
 	}
 
 	function updateSelectAllButton( wrapper, sectionKey ) {
@@ -656,10 +652,42 @@
 
 	// ── Section status indicator ─────────────────────────────────────────────
 
-	var sectionStatusTimers = {};
+	// Per-section debounce timers (commit is deferred until user stops changing).
+	var sectionCommitTimers = {};
+	// Per-section hide timers (auto-clear the "Updated ✓" pill after a delay).
+	var sectionHideTimers = {};
+
+	/** Debounce delay in ms before committing after the last change. */
+	var COMMIT_DEBOUNCE_MS = 600;
+	/** How long "Updated ✓" stays visible before fading out. */
+	var UPDATED_HIDE_MS = 2500;
 
 	/**
-	 * Set the status indicator next to a section heading.
+	 * Trigger a debounced auto-commit for a section.
+	 * Shows "Updating…" immediately; after COMMIT_DEBOUNCE_MS of inactivity
+	 * the commit fires and the pill switches to "Updated ✓".
+	 *
+	 * @param {Element} wrapper
+	 * @param {string}  sectionKey
+	 */
+	function scheduleSectionCommit( wrapper, sectionKey ) {
+		// Show "Updating…" right away and cancel any pending hide timer.
+		setSectionStatus( wrapper, sectionKey, 'updating' );
+
+		// Reset the debounce timer.
+		if ( sectionCommitTimers[ sectionKey ] ) {
+			clearTimeout( sectionCommitTimers[ sectionKey ] );
+		}
+
+		sectionCommitTimers[ sectionKey ] = setTimeout( function () {
+			sectionCommitTimers[ sectionKey ] = null;
+			commitSectionSelection( wrapper, sectionKey );
+			setSectionStatus( wrapper, sectionKey, 'updated' );
+		}, COMMIT_DEBOUNCE_MS );
+	}
+
+	/**
+	 * Set the status pill next to a section heading.
 	 *
 	 * @param {Element} wrapper
 	 * @param {string}  sectionKey
@@ -673,10 +701,10 @@
 			return;
 		}
 
-		// Clear any pending auto-hide timer for this section.
-		if ( sectionStatusTimers[ sectionKey ] ) {
-			clearTimeout( sectionStatusTimers[ sectionKey ] );
-			sectionStatusTimers[ sectionKey ] = null;
+		// Always cancel the pending hide timer when state changes.
+		if ( sectionHideTimers[ sectionKey ] ) {
+			clearTimeout( sectionHideTimers[ sectionKey ] );
+			sectionHideTimers[ sectionKey ] = null;
 		}
 
 		el.className = 'fhs-configurator__section-status';
@@ -687,12 +715,15 @@
 		} else if ( state === 'updated' ) {
 			el.classList.add( 'is-updated' );
 			el.textContent = 'Updated ✓';
-			// Auto-hide after 2.5 s.
-			sectionStatusTimers[ sectionKey ] = setTimeout( function () {
-				el.classList.remove( 'is-updated' );
-				el.textContent = '';
-				sectionStatusTimers[ sectionKey ] = null;
-			}, 2500 );
+			// Auto-hide after UPDATED_HIDE_MS.
+			sectionHideTimers[ sectionKey ] = setTimeout( function () {
+				el.classList.add( 'is-hiding' );
+				sectionHideTimers[ sectionKey ] = setTimeout( function () {
+					el.className = 'fhs-configurator__section-status';
+					el.textContent = '';
+					sectionHideTimers[ sectionKey ] = null;
+				}, 300 ); // matches the CSS transition duration
+			}, UPDATED_HIDE_MS );
 		} else {
 			el.textContent = '';
 		}
