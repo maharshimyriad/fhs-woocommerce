@@ -248,10 +248,28 @@
 			committed.sections.machine_packages = [];
 			committed.activeMachineProductId = 0;
 			committed.activeMachineSource = 'none';
+
+			// Uncheck the radio in the left panel.
+			var machineInputs = getSectionInputs( wrapper, 'machine_packages' );
+			machineInputs.forEach( function ( input ) {
+				input.checked = false;
+			} );
+			syncSectionSelectedState( wrapper, 'machine_packages' );
+			updateSelectAllButton( wrapper, 'machine_packages' );
 		} else if ( Array.isArray( committed.sections[ sectionKey ] ) ) {
 			committed.sections[ sectionKey ] = committed.sections[ sectionKey ].filter( function ( id ) {
 				return id !== productId;
 			} );
+
+			// Uncheck the matching input in the left panel.
+			var input = wrapper.querySelector(
+				'.fhs-configurator__card-input[data-section-key="' + sectionKey + '"][value="' + productId + '"]'
+			);
+			if ( input ) {
+				input.checked = false;
+			}
+			syncSectionSelectedState( wrapper, sectionKey );
+			updateSelectAllButton( wrapper, sectionKey );
 		}
 
 		renderCommittedConfigurationPanel( wrapper );
