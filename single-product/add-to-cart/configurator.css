@@ -601,8 +601,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__grid--machine {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(4,1fr);
+    gap: 20px;
 }
 
 .fhs-configurator__card--machine {
@@ -703,8 +703,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__grid--standard {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 }
 
 .fhs-configurator__card--standard {
