@@ -508,19 +508,23 @@
 		}
 		body.appendChild( price );
 
-		if ( sectionKey !== 'base_product' ) {
-			var remove = document.createElement( 'button' );
-			remove.type = 'button';
-			remove.className = 'fhs-configurator__summary-remove';
-			remove.setAttribute( 'data-fhs-config-remove', '1' );
-			remove.setAttribute( 'data-section-key', sectionKey );
-			remove.setAttribute( 'data-product-id', String( item.id ) );
-			remove.textContent = 'Remove';
-			body.appendChild( remove );
-		}
-
 		article.appendChild( img );
 		article.appendChild( body );
+
+		// Remove button — always shown. For the base_product card we use
+		// 'machine_packages' as the section key so removeCommittedProduct
+		// can clear the machine selection correctly.
+		var removeSection = sectionKey === 'base_product' ? 'machine_packages' : sectionKey;
+		var remove = document.createElement( 'button' );
+		remove.type = 'button';
+		remove.className = 'fhs-configurator__summary-remove';
+		remove.setAttribute( 'data-fhs-config-remove', '1' );
+		remove.setAttribute( 'data-section-key', removeSection );
+		remove.setAttribute( 'data-product-id', String( item.id ) );
+		remove.setAttribute( 'aria-label', 'Remove ' + ( item.name || 'item' ) );
+		remove.innerHTML = '&times;';
+		article.appendChild( remove );
+
 		return article;
 	}
 
