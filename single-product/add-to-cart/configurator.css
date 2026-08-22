@@ -142,7 +142,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 20px;
+    padding:0 20px 14px;
     border-bottom: 1px solid #e0e4ea;
 }
 
@@ -362,10 +362,26 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 /* ─── Error/status message ──────────────────────────────────────────────── */
 
 .fhs-configurator__summary-message {
-    margin: 0;
-    min-height: 18px;
-    font-size: 1.25rem;
+    margin: 6px 0 0;
+    min-height: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
     color: #a02020;
+    border-radius: 4px;
+    padding: 0;
+    transition: all 0.2s;
+}
+
+.fhs-configurator__summary-message:not(:empty) {
+    padding: 7px 10px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+}
+
+.fhs-configurator__summary-message.is-success {
+    color: #166534;
+    background: #f0fdf4;
+    border-color: #86efac;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

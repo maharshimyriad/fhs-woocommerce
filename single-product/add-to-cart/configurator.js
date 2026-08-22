@@ -36,6 +36,9 @@
 		wrapper.fhsCommittedConfiguration = createInitialCommittedConfiguration( wrapper );
 		wrapper.fhsCartRequestInFlight = false;
 
+		// Restore any previously saved configuration from localStorage.
+		restoreConfiguration( wrapper );
+
 		tabs.forEach( function ( tab ) {
 			tab.addEventListener( 'click', function () {
 				switchTab( wrapper, tabs, panels, tab.getAttribute( 'data-section-key' ) );
@@ -293,6 +296,7 @@
 		renderCommittedConfigurationPanel( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
 		clearSummaryMessage( wrapper );
+		clearSavedConfiguration( wrapper );
 	}
 
 	function handleAddAllToCart( wrapper, button ) {
@@ -336,14 +340,42 @@
 				} );
 			} )
 			.then( function ( result ) {
-				if ( ! result || ! result.success || ! result.data || ! result.data.cart_url ) {
+				if ( ! result || ! result.success || ! result.data ) {
 					var message = result && result.data && result.data.message
 						? result.data.message
 						: 'Unable to add this configuration to the cart. Please refresh the page and try again.';
 					throw new Error( message );
 				}
 
-				window.location.href = result.data.cart_url;
+				// Inject the WooCommerce notice into the page exactly as WC does natively.
+				if ( result.data.notices_html ) {
+					// Find or create a notices wrapper near the top of the product page.
+					var existingWrapper = document.querySelector( '.woocommerce-notices-wrapper' );
+					if ( existingWrapper ) {
+						existingWrapper.outerHTML = result.data.notices_html;
+					} else {
+						// Insert before the product div if no wrapper found.
+						var productEl = document.querySelector( '.product' ) || document.querySelector( '.single-product-content-container' );
+						if ( productEl ) {
+							productEl.insertAdjacentHTML( 'beforebegin', result.data.notices_html );
+						}
+					}
+
+					// Scroll the notice into view.
+					var notice = document.querySelector( '.woocommerce-message' );
+					if ( notice ) {
+						notice.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+						notice.focus();
+					}
+				}
+
+				// Trigger WooCommerce fragment refresh so mini-cart count updates.
+				if ( typeof jQuery !== 'undefined' ) {
+					jQuery( document.body ).trigger( 'wc_fragment_refresh' );
+				}
+
+				wrapper.fhsCartRequestInFlight = false;
+				setAddAllButtonState( button, false );
 			} )
 			.catch( function ( error ) {
 				setSummaryMessage( wrapper, error && error.message ? error.message : 'Unable to add this configuration to the cart. Please refresh the page and try again.' );
@@ -534,6 +566,91 @@
 		return wrapper.fhsCommittedConfiguration;
 	}
 
+	// ── localStorage persistence ─────────────────────────────────────────────
+
+	function getStorageKey( wrapper ) {
+		var productId = wrapper.getAttribute( 'data-product-id' );
+		return 'fhs_configurator_' + ( productId || 'default' );
+	}
+
+	function saveConfiguration( wrapper ) {
+		try {
+			var config = cloneCommittedConfiguration( getCommittedConfiguration( wrapper ) );
+			localStorage.setItem( getStorageKey( wrapper ), JSON.stringify( config ) );
+		} catch ( e ) {
+			// localStorage unavailable — silently ignore.
+		}
+	}
+
+	function clearSavedConfiguration( wrapper ) {
+		try {
+			localStorage.removeItem( getStorageKey( wrapper ) );
+		} catch ( e ) {}
+	}
+
+	/**
+	 * Restore a previously saved configuration on page load.
+	 * Replaces the initial committed state, then syncs card inputs to match.
+	 */
+	function restoreConfiguration( wrapper ) {
+		var saved;
+		try {
+			var raw = localStorage.getItem( getStorageKey( wrapper ) );
+			if ( ! raw ) {
+				return;
+			}
+			saved = JSON.parse( raw );
+		} catch ( e ) {
+			return;
+		}
+
+		if ( ! saved || typeof saved !== 'object' ) {
+			return;
+		}
+
+		var committed = getCommittedConfiguration( wrapper );
+		var baseProduct = getBaseProduct( wrapper );
+		var baseProductId = baseProduct ? baseProduct.id : 0;
+
+		// Restore scalar fields with safe fallbacks.
+		committed.activeMachineSource    = saved.activeMachineSource    || 'none';
+		committed.activeMachineProductId = saved.activeMachineProductId || 0;
+
+		// Restore sections — only known keys, all must be arrays.
+		if ( saved.sections && typeof saved.sections === 'object' ) {
+			SECTION_ORDER.forEach( function ( key ) {
+				if ( Array.isArray( saved.sections[ key ] ) ) {
+					committed.sections[ key ] = saved.sections[ key ].map( Number ).filter( Boolean );
+				}
+			} );
+		}
+
+		// Sync the left-panel card inputs to match the restored committed state.
+		// Machine packages: check the saved machine card (base or package).
+		var machineInputs = getSectionInputs( wrapper, 'machine_packages' );
+		machineInputs.forEach( function ( input ) {
+			var inputId = parseInt( input.value, 10 );
+			if ( committed.activeMachineSource === 'machine_packages' ) {
+				input.checked = inputId === committed.activeMachineProductId;
+			} else if ( committed.activeMachineSource === 'base_product' ) {
+				input.checked = inputId === baseProductId;
+			} else {
+				input.checked = false;
+			}
+		} );
+
+		// All other sections: check inputs whose IDs are in the restored array.
+		SECTION_ORDER.forEach( function ( sectionKey ) {
+			if ( sectionKey === 'machine_packages' ) {
+				return;
+			}
+			var ids = committed.sections[ sectionKey ] || [];
+			getSectionInputs( wrapper, sectionKey ).forEach( function ( input ) {
+				input.checked = ids.indexOf( parseInt( input.value, 10 ) ) !== -1;
+			} );
+		} );
+	}
+
 	function dispatchTemporaryChangeEvent( wrapper ) {
 		var event = new CustomEvent( 'fhs:configurator:change', {
 			bubbles: true,
@@ -547,6 +664,10 @@
 
 	function dispatchCommittedChangeEvent( wrapper ) {
 		var committed = getCommittedConfiguration( wrapper );
+
+		// Persist every committed change to localStorage.
+		saveConfiguration( wrapper );
+
 		var event = new CustomEvent( 'fhs:configurator:committed-change', {
 			bubbles: true,
 			cancelable: false,
@@ -582,6 +703,7 @@
 		var summary = getSummaryElements( wrapper );
 		if ( summary.message ) {
 			summary.message.textContent = message || '';
+			summary.message.classList.toggle( 'is-success', !! message && message.charAt( 0 ) === '\u2713' );
 		}
 	}
 

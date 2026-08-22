@@ -789,20 +789,50 @@ function fhs_configurator_add_all_to_cart()
 		), 500);
 	}
 
-	$cart_keys = array();
-	foreach ($validated['product_ids'] as $product_id) {
-		$cart_key = WC()->cart->add_to_cart($product_id, 1);
-		if (! $cart_key) {
-			wp_send_json_error(array(
-				'message' => __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'),
-			), 500);
+	$cart_keys    = array();
+	$added_names  = array();
+
+	foreach ( $validated['product_ids'] as $product_id ) {
+		$cart_key = WC()->cart->add_to_cart( $product_id, 1 );
+		if ( ! $cart_key ) {
+			wp_send_json_error( array(
+				'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
+			), 500 );
 		}
 		$cart_keys[] = $cart_key;
+
+		$p = wc_get_product( $product_id );
+		if ( $p ) {
+			$added_names[] = $p->get_name();
+		}
 	}
 
-	wp_send_json_success(array(
-		'cart_url' => wc_get_cart_url(),
-	));
+	// Build a WooCommerce-style notice matching the native add-to-cart format.
+	$cart_url = wc_get_cart_url();
+	if ( count( $added_names ) === 1 ) {
+		/* translators: %s: product name */
+		$notice_text = sprintf(
+			__( '&ldquo;%s&rdquo; has been added to your cart.', 'woocommerce' ),
+			esc_html( $added_names[0] )
+		);
+	} else {
+		$notice_text = __( 'All products have been added to your cart.', 'woocommerce' );
+	}
+
+	$notices_html =
+		'<div class="woocommerce-notices-wrapper">' .
+		'<div class="woocommerce-message" role="alert" tabindex="-1">' .
+		$notice_text .
+		' <a href="' . esc_url( $cart_url ) . '" class="button wc-forward">' .
+		esc_html__( 'View cart', 'woocommerce' ) .
+		'</a>' .
+		'</div></div>';
+
+	wp_send_json_success( array(
+		'notices_html' => $notices_html,
+		'cart_url'     => $cart_url,
+		'cart_count'   => WC()->cart->get_cart_contents_count(),
+	) );
 }
 
 add_action('wp_ajax_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart');
