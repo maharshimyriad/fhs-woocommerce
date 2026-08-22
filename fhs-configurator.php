@@ -132,6 +132,21 @@ function fhs_configurator_filter_astra_structure($structure)
 
 add_filter('astra_woo_single_product_structure', 'fhs_configurator_filter_astra_structure');
 
+/**
+ * Add `fhs-configurator-active` to the body classes when the configurator
+ * is active for the current product. Useful for page-level CSS targeting.
+ */
+add_filter('body_class', function ( $classes ) {
+	if ( ! is_product() ) {
+		return $classes;
+	}
+	$product = wc_get_product( get_the_ID() );
+	if ( $product && fhs_configurator_is_active( $product ) ) {
+		$classes[] = 'fhs-configurator-active';
+	}
+	return $classes;
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 4a. Product data helper
 // ─────────────────────────────────────────────────────────────────────────────

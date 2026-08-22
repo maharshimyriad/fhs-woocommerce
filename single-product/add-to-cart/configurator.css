@@ -902,3 +902,9 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
         gap: 8px;
     }
 }
+
+
+body.fhs-configurator-active .products-breadcrumb,
+body.fhs-configurator-active .woocommerce-notices-wrapper {
+    max-width: 90vw;
+}
