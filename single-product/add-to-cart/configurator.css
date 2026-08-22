@@ -824,6 +824,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     padding: 0;
     border: 0;
     left: 14px;
+    top: 14px;
     scale: 1.25;
 }
 
