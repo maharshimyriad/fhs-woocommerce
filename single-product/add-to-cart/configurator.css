@@ -111,8 +111,10 @@
     flex-shrink: 0;
 }
 
-.fhs-configurator__clear-all:hover {
-    color: #0d3566;
+.fhs-configurator__clear-all:hover,
+.fhs-configurator__clear-all:focus,
+.fhs-configurator__clear-all:focus-visible {
+    color: #00587d;
     background: none;
 }
 
@@ -178,7 +180,7 @@
     border-bottom: 1px solid #f3f4f6;
 }
 
-.fhs-configurator__summary-item .fhs-configurator__summary-item-image{
+.fhs-configurator__summary-item .fhs-configurator__summary-item-image {
     box-shadow: none !important;
 }
 
@@ -241,10 +243,14 @@ body.logged-in .fhs-configurator__summary-item-price {
     font-weight: 300;
     margin-top: 2px;
     align-self: flex-start;
+    text-decoration: underline;
 }
 
-.fhs-configurator__summary-remove:hover {
-    color: #dc2626;
+.fhs-configurator__summary-remove:hover,
+.fhs-configurator__summary-remove:focus,
+.fhs-configurator__summary-remove:focus-visible {
+    color: #878d97;
+    background: none;
 }
 
 /* ─── Summary footer ────────────────────────────────────────────────────── */
@@ -306,7 +312,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 .fhs-configurator__add-all-to-cart:hover {
-    background: #0d3566;
+    background: #00587d;
 }
 
 .fhs-configurator__add-all-to-cart:disabled {
@@ -364,12 +370,12 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     clear: both;
     width: 100%;
     box-sizing: border-box;
-    background: #f5f6f8;
-    border-top: 1px solid #e0e4ea;
-    border-bottom: 1px solid #e0e4ea;
+    background: none;
+    border: 1px solid #e0e4ea;
     margin-top: 0;
     margin-bottom: 0;
     padding: 20px 20px 36px;
+    border-radius: 4px;
 }
 
 .fhs-configurator__main {
@@ -605,7 +611,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__grid--machine {
     display: grid;
-    grid-template-columns: repeat(4,1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
@@ -789,7 +795,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     position: absolute;
     padding: 0;
     border: 0;
-    left:14px;
+    left: 14px;
     scale: 1.25;
 }
 
