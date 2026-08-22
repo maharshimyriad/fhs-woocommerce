@@ -76,8 +76,8 @@
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 16px;
-    padding-bottom: 14px;
     border-bottom: 1px solid #e0e4ea;
+    padding: 0 20px 14px;
 }
 
 .fhs-configurator__summary-heading-group {
@@ -142,13 +142,13 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0 20px;
+    padding: 20px;
     border-bottom: 1px solid #e0e4ea;
 }
 
 .fhs-configurator__summary-section:last-child {
     border-bottom: none;
-    
+
 }
 
 .fhs-configurator__summary-section-header {
@@ -264,7 +264,7 @@ body.logged-in .fhs-configurator__summary-item-price {
 
 .fhs-configurator__summary-footer {
     margin-top: 16px;
-    padding-top: 14px;
+    padding: 14px 20px 0;
     border-top: 1px solid #e0e4ea;
 }
 
