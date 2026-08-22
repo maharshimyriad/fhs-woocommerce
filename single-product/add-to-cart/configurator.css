@@ -142,7 +142,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding:0 20px 14px;
+    padding: 0 20px 14px;
     border-bottom: 1px solid #e0e4ea;
 }
 
@@ -590,8 +590,12 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     flex-shrink: 0;
 }
 
-.fhs-configurator__select-all:hover {
-    color: #0d3566;
+.fhs-configurator__select-all:hover,
+.fhs-configurator__select-all:focus,
+.fhs-configurator__select-all:focus-visible,
+.fhs-configurator__select-all:active {
+    color: #00587d;
+    background: none;
 }
 
 /* ── Panel heading status indicator ─────────────────────────────────────── */
