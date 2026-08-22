@@ -455,6 +455,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__intro-help-link:hover {
     color: #0d3566;
+    text-decoration: underline;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
