@@ -1046,11 +1046,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 
     body.fhs-configurator-active .single-product-layout-wrap {
-        padding: 0 35px;
-    }
-
-    .fhs-configurator__summary-card {
-        padding: 20px;
+        padding: 0 20px;
     }
 }
 
