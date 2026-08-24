@@ -77,7 +77,7 @@
     gap: 12px;
     margin-bottom: 16px;
     border-bottom: 1px solid #e0e4ea;
-    padding: 0 20px 14px;
+    padding: 0 20px 16px;
 }
 
 .fhs-configurator__summary-heading-group {
@@ -249,13 +249,18 @@ body.logged-in .fhs-configurator__summary-item-price {
     margin-left: 2px;
 }
 
-/* "Tax will be calculated at checkout." note below subtotal */
+/* "GST & shipping calculated at cart" note below subtotal */
 .fhs-configurator__tax-note {
     margin: 4px 0 0;
     font-size: 1.1rem;
     color: #9ca3af;
     font-style: italic;
     line-height: 1.4;
+}
+
+.fhs-configurator__tax-note a {
+    color: #1a4f8a;
+    text-decoration: underline;
 }
 
 .fhs-configurator__summary-remove {

@@ -558,7 +558,10 @@ function fhs_render_configurator_sidebar()
 	echo '					<span class="fhs-configurator__summary-subtotal-label">' . esc_html__('Subtotal', 'woocommerce') . '</span>';
 	echo '					<span class="fhs-configurator__summary-subtotal-value" data-fhs-config-subtotal></span>';
 	echo '				</div>';
-	echo '				<p class="fhs-configurator__tax-note" data-fhs-config-tax-note style="display:none">' . esc_html__('Tax will be calculated at checkout.', 'woocommerce') . '</p>';
+	echo '				<p class="fhs-configurator__tax-note" data-fhs-config-tax-note style="display:none">';
+	echo '					' . esc_html__( 'GST & shipping calculated at ', 'woocommerce' );
+	echo '					<a href="' . esc_url( wc_get_cart_url() ) . '">' . esc_html__( 'cart', 'woocommerce' ) . '</a>.';
+	echo '				</p>';
 	echo '				<div class="fhs-configurator__summary-cart-actions">';
 	if ($can_add_to_cart) {
 		echo '					<button type="button" class="fhs-configurator__add-all-to-cart" data-fhs-config-add-all>' . esc_html__('Add All to Cart', 'woocommerce') . '</button>';
