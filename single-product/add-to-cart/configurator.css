@@ -40,7 +40,7 @@
     max-width: 90vw;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 24px;
+    gap: 60px;
     align-items: start;
     box-sizing: border-box;
 }
@@ -93,7 +93,7 @@
 }
 
 .fhs-configurator__summary-count {
-    color: #000;
+    color: #00587d;
     font-weight: 400;
     background: #DDE4F9;
     width: fit-content;
@@ -416,7 +416,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: 1px solid #e0e4ea;
     margin-top: 0;
     margin-bottom: 0;
-    padding: 14px 20px 36px;
+    padding: 14px 35px 36px;
     border-radius: 4px;
 }
 
@@ -547,9 +547,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__panel {
     background: #fff;
-    border: 1px solid #e0e4ea;
-    border-radius: 4px;
-    padding: 20px;
+    padding: 20px 0 10px;
 }
 
 .fhs-configurator__panel[hidden] {
