@@ -420,7 +420,7 @@
 		summary.count.textContent = formatItemCount( data.itemCount );
 		summary.subtotal.innerHTML =
 			data.subtotalHtml +
-			'<span class="fhs-configurator__tax-label"> (Ex. Tax)</span>';
+			'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>';
 
 		// Show/hide the tax note below the subtotal row.
 		var taxNote = summary.root ? summary.root.querySelector( '[data-fhs-config-tax-note]' ) : null;
@@ -543,7 +543,7 @@
 		if ( item.price_html || item.price_display ) {
 			price.innerHTML =
 				( item.price_html || item.price_display ) +
-				'<span class="fhs-configurator__tax-label"> (Ex. Tax)</span>';
+				'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>';
 		}
 
 		body.appendChild( name );
