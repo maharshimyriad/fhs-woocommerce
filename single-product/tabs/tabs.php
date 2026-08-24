@@ -402,7 +402,3 @@ $product_description = $product->get_description();
     <div style="margin-top:60px;"><?php echo do_shortcode('[elementor-template id="21142"]'); ?></div>
     <div class="about-us-container"><?php echo do_shortcode('[elementor-template id="14294"]'); ?></div>
     <div><?php echo do_shortcode('[elementor-template id="13889"]'); ?></div>
-
-
-e
-e
