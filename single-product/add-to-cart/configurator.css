@@ -542,6 +542,123 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE/TABLET SECTION DROPDOWN (visible ≤ 900px, hidden above)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fhs-configurator__tab-dropdown {
+    display: none; /* hidden on desktop */
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.fhs-configurator__tab-dropdown-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    background: #fff;
+    border: 1px solid #e0e4ea;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: left;
+    transition: border-color 0.15s;
+}
+
+.fhs-configurator__tab-dropdown-trigger:hover,
+.fhs-configurator__tab-dropdown.is-open .fhs-configurator__tab-dropdown-trigger {
+    border-color: #1a4f8a;
+}
+
+.fhs-configurator__tab-dropdown-icon {
+    flex-shrink: 0;
+    color: #1a4f8a;
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.fhs-configurator__tab-dropdown-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fhs-configurator__tab-dropdown-chevron {
+    flex-shrink: 0;
+    color: #6b7280;
+    transition: transform 0.2s;
+}
+
+.fhs-configurator__tab-dropdown.is-open .fhs-configurator__tab-dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+/* Dropdown menu list */
+.fhs-configurator__tab-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: #fff;
+    border: 1px solid #e0e4ea;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+    padding: 4px 0;
+    margin: 0;
+    list-style: none;
+    overflow: hidden;
+}
+
+.fhs-configurator__tab-dropdown.is-open .fhs-configurator__tab-dropdown-menu {
+    display: block;
+}
+
+.fhs-configurator__tab-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+
+.fhs-configurator__tab-dropdown-item i {
+    font-size: 1.5rem;
+    color: #9ca3af;
+    flex-shrink: 0;
+    transition: color 0.12s;
+}
+
+.fhs-configurator__tab-dropdown-item:hover {
+    background: #f5f8fd;
+    color: #1a4f8a;
+}
+
+.fhs-configurator__tab-dropdown-item:hover i {
+    color: #1a4f8a;
+}
+
+.fhs-configurator__tab-dropdown-item.is-active {
+    color: #1a4f8a;
+    font-weight: 600;
+    background: #f0f4fb;
+}
+
+.fhs-configurator__tab-dropdown-item.is-active i {
+    color: #1a4f8a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    SECTION PANELS
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -885,8 +1002,16 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 }
 
-/* Tablet — 2 cols */
+/* ≤ 900px — switch to dropdown, hide tab bar */
 @media (max-width: 900px) {
+    .fhs-configurator__tab-dropdown {
+        display: block;
+    }
+
+    .fhs-configurator__tabs {
+        display: none;
+    }
+
     .fhs-configurator__grid--machine {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -896,18 +1021,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 }
 
-/* Tabs — allow horizontal scroll on narrow screens */
+/* ≤ 768px — intro bar adjustments (tabs already hidden via 900px rule) */
 @media (max-width: 768px) {
-    .fhs-configurator__tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .fhs-configurator__tab {
-        flex-shrink: 0;
-    }
-
     .fhs-configurator__intro-bar {
         flex-wrap: wrap;
         gap: 6px;
@@ -917,11 +1032,11 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
         width: 100%;
     }
 
-    body.fhs-configurator-active .single-product-layout-wrap{
-        padding:0 35px;
+    body.fhs-configurator-active .single-product-layout-wrap {
+        padding: 0 35px;
     }
 
-    .fhs-configurator__summary-card{
+    .fhs-configurator__summary-card {
         padding: 20px;
     }
 }
