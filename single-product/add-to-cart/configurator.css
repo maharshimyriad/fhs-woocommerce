@@ -913,7 +913,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
         width: 100%;
     }
 
-    body.fhs-configurator-active .woocommerce #content .ast-woocommerce-container div.product div.summary, .woocommerce .ast-woocommerce-container div.product div.summary, .woocommerce-page #content .ast-woocommerce-container div.product div.summary, .woocommerce-page .ast-woocommerce-container div.product div.summary{
+    body.fhs-configurator-active .single-product-layout-wrap{
         padding:0 35px;
     }
 
