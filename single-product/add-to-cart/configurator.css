@@ -1021,6 +1021,20 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     .fhs-configurator__grid--standard {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    /* Reduce image size at tablet */
+    .fhs-configurator__card--machine .fhs-configurator__card-img-wrap {
+        min-height: 80px;
+        padding: 8px 0 6px;
+    }
+
+    .fhs-configurator__card--machine .fhs-configurator__card-img {
+        max-height: 72px;
+    }
+
+    .fhs-configurator__card--standard .fhs-configurator__card-img {
+        max-width: 60%;
+    }
 }
 
 /* ≤ 768px — intro bar adjustments (tabs already hidden via 900px rule) */
@@ -1052,6 +1066,24 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     .fhs-configurator__grid--standard {
         grid-template-columns: 1fr;
         gap: 8px;
+    }
+
+    /* Smaller images on mobile so cards don't dominate the screen */
+    .fhs-configurator__card--machine .fhs-configurator__card-img-wrap {
+        min-height: 70px;
+        padding: 6px 0 4px;
+    }
+
+    .fhs-configurator__card--machine .fhs-configurator__card-img {
+        max-height: 60px;
+    }
+
+    .fhs-configurator__card--standard .fhs-configurator__card-img-wrap {
+        padding: 4px;
+    }
+
+    .fhs-configurator__card--standard .fhs-configurator__card-img {
+        max-width: 50%;
     }
 }
 
