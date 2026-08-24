@@ -108,6 +108,41 @@ foreach ($sections as $section) {
 			</span>
 		</div>
 
+		<!-- ── Mobile/tablet section dropdown (visible ≤ 900px) ────────── -->
+		<div class="fhs-configurator__tab-dropdown" aria-label="<?php esc_attr_e('Select section', 'woocommerce'); ?>">
+			<button
+				type="button"
+				class="fhs-configurator__tab-dropdown-trigger"
+				aria-haspopup="listbox"
+				aria-expanded="false">
+				<span class="fhs-configurator__tab-dropdown-icon">
+					<i class="icofont <?php echo esc_attr($section_icons[$first_key] ?? 'icofont-box'); ?>" aria-hidden="true"></i>
+				</span>
+				<span class="fhs-configurator__tab-dropdown-label">
+					<?php echo esc_html($sections[0]['label']); ?>
+				</span>
+				<svg class="fhs-configurator__tab-dropdown-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+			</button>
+			<ul class="fhs-configurator__tab-dropdown-menu" role="listbox">
+				<?php foreach ($sections as $section) :
+					$icon_class = $section_icons[$section['key']] ?? 'icofont-box';
+					$is_first   = $section['key'] === $first_key;
+				?>
+					<li
+						class="fhs-configurator__tab-dropdown-item<?php echo $is_first ? ' is-active' : ''; ?>"
+						role="option"
+						aria-selected="<?php echo $is_first ? 'true' : 'false'; ?>"
+						data-section-key="<?php echo esc_attr($section['key']); ?>"
+						data-icon-class="<?php echo esc_attr($icon_class); ?>">
+						<i class="icofont <?php echo esc_attr($icon_class); ?>" aria-hidden="true"></i>
+						<?php echo esc_html($section['label']); ?>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+
 		<!-- ── Tab navigation ───────────────────────────────────────── -->
 		<nav class="fhs-configurator__tabs" role="tablist"
 			aria-label="<?php esc_attr_e('Configurator sections', 'woocommerce'); ?>">

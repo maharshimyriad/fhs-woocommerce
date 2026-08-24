@@ -45,6 +45,8 @@
 			} );
 		} );
 
+		initTabDropdown( wrapper, tabs, panels );
+
 		wrapper.addEventListener( 'change', function ( event ) {
 			var input = event.target;
 			if ( ! input.classList.contains( 'fhs-configurator__card-input' ) ) {
@@ -117,6 +119,68 @@
 		return sections;
 	}
 
+	function initTabDropdown( wrapper, tabs, panels ) {
+		var dropdown   = wrapper.querySelector( '.fhs-configurator__tab-dropdown' );
+		if ( ! dropdown ) {
+			return;
+		}
+
+		var trigger    = dropdown.querySelector( '.fhs-configurator__tab-dropdown-trigger' );
+		var menu       = dropdown.querySelector( '.fhs-configurator__tab-dropdown-menu' );
+		var labelEl    = dropdown.querySelector( '.fhs-configurator__tab-dropdown-label' );
+		var iconEl     = dropdown.querySelector( '.fhs-configurator__tab-dropdown-icon i' );
+
+		function openDropdown() {
+			trigger.setAttribute( 'aria-expanded', 'true' );
+			dropdown.classList.add( 'is-open' );
+		}
+
+		function closeDropdown() {
+			trigger.setAttribute( 'aria-expanded', 'false' );
+			dropdown.classList.remove( 'is-open' );
+		}
+
+		trigger.addEventListener( 'click', function () {
+			var isOpen = dropdown.classList.contains( 'is-open' );
+			isOpen ? closeDropdown() : openDropdown();
+		} );
+
+		menu.addEventListener( 'click', function ( event ) {
+			var item = event.target.closest( '.fhs-configurator__tab-dropdown-item' );
+			if ( ! item ) {
+				return;
+			}
+
+			var sectionKey = item.getAttribute( 'data-section-key' );
+			var iconClass  = item.getAttribute( 'data-icon-class' );
+
+			// Update trigger label and icon.
+			if ( labelEl ) {
+				labelEl.textContent = item.textContent.trim();
+			}
+			if ( iconEl ) {
+				iconEl.className = 'icofont ' + ( iconClass || 'icofont-box' );
+			}
+
+			// Mark active item.
+			menu.querySelectorAll( '.fhs-configurator__tab-dropdown-item' ).forEach( function ( el ) {
+				var isTarget = el.getAttribute( 'data-section-key' ) === sectionKey;
+				el.classList.toggle( 'is-active', isTarget );
+				el.setAttribute( 'aria-selected', isTarget ? 'true' : 'false' );
+			} );
+
+			closeDropdown();
+			switchTab( wrapper, tabs, panels, sectionKey );
+		} );
+
+		// Close when clicking outside.
+		document.addEventListener( 'click', function ( event ) {
+			if ( ! dropdown.contains( event.target ) ) {
+				closeDropdown();
+			}
+		} );
+	}
+
 	function switchTab( wrapper, tabs, panels, targetKey ) {
 		tabs.forEach( function ( t ) {
 			var isTarget = t.getAttribute( 'data-section-key' ) === targetKey;
@@ -133,6 +197,23 @@
 				panel.setAttribute( 'hidden', '' );
 			}
 		} );
+
+		// Keep the mobile dropdown label in sync.
+		var dropdown = wrapper.querySelector( '.fhs-configurator__tab-dropdown' );
+		if ( dropdown ) {
+			var item = dropdown.querySelector( '.fhs-configurator__tab-dropdown-item[data-section-key="' + targetKey + '"]' );
+			if ( item ) {
+				var labelEl = dropdown.querySelector( '.fhs-configurator__tab-dropdown-label' );
+				var iconEl  = dropdown.querySelector( '.fhs-configurator__tab-dropdown-icon i' );
+				if ( labelEl ) { labelEl.textContent = item.textContent.trim(); }
+				if ( iconEl )  { iconEl.className = 'icofont ' + ( item.getAttribute( 'data-icon-class' ) || 'icofont-box' ); }
+				dropdown.querySelectorAll( '.fhs-configurator__tab-dropdown-item' ).forEach( function ( el ) {
+					var isTarget = el.getAttribute( 'data-section-key' ) === targetKey;
+					el.classList.toggle( 'is-active', isTarget );
+					el.setAttribute( 'aria-selected', isTarget ? 'true' : 'false' );
+				} );
+			}
+		}
 	}
 
 	function syncSectionSelectedState( wrapper, sectionKey ) {
