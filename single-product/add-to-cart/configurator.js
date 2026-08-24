@@ -418,7 +418,15 @@
 		}
 
 		summary.count.textContent = formatItemCount( data.itemCount );
-		summary.subtotal.innerHTML = data.subtotalHtml;
+		summary.subtotal.innerHTML =
+			data.subtotalHtml +
+			'<span class="fhs-configurator__tax-label"> (Ex. Tax)</span>';
+
+		// Show/hide the tax note below the subtotal row.
+		var taxNote = summary.root ? summary.root.querySelector( '[data-fhs-config-tax-note]' ) : null;
+		if ( taxNote ) {
+			taxNote.style.display = data.itemCount > 0 ? '' : 'none';
+		}
 
 		// Disable/enable Add All to Cart button based on item count
 		var addAllBtn = summary.root ? summary.root.querySelector( '[data-fhs-config-add-all]' ) : null;
@@ -532,7 +540,11 @@
 
 		var price = document.createElement( 'div' );
 		price.className = 'fhs-configurator__summary-item-price';
-		price.innerHTML = item.price_html || item.price_display || formatCurrency( 0 );
+		if ( item.price_html || item.price_display ) {
+			price.innerHTML =
+				( item.price_html || item.price_display ) +
+				'<span class="fhs-configurator__tax-label"> (Ex. Tax)</span>';
+		}
 
 		body.appendChild( name );
 		if ( item.sku ) {

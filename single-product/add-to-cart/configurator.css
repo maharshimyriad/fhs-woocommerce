@@ -145,7 +145,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0 20px 14px;
+    padding: 0 20px 16px;
     border-bottom: 1px solid #e0e4ea;
 }
 
@@ -187,7 +187,6 @@
     gap: 10px;
     align-items: start;
     padding: 10px 0;
-    border-bottom: 1px solid #f3f4f6;
 }
 
 .fhs-configurator__summary-item .fhs-configurator__summary-item-image {
@@ -240,6 +239,23 @@
 
 body.logged-in .fhs-configurator__summary-item-price {
     display: block;
+}
+
+/* Ex. Tax label — appended after price and subtotal values */
+.fhs-configurator__tax-label {
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: #9ca3af;
+    margin-left: 2px;
+}
+
+/* "Tax will be calculated at checkout." note below subtotal */
+.fhs-configurator__tax-note {
+    margin: 4px 0 0;
+    font-size: 1.1rem;
+    color: #9ca3af;
+    font-style: italic;
+    line-height: 1.4;
 }
 
 .fhs-configurator__summary-remove {
