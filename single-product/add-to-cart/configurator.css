@@ -93,10 +93,13 @@
 }
 
 .fhs-configurator__summary-count {
-    margin: 0;
-    font-size: 1.3rem;
-    color: #6b7280;
+    color: #000;
     font-weight: 400;
+    background: #DDE4F9;
+    width: fit-content;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 1.3rem !important;
 }
 
 .fhs-configurator__clear-all {
@@ -397,7 +400,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: 1px solid #e0e4ea;
     margin-top: 0;
     margin-bottom: 0;
-    padding: 20px 20px 36px;
+    padding: 14px 20px 36px;
     border-radius: 4px;
 }
 
@@ -413,10 +416,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 18px;
+    padding: 0;
     background: #fff;
-    border: 1px solid #e0e4ea;
-    border-radius: 4px;
     margin-bottom: 14px;
     font-size: 1.47rem;
     color: #1a1a1a;
@@ -470,7 +471,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: 1px solid #e0e4ea;
     border-radius: 4px;
     overflow: hidden;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .fhs-configurator__tab {
