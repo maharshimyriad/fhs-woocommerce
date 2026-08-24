@@ -570,7 +570,9 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__tab-dropdown-trigger:hover,
 .fhs-configurator__tab-dropdown.is-open .fhs-configurator__tab-dropdown-trigger {
-    border-color: #1a4f8a;
+    border-color: #00587d;
+    background: #fff;
+    color: #1a1a1a;
 }
 
 .fhs-configurator__tab-dropdown-icon {
