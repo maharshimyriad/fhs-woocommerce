@@ -879,16 +879,20 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     .fhs-configurator__grid--machine {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    .fhs-configurator__grid--standard {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
-/* Tablet — machine packages 2 cols */
+/* Tablet — 2 cols */
 @media (max-width: 900px) {
     .fhs-configurator__grid--machine {
         grid-template-columns: repeat(2, 1fr);
     }
 
     .fhs-configurator__grid--standard {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -922,14 +926,14 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 }
 
-/* Mobile — machine packages 1 col */
+/* Mobile — 1 col */
 @media (max-width: 480px) {
     .fhs-configurator__grid--machine {
         grid-template-columns: 1fr;
     }
 
     .fhs-configurator__grid--standard {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: 1fr;
         gap: 8px;
     }
 }
