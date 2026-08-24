@@ -612,7 +612,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: 1px solid #e0e4ea;
     border-radius: 6px;
     box-shadow: 0 6px 24px rgba(0,0,0,0.10);
-    padding: 4px 0;
+    padding: 0;
     margin: 0;
     list-style: none;
     overflow: hidden;
