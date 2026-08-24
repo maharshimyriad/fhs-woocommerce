@@ -916,6 +916,10 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     body.fhs-configurator-active .woocommerce #content .ast-woocommerce-container div.product div.summary, .woocommerce .ast-woocommerce-container div.product div.summary, .woocommerce-page #content .ast-woocommerce-container div.product div.summary, .woocommerce-page .ast-woocommerce-container div.product div.summary{
         padding:0 35px;
     }
+
+    .fhs-configurator__summary-card{
+        padding: 20px;
+    }
 }
 
 /* Mobile — machine packages 1 col */
