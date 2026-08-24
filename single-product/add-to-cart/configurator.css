@@ -93,7 +93,7 @@
 }
 
 .fhs-configurator__summary-count {
-    color: #00587d;
+    color: #000;
     font-weight: 400;
     background: #DDE4F9;
     width: fit-content;
@@ -416,7 +416,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     border: 1px solid #e0e4ea;
     margin-top: 0;
     margin-bottom: 0;
-    padding: 14px 35px 36px;
+    padding: 18px 35px 18px;
     border-radius: 4px;
 }
 
@@ -547,7 +547,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__panel {
     background: #fff;
-    padding: 20px 0 10px;
+    padding: 10px 0;
 }
 
 .fhs-configurator__panel[hidden] {
@@ -655,7 +655,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__grid--machine {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
@@ -874,10 +874,10 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 }
 
-/* Tablet — machine packages 3 cols */
+/* Tablet — machine packages 2 cols */
 @media (max-width: 900px) {
     .fhs-configurator__grid--machine {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .fhs-configurator__grid--standard {
@@ -907,10 +907,10 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 }
 
-/* Mobile — machine packages 2 cols */
+/* Mobile — machine packages 1 col */
 @media (max-width: 480px) {
     .fhs-configurator__grid--machine {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
     }
 
     .fhs-configurator__grid--standard {
