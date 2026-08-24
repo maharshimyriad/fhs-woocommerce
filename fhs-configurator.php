@@ -132,6 +132,11 @@ function fhs_configurator_filter_astra_structure($structure)
 
 add_filter('astra_woo_single_product_structure', 'fhs_configurator_filter_astra_structure');
 
+// Remove related products from all single product pages.
+add_action( 'init', function () {
+	remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_related_products', 20 );
+} );
+
 /**
  * Add `fhs-configurator-active` to the body classes when the configurator
  * is active for the current product. Useful for page-level CSS targeting.
