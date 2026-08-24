@@ -1023,13 +1023,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 
     /* Reduce image size at tablet */
-    .fhs-configurator__card--machine .fhs-configurator__card-img-wrap {
-        min-height: 80px;
-        padding: 8px 0 6px;
-    }
-
     .fhs-configurator__card--machine .fhs-configurator__card-img {
-        max-height: 72px;
+        max-width: 70%;
     }
 
     .fhs-configurator__card--standard .fhs-configurator__card-img {
@@ -1069,17 +1064,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     }
 
     /* Smaller images on mobile so cards don't dominate the screen */
-    .fhs-configurator__card--machine .fhs-configurator__card-img-wrap {
-        min-height: 70px;
-        padding: 6px 0 4px;
-    }
-
     .fhs-configurator__card--machine .fhs-configurator__card-img {
-        max-height: 60px;
-    }
-
-    .fhs-configurator__card--standard .fhs-configurator__card-img-wrap {
-        padding: 4px;
+        max-width: 60%;
     }
 
     .fhs-configurator__card--standard .fhs-configurator__card-img {
