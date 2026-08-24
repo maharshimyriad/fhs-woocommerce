@@ -893,7 +893,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 }
 
 /* Tabs — allow horizontal scroll on narrow screens */
-@media (max-width: 700px) {
+@media (max-width: 768px) {
     .fhs-configurator__tabs {
         flex-wrap: nowrap;
         overflow-x: auto;
@@ -911,6 +911,10 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
     .fhs-configurator__intro-help {
         width: 100%;
+    }
+
+    body.fhs-configurator-active .woocommerce #content .ast-woocommerce-container div.product div.summary, .woocommerce .ast-woocommerce-container div.product div.summary, .woocommerce-page #content .ast-woocommerce-container div.product div.summary, .woocommerce-page .ast-woocommerce-container div.product div.summary{
+        padding:0 35px;
     }
 }
 
