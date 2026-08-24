@@ -655,7 +655,7 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__grid--machine {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
@@ -871,6 +871,13 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
     .fhs-configurator__right {
         position: static;
+    }
+}
+
+/* Laptop — machine packages 3 cols */
+@media (max-width: 1440px) {
+    .fhs-configurator__grid--machine {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
