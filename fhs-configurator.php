@@ -810,6 +810,12 @@ function fhs_configurator_add_all_to_cart()
 		), 500);
 	}
 
+	// Ensure the WC session is initialized — required for is_purchasable() checks
+	// to work correctly when called via AJAX with a valid session cookie.
+	if ( WC()->session && ! WC()->session->has_session() ) {
+		WC()->session->set_customer_session_cookie( true );
+	}
+
 	$cart_keys    = array();
 	$added_names  = array();
 
