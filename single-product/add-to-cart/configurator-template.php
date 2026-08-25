@@ -34,7 +34,7 @@ $first_key = $sections[0]['key'];
 
 // Icon map per section key — uses icofont classes already loaded in the theme.
 $section_icons = array(
-	'machine_packages'  => 'icofont-industries-4',
+	'machine_packages'  => 'fa-solid fa-box',
 	'liner_sets'        => 'icofont-loop',
 	'replacement_parts' => 'icofont-tools-alt-2',
 	'accessories'       => 'icofont-box',
@@ -184,7 +184,7 @@ foreach ($sections as $section) {
 					<h3 class="fhs-configurator__panel-heading">
 						<?php echo esc_html($section['label']); ?>
 						<span class="fhs-configurator__optional-badge">
-							<?php esc_html_e('optional', 'woocommerce'); ?>
+							<?php esc_html_e('(optional)', 'woocommerce'); ?>
 						</span>
 						<span
 							class="fhs-configurator__section-status"

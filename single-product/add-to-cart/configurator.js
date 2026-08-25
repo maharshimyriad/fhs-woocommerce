@@ -681,11 +681,16 @@
 		remove.setAttribute( 'data-fhs-config-remove', '1' );
 		remove.setAttribute( 'data-section-key', removeSection );
 		remove.setAttribute( 'data-product-id', String( item.id ) );
-		remove.textContent = 'Remove';
-		body.appendChild( remove );
+// 		remove.textContent = 'Remove';
+		remove.textContent = '✕';
+remove.setAttribute( 'aria-label', 'Remove' );
+remove.setAttribute( 'title', 'Remove' );
+// 		body.appendChild( remove );
 
 		article.appendChild( img );
 		article.appendChild( body );
+		article.appendChild( remove );
+		
 
 		return article;
 	}
