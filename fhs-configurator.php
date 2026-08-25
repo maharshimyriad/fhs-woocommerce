@@ -182,6 +182,17 @@ function fhs_configurator_get_product_data($product_id)
 		return array();
 	}
 
+	// Only show published products that are in stock or on backorder.
+	// Exclude draft, pending, private, out-of-stock.
+	if ( 'publish' !== $product->get_status() ) {
+		return array();
+	}
+
+	$stock_status = $product->get_stock_status(); // 'instock' | 'outofstock' | 'onbackorder'
+	if ( 'outofstock' === $stock_status ) {
+		return array();
+	}
+
 	// Image: product thumbnail → parent fallback → WC placeholder.
 	$image_id  = $product->get_image_id();
 	$image_url = $image_id

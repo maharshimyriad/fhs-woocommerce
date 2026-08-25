@@ -188,13 +188,13 @@ foreach ($sections as $section) {
 						</span>
 						<?php
 						$section_tooltips = array(
-							'machine_packages'  => __( 'Choose a machine package to include with your configuration. You can select the standard machine or upgrade to a full package.', 'woocommerce' ),
-							'liner_sets'        => __( 'Liner sets protect the interior of your pipes during the welding process. Select the sizes that match your pipe dimensions.', 'woocommerce' ),
-							'replacement_parts' => __( 'Keep your machine running at peak performance with genuine replacement parts.', 'woocommerce' ),
-							'accessories'       => __( 'Enhance your setup with compatible accessories designed for this machine.', 'woocommerce' ),
-							'data_logging'      => __( 'Data logging equipment records weld parameters for traceability and quality assurance.', 'woocommerce' ),
-							'consumables'       => __( 'Consumables are items that need regular replacement during normal machine operation.', 'woocommerce' ),
-							'tooling_extras'    => __( 'Additional tooling and extras to extend the capabilities of your machine.', 'woocommerce' ),
+							'machine_packages'  => __( 'Add Machine Packages', 'woocommerce' ),
+							'liner_sets'        => __( 'Add Liner Sets', 'woocommerce' ),
+							'replacement_parts' => __( 'Add Replacement Parts', 'woocommerce' ),
+							'accessories'       => __( 'Add Accessories', 'woocommerce' ),
+							'data_logging'      => __( 'Add Data Logging', 'woocommerce' ),
+							'consumables'       => __( 'Add Consumables', 'woocommerce' ),
+							'tooling_extras'    => __( 'Add Tooling & Extras', 'woocommerce' ),
 						);
 						$tooltip_text = isset( $section_tooltips[ $section['key'] ] ) ? $section_tooltips[ $section['key'] ] : '';
 						if ( $tooltip_text ) :
