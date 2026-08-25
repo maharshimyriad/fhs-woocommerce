@@ -822,25 +822,16 @@ function fhs_configurator_add_all_to_cart()
 	foreach ( $validated['product_ids'] as $product_id ) {
 		$p = wc_get_product( $product_id );
 
-		// Check purchasability before attempting to add — gives a clear error
-		// instead of add_to_cart silently returning false.
 		if ( ! $p || ! $p->is_purchasable() ) {
 			wp_send_json_error( array(
-				'message' => sprintf(
-					/* translators: %s product name or ID */
-					__( '"%s" cannot be purchased at this time. Please contact us for assistance.', 'woocommerce' ),
-					$p ? $p->get_name() : '#' . $product_id
-				),
+				'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
 			), 400 );
 		}
 
 		$cart_key = WC()->cart->add_to_cart( $product_id, 1 );
 		if ( ! $cart_key ) {
 			wp_send_json_error( array(
-				'message' => sprintf(
-					__( '"%s" could not be added to the cart. Please try again or contact us.', 'woocommerce' ),
-					$p->get_name()
-				),
+				'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
 			), 500 );
 		}
 		$cart_keys[] = $cart_key;
