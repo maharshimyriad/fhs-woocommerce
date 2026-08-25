@@ -101,11 +101,21 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
 #fhs-debug-panel .dp-entry .dp-trigger { color: #ffa657; }
 #fhs-debug-panel .dp-entry .dp-interval { color: #d2a8ff; }
 #fhs-debug-panel .dp-entry .dp-stack { color: #8b949e; font-size: 10px; margin-top: 3px; word-break: break-all; }
-#fhs-debug-panel .dp-clear {
+#fhs-debug-panel .dp-clear,
+#fhs-debug-panel .dp-copy {
     background: none; border: 1px solid #30363d; color: #8b949e;
     padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;
+    transition: all 0.15s;
 }
-#fhs-debug-panel .dp-clear:hover { border-color: #f85149; color: #f85149; }
+#fhs-debug-panel .dp-clear:hover  { border-color: #f85149; color: #f85149; }
+#fhs-debug-panel .dp-copy:hover   { border-color: #3fb950; color: #3fb950; }
+#fhs-debug-panel .dp-copy.copied  { border-color: #3fb950; color: #3fb950; background: rgba(63,185,80,0.12); }
+#fhs-debug-panel .dp-console-note {
+    padding: 5px 10px; font-size: 10px; color: #8b949e;
+    background: #0d1117; border-bottom: 1px solid #21262d;
+    display: flex; align-items: center; gap: 6px;
+}
+#fhs-debug-panel .dp-console-note .dot { width:7px; height:7px; border-radius:50%; background:#3fb950; display:inline-block; flex-shrink:0; }
 #fhs-debug-minimised { display: none; }
 </style>
 
@@ -114,9 +124,14 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
         <span>⚡ update_order_review debugger</span>
         <div style="display:flex;gap:8px;align-items:center;">
             <span class="dp-count" id="fhs-dp-count">0</span>
+            <button class="dp-copy" id="fhs-dp-copy">📋 Copy</button>
             <button class="dp-clear" id="fhs-dp-clear">Clear</button>
             <span style="color:#8b949e;font-size:10px;" id="fhs-dp-min">▼</span>
         </div>
+    </div>
+    <div class="dp-console-note">
+        <span class="dot"></span>
+        All calls also logged to <strong style="color:#e6edf3;">DevTools Console</strong> in real-time — open Console tab to see full grouped output
     </div>
     <div class="dp-body" id="fhs-dp-body"></div>
 </div>
@@ -148,6 +163,108 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
         panelBody_.innerHTML = '';
         panelCount.textContent = '0';
     });
+
+    /* ── copy button ─────────────────────────────────────────────── */
+    document.getElementById('fhs-dp-copy').addEventListener('click', function(e) {
+        e.stopPropagation();
+        var btn = this;
+
+        if (callCount === 0) {
+            btn.textContent = '⚠ Nothing yet';
+            setTimeout(function(){ btn.textContent = '📋 Copy'; }, 1500);
+            return;
+        }
+
+        /* Build a readable plain-text report */
+        var lines = [];
+        lines.push('=== FHS update_order_review Debug Report ===');
+        lines.push('Page: ' + window.location.href);
+        lines.push('Captured: ' + ts());
+        lines.push('Total calls: ' + callCount);
+        lines.push('');
+
+        /* Per-call detail */
+        lines.push('--- CALLS ---');
+        callLog.forEach(function(entry) {
+            lines.push('');
+            lines.push('Call #' + entry.n);
+            lines.push('  Time     : ' + entry.time);
+            lines.push('  Interval : ' + entry.interval);
+            lines.push('  Method   : ' + entry.method);
+            lines.push('  URL      : ' + entry.url);
+            lines.push('  Source   : ' + entry.source);
+            lines.push('  Trigger  : ' + entry.trigger);
+            if (entry.body) {
+                lines.push('  Payload  : ' + entry.body);
+            }
+            lines.push('  Stack:');
+            entry.stack.split('\n').forEach(function(f){ lines.push('    ' + f); });
+        });
+
+        /* Summary section */
+        lines.push('');
+        lines.push('--- SUMMARY ---');
+
+        var tally = {};
+        callLog.forEach(function(e){ tally[e.source] = (tally[e.source] || 0) + 1; });
+        lines.push('Calls by source file:');
+        Object.keys(tally).sort(function(a,b){ return tally[b]-tally[a]; }).forEach(function(k){
+            lines.push('  ' + tally[k] + 'x  ' + k);
+        });
+
+        var tt = {};
+        callLog.forEach(function(e){ tt[e.trigger] = (tt[e.trigger] || 0) + 1; });
+        lines.push('Calls by trigger type:');
+        Object.keys(tt).sort(function(a,b){ return tt[b]-tt[a]; }).forEach(function(k){
+            lines.push('  ' + tt[k] + 'x  ' + k);
+        });
+
+        if (callCount >= 2) {
+            var gaps = [];
+            for (var i = 1; i < callLog.length; i++) {
+                gaps.push((new Date(callLog[i].time)) - (new Date(callLog[i-1].time)));
+            }
+            var avgGap = gaps.reduce(function(a,b){return a+b;},0) / gaps.length;
+            lines.push('Avg interval between calls: ' + avgGap.toFixed(0) + ' ms');
+        }
+
+        lines.push('');
+        lines.push('--- RAW JSON ---');
+        lines.push(JSON.stringify(callLog, null, 2));
+
+        var text = lines.join('\n');
+
+        /* Copy to clipboard — modern API with old fallback */
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                btn.textContent = '✅ Copied';
+                btn.classList.add('copied');
+                setTimeout(function(){ btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+            }).catch(function() {
+                fallbackCopy(text, btn);
+            });
+        } else {
+            fallbackCopy(text, btn);
+        }
+    });
+
+    function fallbackCopy(text, btn) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            btn.textContent = '✅ Copied';
+            btn.classList.add('copied');
+            setTimeout(function(){ btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+        } catch(err) {
+            btn.textContent = '❌ Failed';
+            setTimeout(function(){ btn.textContent = '📋 Copy'; }, 2000);
+        }
+        document.body.removeChild(ta);
+    }
 
     /* ── helpers ────────────────────────────────────────────────── */
     function ts() {
