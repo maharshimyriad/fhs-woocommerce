@@ -204,11 +204,7 @@ foreach ($sections as $section) {
 								aria-label="<?php echo esc_attr( $tooltip_text ); ?>"
 								role="tooltip"
 								tabindex="0">
-								<svg class="fhs-configurator__tooltip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-									<circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/>
-									<path d="M7.25 7.25C7.25 6.836 7.586 6.5 8 6.5C8.414 6.5 8.75 6.836 8.75 7.25V11C8.75 11.414 8.414 11.75 8 11.75C7.586 11.75 7.25 11.414 7.25 11V7.25Z" fill="currentColor"/>
-									<circle cx="8" cy="4.75" r="0.875" fill="currentColor"/>
-								</svg>
+								<i class="icofont icofont-question-circle fhs-configurator__tooltip-icon" aria-hidden="true"></i>
 								<span class="fhs-configurator__tooltip-bubble" role="presentation">
 									<?php echo esc_html( $tooltip_text ); ?>
 								</span>

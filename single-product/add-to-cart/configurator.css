@@ -758,8 +758,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__tooltip-icon {
     display: block;
-    width: 15px;
-    height: 15px;
+    font-size: 1.6rem;
+    line-height: 1;
     transition: color 0.15s;
 }
 
