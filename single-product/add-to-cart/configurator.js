@@ -384,7 +384,13 @@
 		if ( wrapper.fhsCartRequestInFlight ) {
 			return;
 		}
+		doAddAllToCart( wrapper, button, false );
+	}
 
+	/**
+	 * @param {boolean} isRetry  true when called after a nonce refresh — prevents infinite loop.
+	 */
+	function doAddAllToCart( wrapper, button, isRetry ) {
 		var ajaxUrl = wrapper.getAttribute( 'data-ajax-url' );
 		var nonce = wrapper.getAttribute( 'data-cart-nonce' );
 		var baseProductId = parseInt( wrapper.getAttribute( 'data-product-id' ), 10 ) || 0;
@@ -411,38 +417,39 @@
 			body: formData,
 		} )
 			.then( function ( response ) {
+				// Nonce expired — 403 from check_ajax_referer.
+				if ( ( response.status === 403 || response.status === 500 ) && ! isRetry ) {
+					return refreshNonceAndRetry( wrapper, button, ajaxUrl );
+				}
 				return response.json().catch( function () {
 					return {
 						success: false,
-						data: {
-							message: 'Unable to add this configuration to the cart. Please refresh the page and try again.',
-						},
+						data: { message: 'Unable to add this configuration to the cart. Please refresh the page and try again.' },
 					};
 				} );
 			} )
 			.then( function ( result ) {
-				if ( ! result || ! result.success || ! result.data ) {
+				if ( ! result || result.__retrying ) {
+					return; // nonce refresh path already handles continuation
+				}
+				if ( ! result.success || ! result.data ) {
 					var message = result && result.data && result.data.message
 						? result.data.message
 						: 'Unable to add this configuration to the cart. Please refresh the page and try again.';
 					throw new Error( message );
 				}
 
-				// Inject the WooCommerce notice into the page exactly as WC does natively.
+				// Inject the WooCommerce notice into the page.
 				if ( result.data.notices_html ) {
-					// Find or create a notices wrapper near the top of the product page.
 					var existingWrapper = document.querySelector( '.woocommerce-notices-wrapper' );
 					if ( existingWrapper ) {
 						existingWrapper.outerHTML = result.data.notices_html;
 					} else {
-						// Insert before the product div if no wrapper found.
 						var productEl = document.querySelector( '.product' ) || document.querySelector( '.single-product-content-container' );
 						if ( productEl ) {
 							productEl.insertAdjacentHTML( 'beforebegin', result.data.notices_html );
 						}
 					}
-
-					// Scroll the notice into view.
 					var notice = document.querySelector( '.woocommerce-message' );
 					if ( notice ) {
 						notice.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
@@ -450,7 +457,6 @@
 					}
 				}
 
-				// Trigger WooCommerce fragment refresh so mini-cart count updates.
 				if ( typeof jQuery !== 'undefined' ) {
 					jQuery( document.body ).trigger( 'wc_fragment_refresh' );
 				}
@@ -462,6 +468,38 @@
 				setSummaryMessage( wrapper, error && error.message ? error.message : 'Unable to add this configuration to the cart. Please refresh the page and try again.' );
 				wrapper.fhsCartRequestInFlight = false;
 				setAddAllButtonState( button, false );
+			} );
+	}
+
+	/**
+	 * Fetch a fresh nonce then retry the cart request once.
+	 */
+	function refreshNonceAndRetry( wrapper, button, ajaxUrl ) {
+		var refreshData = new FormData();
+		refreshData.append( 'action', 'fhs_configurator_refresh_nonce' );
+
+		return fetch( ajaxUrl, {
+			method: 'POST',
+			credentials: 'same-origin',
+			body: refreshData,
+		} )
+			.then( function ( r ) { return r.json(); } )
+			.then( function ( result ) {
+				if ( result && result.success && result.data && result.data.nonce ) {
+					// Update the DOM so future requests also use the fresh nonce.
+					wrapper.setAttribute( 'data-cart-nonce', result.data.nonce );
+					// Reset in-flight flag before retrying.
+					wrapper.fhsCartRequestInFlight = false;
+					doAddAllToCart( wrapper, button, true );
+				} else {
+					throw new Error( 'Session expired. Please refresh the page and try again.' );
+				}
+			} )
+			.then( function () {
+				return { __retrying: true }; // signal to outer .then to no-op
+			} )
+			.catch( function ( err ) {
+				throw err;
 			} );
 	}
 

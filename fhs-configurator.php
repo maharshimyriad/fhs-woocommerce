@@ -814,18 +814,32 @@ function fhs_configurator_add_all_to_cart()
 	$added_names  = array();
 
 	foreach ( $validated['product_ids'] as $product_id ) {
+		$p = wc_get_product( $product_id );
+
+		// Check purchasability before attempting to add — gives a clear error
+		// instead of add_to_cart silently returning false.
+		if ( ! $p || ! $p->is_purchasable() ) {
+			wp_send_json_error( array(
+				'message' => sprintf(
+					/* translators: %s product name or ID */
+					__( '"%s" cannot be purchased at this time. Please contact us for assistance.', 'woocommerce' ),
+					$p ? $p->get_name() : '#' . $product_id
+				),
+			), 400 );
+		}
+
 		$cart_key = WC()->cart->add_to_cart( $product_id, 1 );
 		if ( ! $cart_key ) {
 			wp_send_json_error( array(
-				'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
+				'message' => sprintf(
+					__( '"%s" could not be added to the cart. Please try again or contact us.', 'woocommerce' ),
+					$p->get_name()
+				),
 			), 500 );
 		}
 		$cart_keys[] = $cart_key;
 
-		$p = wc_get_product( $product_id );
-		if ( $p ) {
-			$added_names[] = $p->get_name();
-		}
+		$added_names[] = $p->get_name();
 	}
 
 	// Build a WooCommerce-style notice matching the native add-to-cart format.
@@ -858,6 +872,18 @@ function fhs_configurator_add_all_to_cart()
 
 add_action('wp_ajax_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart');
 add_action('wp_ajax_nopriv_fhs_configurator_add_all_to_cart', 'fhs_configurator_add_all_to_cart');
+
+/**
+ * AJAX: Return a fresh nonce for the configurator cart action.
+ * Called by JS when the existing nonce has expired (after ~12 hours).
+ */
+function fhs_configurator_refresh_nonce() {
+	wp_send_json_success( array(
+		'nonce' => wp_create_nonce( 'fhs_configurator_add_all_to_cart' ),
+	) );
+}
+add_action( 'wp_ajax_fhs_configurator_refresh_nonce',        'fhs_configurator_refresh_nonce' );
+add_action( 'wp_ajax_nopriv_fhs_configurator_refresh_nonce', 'fhs_configurator_refresh_nonce' );
 
 add_action('fhs_inside_product_main_container', 'fhs_render_configurator');
 add_action('fhs_configurator_sidebar_area', 'fhs_render_configurator_sidebar');
