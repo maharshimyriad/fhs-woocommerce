@@ -742,6 +742,67 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
     vertical-align: middle;
 }
 
+/* ── Tooltip ────────────────────────────────────────────────────────────── */
+
+.fhs-configurator__tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    cursor: pointer;
+    color: #9ca3af;
+    flex-shrink: 0;
+    margin-left: 2px;
+    outline: none;
+}
+
+.fhs-configurator__tooltip-icon {
+    display: block;
+    width: 15px;
+    height: 15px;
+    transition: color 0.15s;
+}
+
+.fhs-configurator__tooltip:hover .fhs-configurator__tooltip-icon,
+.fhs-configurator__tooltip:focus .fhs-configurator__tooltip-icon {
+    color: #1a4f8a;
+}
+
+.fhs-configurator__tooltip-bubble {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 300;
+    pointer-events: none;
+    white-space: normal;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+
+.fhs-configurator__tooltip-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1a1a1a;
+}
+
+.fhs-configurator__tooltip:hover .fhs-configurator__tooltip-bubble,
+.fhs-configurator__tooltip:focus .fhs-configurator__tooltip-bubble {
+    display: block;
+}
+
 .fhs-configurator__select-all {
     font-size: 1.5rem !important;
     background: none;

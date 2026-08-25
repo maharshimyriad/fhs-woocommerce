@@ -186,6 +186,34 @@ foreach ($sections as $section) {
 						<span class="fhs-configurator__optional-badge">
 							<?php esc_html_e('(optional)', 'woocommerce'); ?>
 						</span>
+						<?php
+						$section_tooltips = array(
+							'machine_packages'  => __( 'Choose a machine package to include with your configuration. You can select the standard machine or upgrade to a full package.', 'woocommerce' ),
+							'liner_sets'        => __( 'Liner sets protect the interior of your pipes during the welding process. Select the sizes that match your pipe dimensions.', 'woocommerce' ),
+							'replacement_parts' => __( 'Keep your machine running at peak performance with genuine replacement parts.', 'woocommerce' ),
+							'accessories'       => __( 'Enhance your setup with compatible accessories designed for this machine.', 'woocommerce' ),
+							'data_logging'      => __( 'Data logging equipment records weld parameters for traceability and quality assurance.', 'woocommerce' ),
+							'consumables'       => __( 'Consumables are items that need regular replacement during normal machine operation.', 'woocommerce' ),
+							'tooling_extras'    => __( 'Additional tooling and extras to extend the capabilities of your machine.', 'woocommerce' ),
+						);
+						$tooltip_text = isset( $section_tooltips[ $section['key'] ] ) ? $section_tooltips[ $section['key'] ] : '';
+						if ( $tooltip_text ) :
+						?>
+							<span
+								class="fhs-configurator__tooltip"
+								aria-label="<?php echo esc_attr( $tooltip_text ); ?>"
+								role="tooltip"
+								tabindex="0">
+								<svg class="fhs-configurator__tooltip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+									<circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/>
+									<path d="M7.25 7.25C7.25 6.836 7.586 6.5 8 6.5C8.414 6.5 8.75 6.836 8.75 7.25V11C8.75 11.414 8.414 11.75 8 11.75C7.586 11.75 7.25 11.414 7.25 11V7.25Z" fill="currentColor"/>
+									<circle cx="8" cy="4.75" r="0.875" fill="currentColor"/>
+								</svg>
+								<span class="fhs-configurator__tooltip-bubble" role="presentation">
+									<?php echo esc_html( $tooltip_text ); ?>
+								</span>
+							</span>
+						<?php endif; ?>
 						<span
 							class="fhs-configurator__section-status"
 							data-section-status="<?php echo esc_attr($section['key']); ?>"
