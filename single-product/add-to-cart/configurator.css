@@ -750,7 +750,8 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
 
 .fhs-configurator__tooltip {
     position: relative;
-    display: inline-flex;
+    /* display: inline-flex; */
+    display: none;
     align-items: center;
     vertical-align: middle;
     cursor: pointer;
