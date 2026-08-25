@@ -541,12 +541,6 @@
 			data.subtotalHtml +
 			'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>';
 
-		// Show/hide the tax note below the subtotal row.
-		var taxNote = summary.root ? summary.root.querySelector( '[data-fhs-config-tax-note]' ) : null;
-		if ( taxNote ) {
-			taxNote.style.display = data.itemCount > 0 ? '' : 'none';
-		}
-
 		// Disable/enable Add All to Cart button based on item count
 		var addAllBtn = summary.root ? summary.root.querySelector( '[data-fhs-config-add-all]' ) : null;
 		if ( addAllBtn ) {

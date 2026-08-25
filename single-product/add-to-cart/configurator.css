@@ -256,13 +256,18 @@ body.logged-in .fhs-configurator__summary-item-price {
     margin-left: 2px;
 }
 
-/* "GST & shipping calculated at cart" note below subtotal */
+/* "GST & shipping calculated at cart" note below subtotal — logged-in only */
 .fhs-configurator__tax-note {
+    display: none !important;
     margin: 4px 0 0;
     font-size: 1.1rem;
     color: #9ca3af;
     font-style: italic;
     line-height: 1.4;
+}
+
+body.logged-in .fhs-configurator__tax-note {
+    display: block !important;
 }
 
 .fhs-configurator__summary-remove {
