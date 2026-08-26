@@ -1327,12 +1327,12 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
 /* Configurator left column fills full height of the row */
 .fhs-configurator-inline-row .fhs-configurator {
     min-width: 0;
+    position: sticky;
+    top:30px;
 }
 
 /* Sidebar sticks as the user scrolls through the section panels */
 .fhs-configurator-inline-row .fhs-configurator-sidebar {
-    position: sticky;
-    top: 80px;
     align-self: start;
 }
 

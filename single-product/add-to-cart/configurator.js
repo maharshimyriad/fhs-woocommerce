@@ -96,6 +96,7 @@
 		syncAllSelectedStates( wrapper );
 		updateAllSelectAllButtons( wrapper );
 		renderCommittedConfigurationPanel( wrapper );
+		updateAllTabBadges( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
 
 		// New features: qty steppers + view-more collapse.
@@ -327,6 +328,7 @@
 		}
 
 		renderCommittedConfigurationPanel( wrapper );
+		updateAllTabBadges( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
 	}
 
@@ -361,6 +363,7 @@
 		}
 
 		renderCommittedConfigurationPanel( wrapper );
+		updateAllTabBadges( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
 	}
 
@@ -388,6 +391,7 @@
 		committed.activeMachineSource = 'none';
 
 		renderCommittedConfigurationPanel( wrapper );
+		updateAllTabBadges( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
 		clearSummaryMessage( wrapper );
 		clearSavedConfiguration( wrapper );
@@ -1361,6 +1365,62 @@
 		}
 		return state;
 	};
+
+	// ── Tab selection badges ─────────────────────────────────────────────────
+	//
+	// Each tab button gets a small pill showing the count of selected cards in
+	// that section.  The pill is injected as a <span> inside the button and
+	// removed when the count drops to zero.
+
+	function updateTabBadge( wrapper, sectionKey ) {
+		var tab = wrapper.querySelector(
+			'.fhs-configurator__tab[data-section-key="' + sectionKey + '"]'
+		);
+		if ( ! tab ) return;
+
+		// Count committed items for this section.
+		var committed  = getCommittedConfiguration( wrapper );
+		var count      = 0;
+
+		if ( sectionKey === 'machine_packages' ) {
+			// Machine packages section: 1 if any machine is committed.
+			if ( committed.activeMachineSource !== 'none' && committed.activeMachineProductId ) {
+				count = 1;
+			}
+		} else {
+			var ids = Array.isArray( committed.sections[ sectionKey ] )
+				? committed.sections[ sectionKey ]
+				: [];
+			count = ids.length;
+		}
+
+		// Find or create the badge span inside the tab button.
+		var badge = tab.querySelector( '.fhs-configurator__tab-badge' );
+
+		if ( count > 0 ) {
+			if ( ! badge ) {
+				badge = document.createElement( 'span' );
+				badge.className = 'fhs-configurator__tab-badge';
+				tab.appendChild( badge );
+			}
+			badge.textContent = count;
+		} else {
+			if ( badge ) {
+				badge.parentNode.removeChild( badge );
+			}
+		}
+	}
+
+	function updateAllTabBadges( wrapper ) {
+		// Machine packages tab.
+		updateTabBadge( wrapper, 'machine_packages' );
+		// All other sections.
+		SECTION_ORDER.forEach( function ( sectionKey ) {
+			if ( sectionKey !== 'machine_packages' ) {
+				updateTabBadge( wrapper, sectionKey );
+			}
+		} );
+	}
 
 	window.fhsConfigurator = {
 		getSelections: function () {
