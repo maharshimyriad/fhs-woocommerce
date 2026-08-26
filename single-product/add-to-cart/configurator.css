@@ -1520,11 +1520,20 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     }
 }
 
-/* Quantity pill in sidebar item */
+/* Quantity row in sidebar item — sits between SKU and price */
 .fhs-configurator__summary-item-qty {
     display: flex;
     align-items: center;
-    margin-top: 5px;
+    gap: 6px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.fhs-conf-qty-label {
+    font-size: 1.2rem;
+    color: #6b7280;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .fhs-conf-qty-badge {
@@ -1535,12 +1544,12 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     color: #00587d;
     border: 1px solid #d4e0f5;
     border-radius: 20px;
-    padding: 2px 10px;
+    padding: 1px 9px;
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 1.5;
     white-space: nowrap;
-    letter-spacing: 0.02em;
+    min-width: 26px;
 }
     display: block;
     text-decoration: none;

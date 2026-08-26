@@ -688,18 +688,20 @@
 				'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>';
 		}
 
-		// Quantity pill — always shown, clean × N format only.
+		// Quantity label — shown before price, format "Quantity: N"
 		var qty = item.qty || 1;
 		var qtyBadge = document.createElement( 'div' );
 		qtyBadge.className = 'fhs-configurator__summary-item-qty';
-		qtyBadge.innerHTML = '<span class="fhs-conf-qty-badge">\u00d7\u00a0' + qty + '</span>';
+		qtyBadge.innerHTML =
+			'<span class="fhs-conf-qty-label">Quantity:</span>' +
+			'<span class="fhs-conf-qty-badge">' + qty + '</span>';
 
 		body.appendChild( name );
 		if ( item.sku ) {
 			body.appendChild( sku );
 		}
-		body.appendChild( price );
 		body.appendChild( qtyBadge );
+		body.appendChild( price );
 
 		var removeSection = sectionKey === 'base_product' ? 'machine_packages' : sectionKey;
 		var remove = document.createElement( 'button' );
@@ -733,9 +735,23 @@
 		return 'fhs_configurator_' + ( productId || 'default' );
 	}
 
+	/** Collect the current qty for every card in the wrapper into a plain object. */
+	function collectAllQtys( wrapper ) {
+		var qtys = {};
+		wrapper.querySelectorAll( '.fhs-configurator__card[data-product-id]' ).forEach( function ( card ) {
+			var pid = card.getAttribute( 'data-product-id' );
+			if ( pid ) {
+				qtys[ pid ] = parseInt( card.getAttribute( 'data-qty' ), 10 ) || 1;
+			}
+		} );
+		return qtys;
+	}
+
 	function saveConfiguration( wrapper ) {
 		try {
 			var config = cloneCommittedConfiguration( getCommittedConfiguration( wrapper ) );
+			// Attach per-product quantities so they survive a page reload.
+			config.quantities = collectAllQtys( wrapper );
 			localStorage.setItem( getStorageKey( wrapper ), JSON.stringify( config ) );
 		} catch ( e ) {
 			// localStorage unavailable — silently ignore.
@@ -781,6 +797,21 @@
 			SECTION_ORDER.forEach( function ( key ) {
 				if ( Array.isArray( saved.sections[ key ] ) ) {
 					committed.sections[ key ] = saved.sections[ key ].map( Number ).filter( Boolean );
+				}
+			} );
+		}
+
+		// Restore per-product quantities onto the card DOM elements.
+		if ( saved.quantities && typeof saved.quantities === 'object' ) {
+			Object.keys( saved.quantities ).forEach( function ( pid ) {
+				var qty  = Math.max( 1, parseInt( saved.quantities[ pid ], 10 ) || 1 );
+				var card = wrapper.querySelector( '.fhs-configurator__card[data-product-id="' + pid + '"]' );
+				if ( card ) {
+					card.setAttribute( 'data-qty', qty );
+					var input = card.querySelector( '.fhs-conf-qty-input' );
+					if ( input ) {
+						input.value = qty;
+					}
 				}
 			} );
 		}
