@@ -673,18 +673,27 @@ function fhs_configurator_validate_committed_request($base_product_id, $submitte
 		),
 	);
 
-	$machine_source = isset($submitted_state['activeMachineSource']) ? sanitize_key($submitted_state['activeMachineSource']) : 'base_product';
+	$machine_source = isset($submitted_state['activeMachineSource']) ? sanitize_key($submitted_state['activeMachineSource']) : 'none';
 	$machine_id     = isset($submitted_state['activeMachineProductId']) ? absint($submitted_state['activeMachineProductId']) : 0;
 	$submitted_sections = isset($submitted_state['sections']) && is_array($submitted_state['sections'])
 		? $submitted_state['sections']
 		: array();
 
+	// Require the user to have actively chosen a machine/standard product.
+	// 'none' means nothing was selected — reject the request outright.
+	if ( 'none' === $machine_source || ! in_array( $machine_source, array( 'base_product', 'machine_packages' ), true ) ) {
+		return new WP_Error(
+			'no_machine_selected',
+			__( 'Please select a machine or standard product before adding to cart.', 'woocommerce' )
+		);
+	}
+
 	$validated = array(
-		'base_product_id'         => $base_product_id,
-		'active_machine_source'   => 'base_product',
+		'base_product_id'           => $base_product_id,
+		'active_machine_source'     => 'base_product',
 		'active_machine_product_id' => $base_product_id,
-		'sections'                => array(),
-		'product_ids'             => array(),
+		'sections'                  => array(),
+		'product_ids'               => array(),
 	);
 
 	if ('machine_packages' === $machine_source) {
