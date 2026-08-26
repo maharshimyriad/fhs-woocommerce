@@ -598,7 +598,7 @@
 				items: [ machineWithQty ],
 			} );
 			subtotal += getNumericPrice( machineProduct.price_value ) * machineQty;
-			itemCount += machineQty;
+			itemCount += 1; // count products, not qty
 		}
 
 		SECTION_ORDER.forEach( function ( sectionKey ) {
@@ -618,7 +618,7 @@
 				var productWithQty = Object.assign( {}, product, { qty: qty } );
 				items.push( productWithQty );
 				subtotal += getNumericPrice( product.price_value ) * qty;
-				itemCount += qty;
+				itemCount += 1; // count products, not qty
 			} );
 
 			if ( items.length ) {
@@ -958,7 +958,7 @@
 	}
 
 	function formatItemCount( count ) {
-		return count + ' ' + ( count === 1 ? 'item' : 'items' );
+		return count + ' ' + ( count === 1 ? 'product' : 'products' );
 	}
 
 	function formatSectionLabel( sectionKey ) {
@@ -1117,7 +1117,13 @@
 		// Click — works for mouse and touch.
 		wrapper.addEventListener( 'click', function ( event ) {
 			if ( handleQtyTrigger( event.target ) ) {
+				// preventDefault stops the <label> from activating its associated
+				// radio/checkbox after the span click.  stopPropagation prevents
+				// the wrapper's own change-listener from firing.
+				event.preventDefault();
 				event.stopPropagation();
+			}
+		} );
 			}
 		} );
 
