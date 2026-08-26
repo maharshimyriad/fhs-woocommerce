@@ -369,6 +369,15 @@
 			input.checked = false;
 		} );
 
+		// Reset all qty steppers to 1.
+		wrapper.querySelectorAll( '.fhs-configurator__card[data-product-id]' ).forEach( function ( card ) {
+			card.setAttribute( 'data-qty', 1 );
+			var qtyInput = card.querySelector( '.fhs-conf-qty-input' );
+			if ( qtyInput ) {
+				qtyInput.value = 1;
+			}
+		} );
+
 		syncAllSelectedStates( wrapper );
 		updateAllSelectAllButtons( wrapper );
 		dispatchTemporaryChangeEvent( wrapper );
@@ -1114,12 +1123,40 @@
 			return true;
 		}
 
-		// Click — works for mouse and touch.
+		// ── CAPTURE mousedown on qty spans ───────────────────────────────────
+		// The browser processes label→input forwarding between mousedown and
+		// click.  By calling preventDefault() at mousedown (capture phase,
+		// before the label sees it) we prevent the label from ever activating
+		// its associated radio/checkbox.  We then re-fire the visual logic on
+		// the subsequent click event.
+		wrapper.addEventListener( 'mousedown', function ( event ) {
+			var target = event.target;
+			if (
+				target.classList.contains( 'fhs-conf-qty-minus' ) ||
+				target.classList.contains( 'fhs-conf-qty-plus' )
+			) {
+				// Prevent label from forwarding this mousedown to the input.
+				event.preventDefault();
+			}
+		}, true /* capture */ );
+
+		// Click — runs after mousedown; label forwarding is already blocked.
 		wrapper.addEventListener( 'click', function ( event ) {
-			if ( handleQtyTrigger( event.target ) ) {
-				// preventDefault stops the <label> from activating its associated
-				// radio/checkbox after the span click.  stopPropagation prevents
-				// the wrapper's own change-listener from firing.
+			var target = event.target;
+
+			// ── DEBUG (append ?fhs_debug=1 to URL to enable) ────────────────
+			if ( window.location.search.indexOf( 'fhs_debug=1' ) !== -1 ) {
+				console.group( '[FHS QTY DEBUG] click' );
+				console.log( 'target:', target.tagName, target.className );
+				console.log( 'is stepper:', target.classList.contains( 'fhs-conf-qty-minus' ) || target.classList.contains( 'fhs-conf-qty-plus' ) );
+				var lbl = target.closest( 'label' );
+				var inp = lbl ? lbl.querySelector( '.fhs-configurator__card-input' ) : null;
+				console.log( 'card input checked:', inp ? inp.checked : 'n/a' );
+				console.groupEnd();
+			}
+			// ── END DEBUG ────────────────────────────────────────────────────
+
+			if ( handleQtyTrigger( target ) ) {
 				event.preventDefault();
 				event.stopPropagation();
 			}
