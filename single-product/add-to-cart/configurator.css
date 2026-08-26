@@ -1395,7 +1395,6 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     justify-content: center;
     font-size: 1.4rem;
     font-weight: 600;
-    border: none;
     background: #f5f6f8;
     color: #374151;
     cursor: pointer;
@@ -1404,11 +1403,21 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     transition: background 0.12s;
     line-height: 1;
     box-shadow: none;
+    user-select: none;
+    /* span needs explicit role styling */
+    border: none;
+    outline: none;
 }
 
 .fhs-configurator__card-qty-wrap .fhs-conf-qty-minus:hover,
 .fhs-configurator__card-qty-wrap .fhs-conf-qty-plus:hover {
     background: #e0e4ea;
+}
+
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-minus:focus-visible,
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-plus:focus-visible {
+    outline: 2px solid #00587d;
+    outline-offset: -2px;
 }
 
 .fhs-configurator__card-qty-wrap .fhs-conf-qty-input {
@@ -1511,34 +1520,27 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     }
 }
 
-/* Quantity badge in sidebar item */
+/* Quantity pill in sidebar item */
 .fhs-configurator__summary-item-qty {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-top: 4px;
-    flex-wrap: wrap;
+    margin-top: 5px;
 }
 
 .fhs-conf-qty-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #eef2ff;
-    color: #374151;
-    border-radius: 4px;
-    padding: 1px 7px;
+    background: #f0f4fb;
+    color: #00587d;
+    border: 1px solid #d4e0f5;
+    border-radius: 20px;
+    padding: 2px 10px;
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.5;
     white-space: nowrap;
-}
-
-/* Line total (shown when qty > 1 and price available) */
-.fhs-conf-line-total {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #1a1a1a;
+    letter-spacing: 0.02em;
 }
     display: block;
     text-decoration: none;

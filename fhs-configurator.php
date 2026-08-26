@@ -798,9 +798,25 @@ function fhs_configurator_add_all_to_cart()
 		), 403);
 	}
 
-	$base_product_id = isset($_POST['base_product_id']) ? absint(wp_unslash($_POST['base_product_id'])) : 0;
-	$configuration_json = isset($_POST['configuration']) ? wp_unslash($_POST['configuration']) : '';
+	$base_product_id    = isset($_POST['base_product_id']) ? absint(wp_unslash($_POST['base_product_id'])) : 0;
+	$configuration_json = isset($_POST['configuration'])  ? wp_unslash($_POST['configuration'])  : '';
+	$quantities_json    = isset($_POST['quantities'])      ? wp_unslash($_POST['quantities'])      : '';
+
 	$configuration = json_decode($configuration_json, true);
+
+	// Decode and sanitise the per-product qty map sent from JS.
+	// Format: { "productId": qty, ... }  — all values clamped to int >= 1.
+	$quantities_raw = $quantities_json ? json_decode($quantities_json, true) : array();
+	$quantities     = array();
+	if (is_array($quantities_raw)) {
+		foreach ($quantities_raw as $pid => $qty) {
+			$clean_pid = absint($pid);
+			$clean_qty = max(1, intval($qty));
+			if ($clean_pid > 0) {
+				$quantities[$clean_pid] = $clean_qty;
+			}
+		}
+	}
 
 	if (! $base_product_id || ! is_array($configuration)) {
 		wp_send_json_error(array(
@@ -821,14 +837,13 @@ function fhs_configurator_add_all_to_cart()
 		), 500);
 	}
 
-	// Ensure the WC session is initialized — required for is_purchasable() checks
-	// to work correctly when called via AJAX with a valid session cookie.
+	// Ensure the WC session is initialized.
 	if ( WC()->session && ! WC()->session->has_session() ) {
 		WC()->session->set_customer_session_cookie( true );
 	}
 
-	$cart_keys    = array();
-	$added_names  = array();
+	$cart_keys   = array();
+	$added_names = array();
 
 	foreach ( $validated['product_ids'] as $product_id ) {
 		$p = wc_get_product( $product_id );
@@ -839,14 +854,16 @@ function fhs_configurator_add_all_to_cart()
 			), 400 );
 		}
 
-		$cart_key = WC()->cart->add_to_cart( $product_id, 1 );
+		// Use the qty from the JS-sent map; default to 1 if missing.
+		$qty = isset($quantities[$product_id]) ? $quantities[$product_id] : 1;
+
+		$cart_key = WC()->cart->add_to_cart( $product_id, $qty );
 		if ( ! $cart_key ) {
 			wp_send_json_error( array(
 				'message' => __( 'Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce' ),
 			), 500 );
 		}
-		$cart_keys[] = $cart_key;
-
+		$cart_keys[]   = $cart_key;
 		$added_names[] = $p->get_name();
 	}
 
