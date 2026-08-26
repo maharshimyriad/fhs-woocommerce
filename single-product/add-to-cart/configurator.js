@@ -569,13 +569,15 @@
 		// activeMachineSource === 'none' → machineProduct stays null → nothing rendered.
 
 		if ( machineProduct ) {
+			var machineQty = getCardQty( wrapper, machineProduct.id );
+			var machineWithQty = Object.assign( {}, machineProduct, { qty: machineQty } );
 			sections.push( {
 				key: committed.activeMachineSource === 'machine_packages' ? 'machine_packages' : 'base_product',
 				label: sectionLabels.machine_packages || 'Machine Packages',
-				items: [ machineProduct ],
+				items: [ machineWithQty ],
 			} );
-			subtotal += getNumericPrice( machineProduct.price_value );
-			itemCount += 1;
+			subtotal += getNumericPrice( machineProduct.price_value ) * machineQty;
+			itemCount += machineQty;
 		}
 
 		SECTION_ORDER.forEach( function ( sectionKey ) {
@@ -591,9 +593,11 @@
 				if ( ! product ) {
 					return;
 				}
-				items.push( product );
-				subtotal += getNumericPrice( product.price_value );
-				itemCount += 1;
+				var qty = getCardQty( wrapper, id );
+				var productWithQty = Object.assign( {}, product, { qty: qty } );
+				items.push( productWithQty );
+				subtotal += getNumericPrice( product.price_value ) * qty;
+				itemCount += qty;
 			} );
 
 			if ( items.length ) {
@@ -663,15 +667,29 @@
 				'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>';
 		}
 
+		// Quantity badge — always shows × qty; shows line total when qty > 1.
+		var qty = item.qty || 1;
+		var qtyBadge = document.createElement( 'div' );
+		qtyBadge.className = 'fhs-configurator__summary-item-qty';
+		var unitPrice = getNumericPrice( item.price_value );
+		if ( qty > 1 && unitPrice > 0 ) {
+			qtyBadge.innerHTML =
+				'<span class="fhs-conf-qty-badge">\u00d7 ' + qty + '</span>' +
+				' <span class="fhs-conf-line-total">' +
+					formatCurrency( unitPrice * qty ) +
+					'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>' +
+				'</span>';
+		} else {
+			qtyBadge.innerHTML = '<span class="fhs-conf-qty-badge">\u00d7 ' + qty + '</span>';
+		}
+
 		body.appendChild( name );
 		if ( item.sku ) {
 			body.appendChild( sku );
 		}
 		body.appendChild( price );
+		body.appendChild( qtyBadge );
 
-		// Remove button — always shown, sits inside body like other items.
-		// For base_product we route through 'machine_packages' so
-		// removeCommittedProduct clears the machine selection correctly.
 		var removeSection = sectionKey === 'base_product' ? 'machine_packages' : sectionKey;
 		var remove = document.createElement( 'button' );
 		remove.type = 'button';
@@ -679,16 +697,13 @@
 		remove.setAttribute( 'data-fhs-config-remove', '1' );
 		remove.setAttribute( 'data-section-key', removeSection );
 		remove.setAttribute( 'data-product-id', String( item.id ) );
-// 		remove.textContent = 'Remove';
-		remove.textContent = '✕';
-remove.setAttribute( 'aria-label', 'Remove' );
-remove.setAttribute( 'title', 'Remove' );
-// 		body.appendChild( remove );
+		remove.textContent = '\u2715';
+		remove.setAttribute( 'aria-label', 'Remove' );
+		remove.setAttribute( 'title', 'Remove' );
 
 		article.appendChild( img );
 		article.appendChild( body );
 		article.appendChild( remove );
-		
 
 		return article;
 	}
@@ -915,6 +930,17 @@ remove.setAttribute( 'title', 'Remove' );
 		return isNaN( parsed ) ? 0 : parsed;
 	}
 
+	// Read the committed qty for a product from its card DOM element.
+	// Falls back to 1 if the card isn't found or has no data-qty.
+	function getCardQty( wrapper, productId ) {
+		var card = wrapper
+			? wrapper.querySelector( '.fhs-configurator__card[data-product-id="' + productId + '"]' )
+			: null;
+		if ( ! card ) return 1;
+		var qty = parseInt( card.getAttribute( 'data-qty' ), 10 );
+		return ( qty > 0 ) ? qty : 1;
+	}
+
 	function clearElement( element ) {
 		while ( element.firstChild ) {
 			element.removeChild( element.firstChild );
@@ -1008,19 +1034,30 @@ remove.setAttribute( 'title', 'Remove' );
 
 	// ── Quantity steppers ────────────────────────────────────────────────────
 	//
-	// Each configurator card now has a .fhs-configurator__card-qty-wrap with
-	// minus / input / plus controls.  The wrap is hidden via CSS until the card
-	// gets .is-selected; we only need to wire up the +/- buttons here.
-	//
-	// Quantities are stored on the card's <label> element as data-qty so other
-	// code can read them without querying the input each time.
+	// Cards are <label> elements — clicking anything inside them normally
+	// forwards the click to the associated radio/checkbox input.  We block
+	// that forwarding for the stepper buttons with pointerdown+preventDefault
+	// *before* the browser's label-click redirect fires.
 
 	function initQtySteppers( wrapper ) {
-		// Delegate — works for any cards present now or after a DOM change.
+
+		// BLOCK: prevent label from forwarding stepper button clicks to the
+		// card's radio/checkbox.  Must use pointerdown (fires before click).
+		wrapper.addEventListener( 'pointerdown', function ( event ) {
+			var btn = event.target;
+			if (
+				btn.classList.contains( 'fhs-conf-qty-minus' ) ||
+				btn.classList.contains( 'fhs-conf-qty-plus' )
+			) {
+				// Prevent the <label> from activating its associated <input>.
+				event.preventDefault();
+			}
+		}, true );
+
+		// HANDLE: update the value and re-render the sidebar.
 		wrapper.addEventListener( 'click', function ( event ) {
 			var btn = event.target;
 
-			// Ignore clicks that aren't on a stepper button.
 			if (
 				! btn.classList.contains( 'fhs-conf-qty-minus' ) &&
 				! btn.classList.contains( 'fhs-conf-qty-plus' )
@@ -1028,8 +1065,8 @@ remove.setAttribute( 'title', 'Remove' );
 				return;
 			}
 
-			// Stop the click bubbling to the parent <label> which would
-			// accidentally toggle the card's radio/checkbox.
+			// Belt-and-suspenders: also stop propagation so the card
+			// change listener doesn't accidentally fire.
 			event.preventDefault();
 			event.stopPropagation();
 
@@ -1051,17 +1088,20 @@ remove.setAttribute( 'title', 'Remove' );
 
 			input.value = next;
 
-			// Store on the card label so cart logic can read it.
+			// Persist qty on the card element so the sidebar can read it.
 			var card = wrap.closest( '.fhs-configurator__card' );
 			if ( card ) {
 				card.setAttribute( 'data-qty', next );
-			}
 
-			// Fire a native input event so any external listeners are notified.
-			input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				// Re-render the sidebar using the existing debounce mechanism.
+				var sectionKey = card.getAttribute( 'data-section-key' );
+				if ( sectionKey ) {
+					scheduleSectionCommit( wrapper, sectionKey );
+				}
+			}
 		} );
 
-		// Also handle direct typing into the qty input.
+		// Handle direct keyboard entry into the qty input.
 		wrapper.addEventListener( 'change', function ( event ) {
 			var input = event.target;
 			if ( ! input.classList.contains( 'fhs-conf-qty-input' ) ) return;
@@ -1077,6 +1117,11 @@ remove.setAttribute( 'title', 'Remove' );
 			var card = input.closest( '.fhs-configurator__card' );
 			if ( card ) {
 				card.setAttribute( 'data-qty', value );
+
+				var sectionKey = card.getAttribute( 'data-section-key' );
+				if ( sectionKey ) {
+					scheduleSectionCommit( wrapper, sectionKey );
+				}
 			}
 		} );
 	}

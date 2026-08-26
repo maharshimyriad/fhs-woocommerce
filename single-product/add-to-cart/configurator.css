@@ -1511,8 +1511,35 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     }
 }
 
-/* Variation card title link */
-.fhs-variation-card__name-link {
+/* Quantity badge in sidebar item */
+.fhs-configurator__summary-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.fhs-conf-qty-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: #374151;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+/* Line total (shown when qty > 1 and price available) */
+.fhs-conf-line-total {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
     display: block;
     text-decoration: none;
     color: inherit;
