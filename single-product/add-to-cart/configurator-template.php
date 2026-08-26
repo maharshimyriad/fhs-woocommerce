@@ -256,14 +256,14 @@ foreach ( $sections as $section ) {
 									<?php endif; ?>
 
 									<!-- Quantity stepper for base product card -->
-									<div class="fhs-configurator__card-qty-wrap" onclick="event.stopPropagation();">
-										<button type="button" class="fhs-conf-qty-minus" aria-label="<?php esc_attr_e( 'Decrease', 'woocommerce' ); ?>">-</button>
+									<div class="fhs-configurator__card-qty-wrap">
+										<span role="button" tabindex="0" class="fhs-conf-qty-minus" aria-label="<?php esc_attr_e( 'Decrease', 'woocommerce' ); ?>">−</span>
 										<input type="number"
 											class="fhs-conf-qty-input"
 											value="1" min="1"
 											data-product-id="<?php echo absint( $base_product['id'] ); ?>"
 											aria-label="<?php esc_attr_e( 'Quantity', 'woocommerce' ); ?>" />
-										<button type="button" class="fhs-conf-qty-plus" aria-label="<?php esc_attr_e( 'Increase', 'woocommerce' ); ?>">+</button>
+										<span role="button" tabindex="0" class="fhs-conf-qty-plus" aria-label="<?php esc_attr_e( 'Increase', 'woocommerce' ); ?>">+</span>
 									</div>
 								</div>
 							</label>
@@ -326,14 +326,14 @@ foreach ( $sections as $section ) {
 									<?php endif; ?>
 
 									<!-- Quantity stepper -->
-									<div class="fhs-configurator__card-qty-wrap" onclick="event.stopPropagation();">
-										<button type="button" class="fhs-conf-qty-minus" aria-label="<?php esc_attr_e( 'Decrease', 'woocommerce' ); ?>">-</button>
+									<div class="fhs-configurator__card-qty-wrap">
+										<span role="button" tabindex="0" class="fhs-conf-qty-minus" aria-label="<?php esc_attr_e( 'Decrease', 'woocommerce' ); ?>">−</span>
 										<input type="number"
 											class="fhs-conf-qty-input"
 											value="1" min="1"
 											data-product-id="<?php echo $product_id; ?>"
 											aria-label="<?php esc_attr_e( 'Quantity', 'woocommerce' ); ?>" />
-										<button type="button" class="fhs-conf-qty-plus" aria-label="<?php esc_attr_e( 'Increase', 'woocommerce' ); ?>">+</button>
+										<span role="button" tabindex="0" class="fhs-conf-qty-plus" aria-label="<?php esc_attr_e( 'Increase', 'woocommerce' ); ?>">+</span>
 									</div>
 								</div>
 							</label>

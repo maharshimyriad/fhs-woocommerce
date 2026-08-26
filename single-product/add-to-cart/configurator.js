@@ -405,6 +405,26 @@
 			return;
 		}
 
+		// Build a qty map: { productId: qty } for every committed product.
+		var quantities = {};
+		var allIds = [];
+
+		// Machine product
+		if ( committed.activeMachineSource !== 'none' && committed.activeMachineProductId ) {
+			allIds.push( committed.activeMachineProductId );
+		}
+
+		// All other sections
+		SECTION_ORDER.forEach( function ( sectionKey ) {
+			var ids = Array.isArray( committed.sections[ sectionKey ] ) ? committed.sections[ sectionKey ] : [];
+			ids.forEach( function ( id ) { allIds.push( id ); } );
+		} );
+
+		allIds.forEach( function ( id ) {
+			if ( ! id ) return;
+			quantities[ id ] = getCardQty( wrapper, id );
+		} );
+
 		wrapper.fhsCartRequestInFlight = true;
 		setAddAllButtonState( button, true );
 		setSummaryMessage( wrapper, '' );
@@ -414,6 +434,7 @@
 		formData.append( 'nonce', nonce );
 		formData.append( 'base_product_id', String( baseProductId ) );
 		formData.append( 'configuration', JSON.stringify( committed ) );
+		formData.append( 'quantities', JSON.stringify( quantities ) );
 
 		fetch( ajaxUrl, {
 			method: 'POST',
@@ -667,21 +688,11 @@
 				'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>';
 		}
 
-		// Quantity badge — always shows × qty; shows line total when qty > 1.
+		// Quantity pill — always shown, clean × N format only.
 		var qty = item.qty || 1;
 		var qtyBadge = document.createElement( 'div' );
 		qtyBadge.className = 'fhs-configurator__summary-item-qty';
-		var unitPrice = getNumericPrice( item.price_value );
-		if ( qty > 1 && unitPrice > 0 ) {
-			qtyBadge.innerHTML =
-				'<span class="fhs-conf-qty-badge">\u00d7 ' + qty + '</span>' +
-				' <span class="fhs-conf-line-total">' +
-					formatCurrency( unitPrice * qty ) +
-					'<span class="fhs-configurator__tax-label"> (Ex. GST)</span>' +
-				'</span>';
-		} else {
-			qtyBadge.innerHTML = '<span class="fhs-conf-qty-badge">\u00d7 ' + qty + '</span>';
-		}
+		qtyBadge.innerHTML = '<span class="fhs-conf-qty-badge">\u00d7\u00a0' + qty + '</span>';
 
 		body.appendChild( name );
 		if ( item.sku ) {
@@ -1034,74 +1045,62 @@
 
 	// ── Quantity steppers ────────────────────────────────────────────────────
 	//
-	// Cards are <label> elements — clicking anything inside them normally
-	// forwards the click to the associated radio/checkbox input.  We block
-	// that forwarding for the stepper buttons with pointerdown+preventDefault
-	// *before* the browser's label-click redirect fires.
+	// Stepper controls use <span role="button"> instead of <button> so the
+	// browser never triggers label-forwarding (only interactive elements
+	// inside a <label> activate the associated input).  Keyboard users
+	// can still activate them via Enter/Space.
 
 	function initQtySteppers( wrapper ) {
 
-		// BLOCK: prevent label from forwarding stepper button clicks to the
-		// card's radio/checkbox.  Must use pointerdown (fires before click).
-		wrapper.addEventListener( 'pointerdown', function ( event ) {
-			var btn = event.target;
-			if (
-				btn.classList.contains( 'fhs-conf-qty-minus' ) ||
-				btn.classList.contains( 'fhs-conf-qty-plus' )
-			) {
-				// Prevent the <label> from activating its associated <input>.
-				event.preventDefault();
-			}
-		}, true );
+		function handleQtyTrigger( target ) {
+			var isMinus = target.classList.contains( 'fhs-conf-qty-minus' );
+			var isPlus  = target.classList.contains( 'fhs-conf-qty-plus' );
+			if ( ! isMinus && ! isPlus ) return false;
 
-		// HANDLE: update the value and re-render the sidebar.
-		wrapper.addEventListener( 'click', function ( event ) {
-			var btn = event.target;
-
-			if (
-				! btn.classList.contains( 'fhs-conf-qty-minus' ) &&
-				! btn.classList.contains( 'fhs-conf-qty-plus' )
-			) {
-				return;
-			}
-
-			// Belt-and-suspenders: also stop propagation so the card
-			// change listener doesn't accidentally fire.
-			event.preventDefault();
-			event.stopPropagation();
-
-			var wrap  = btn.closest( '.fhs-configurator__card-qty-wrap' );
-			if ( ! wrap ) return;
+			var wrap  = target.closest( '.fhs-configurator__card-qty-wrap' );
+			if ( ! wrap ) return true;
 
 			var input = wrap.querySelector( '.fhs-conf-qty-input' );
-			if ( ! input ) return;
+			if ( ! input ) return true;
 
 			var current = parseInt( input.value, 10 ) || 1;
 			var min     = parseInt( input.getAttribute( 'min' ), 10 ) || 1;
 			var max     = parseInt( input.getAttribute( 'max' ), 10 ) || 999;
+			var next    = isPlus ? Math.min( current + 1, max ) : Math.max( current - 1, min );
 
-			var next = btn.classList.contains( 'fhs-conf-qty-plus' )
-				? Math.min( current + 1, max )
-				: Math.max( current - 1, min );
-
-			if ( next === current ) return;
+			if ( next === current ) return true;
 
 			input.value = next;
 
-			// Persist qty on the card element so the sidebar can read it.
 			var card = wrap.closest( '.fhs-configurator__card' );
 			if ( card ) {
 				card.setAttribute( 'data-qty', next );
-
-				// Re-render the sidebar using the existing debounce mechanism.
 				var sectionKey = card.getAttribute( 'data-section-key' );
 				if ( sectionKey ) {
 					scheduleSectionCommit( wrapper, sectionKey );
 				}
 			}
+			return true;
+		}
+
+		// Click — works for mouse and touch.
+		wrapper.addEventListener( 'click', function ( event ) {
+			if ( handleQtyTrigger( event.target ) ) {
+				event.stopPropagation();
+			}
 		} );
 
-		// Handle direct keyboard entry into the qty input.
+		// Keyboard — Enter or Space on a focused span[role="button"].
+		wrapper.addEventListener( 'keydown', function ( event ) {
+			if ( event.key === 'Enter' || event.key === ' ' ) {
+				if ( handleQtyTrigger( event.target ) ) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			}
+		} );
+
+		// Direct keyboard entry into the number input.
 		wrapper.addEventListener( 'change', function ( event ) {
 			var input = event.target;
 			if ( ! input.classList.contains( 'fhs-conf-qty-input' ) ) return;
@@ -1117,7 +1116,6 @@
 			var card = input.closest( '.fhs-configurator__card' );
 			if ( card ) {
 				card.setAttribute( 'data-qty', value );
-
 				var sectionKey = card.getAttribute( 'data-section-key' );
 				if ( sectionKey ) {
 					scheduleSectionCommit( wrapper, sectionKey );
