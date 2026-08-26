@@ -1124,8 +1124,6 @@
 				event.stopPropagation();
 			}
 		} );
-			}
-		} );
 
 		// Keyboard — Enter or Space on a focused span[role="button"].
 		wrapper.addEventListener( 'keydown', function ( event ) {
