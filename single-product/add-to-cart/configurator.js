@@ -58,15 +58,6 @@
 			updateSelectAllButton( wrapper, sectionKey );
 			dispatchTemporaryChangeEvent( wrapper );
 
-			// Reset qty to 1 when a card is deselected.
-			var card = input.closest( '.fhs-configurator__card' );
-			if ( card && ! input.checked ) {
-				var qtyInput = card.querySelector( '.fhs-conf-qty-input' );
-				if ( qtyInput ) {
-					qtyInput.value = 1;
-				}
-			}
-
 			// Show "Updating…" immediately; commit fires after debounce.
 			scheduleSectionCommit( wrapper, sectionKey );
 		} );

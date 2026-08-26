@@ -30,30 +30,28 @@
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PAGE-LEVEL TWO-COLUMN LAYOUT
-   .single-product-content-container becomes the grid when the configurator
-   is active, splitting left content and the sticky right sidebar.
+   PAGE-LEVEL LAYOUT
+   When a configurator product is active the outer container is a single
+   full-width column — image+summary row sits at the top, the
+   .fhs-configurator-inline-row (configurator + sidebar) sits below.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .single-product-content-container.fhs-configurator-product-layout {
     width: 93vw;
     max-width: 93vw;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 60px;
-    align-items: start;
+    display: block;   /* single column — inline-row handles its own grid */
     box-sizing: border-box;
 }
 
 .single-product-content-container.fhs-configurator-product-layout .fhs-configurator-product-main {
     min-width: 0;
+    width: 100%;
 }
 
 /* ─── Sticky right sidebar ──────────────────────────────────────────────── */
 
 .fhs-configurator-sidebar {
     min-width: 0;
-    display:none;
 }
 
 .fhs-configurator__right {
@@ -1106,12 +1104,11 @@ body.logged-in .fhs-configurator__summary-subtotal-row {
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Large tablet — sidebar stacks below, left column takes full width */
+/* Large tablet — inline row collapses to single column (handled above) */
 @media (max-width: 1100px) {
     .single-product-content-container.fhs-configurator-product-layout {
         width: 100%;
         max-width: 100%;
-        grid-template-columns: 1fr;
     }
 
     .fhs-configurator__right {
@@ -1310,40 +1307,37 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CONFIGURATOR BESIDE SUMMARY — inline two-column layout
-   The .fhs-configurator sits beside the right summary sidebar when both are
-   inside a shared wrapper. The configurator column stretches to match the
-   sidebar height via align-items: stretch.
+   CONFIGURATOR INLINE ROW
+   Sits below the product image+summary row.
+   Left  → .fhs-configurator  (selection table, fills remaining width)
+   Right → .fhs-configurator-sidebar  (Your Configuration, fixed 360px)
+   Both columns stretch to the same height.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* When the configurator and sidebar share a parent row, stretch both to the
-   same height so the configurator fills the full available space. */
 .fhs-configurator-inline-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
     gap: 32px;
-    align-items: stretch;
+    align-items: start;
     width: 100%;
     box-sizing: border-box;
+    margin-top: 32px;
 }
 
+/* Configurator left column fills full height of the row */
 .fhs-configurator-inline-row .fhs-configurator {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    min-width: 0;
 }
 
-.fhs-configurator-inline-row .fhs-configurator__main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Sidebar stretches to match configurator height */
+/* Sidebar sticks as the user scrolls through the section panels */
 .fhs-configurator-inline-row .fhs-configurator-sidebar {
     position: sticky;
     top: 80px;
     align-self: start;
+}
+
+.fhs-configurator-inline-row .fhs-configurator__right {
+    position: static; /* sticky handled by the aside itself */
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1440,17 +1434,9 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     -webkit-appearance: none;
 }
 
-/* Only show qty stepper when card is selected */
+/* Only show qty stepper when card is selected — REMOVED.
+   Qty stepper is always visible. */
 .fhs-configurator__card .fhs-configurator__card-qty-wrap {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s;
-    height: 0;
-    overflow: hidden;
-    margin-top: 0;
-}
-
-.fhs-configurator__card.is-selected .fhs-configurator__card-qty-wrap {
     opacity: 1;
     pointer-events: auto;
     height: auto;
@@ -1517,6 +1503,7 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
 @media (max-width: 1100px) {
     .fhs-configurator-inline-row {
         grid-template-columns: 1fr;
+        margin-top: 24px;
     }
 
     .fhs-configurator-inline-row .fhs-configurator-sidebar {
