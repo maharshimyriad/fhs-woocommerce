@@ -1534,26 +1534,20 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
     color: #6b7280;
     font-weight: 500;
     white-space: nowrap;
+    line-height: 1;
 }
 
 .fhs-conf-qty-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #f0f4fb;
     color: #00587d;
-    border: 1px solid #d4e0f5;
-    border-radius: 20px;
-    padding: 1px 9px;
+    padding: 0;
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 1.5;
     white-space: nowrap;
-    min-width: 26px;
-}
-    display: block;
-    text-decoration: none;
-    color: inherit;
+    min-width: 0;
 }
 
 .fhs-variation-card__name-link:hover,
