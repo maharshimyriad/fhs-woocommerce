@@ -397,16 +397,6 @@
 		if ( wrapper.fhsCartRequestInFlight ) {
 			return;
 		}
-
-		// Guard: require a machine/standard product to be selected before
-		// adding to cart.  activeMachineSource is 'none' when the user has
-		// not chosen either the Standard card or any Machine Package card.
-		var committed = getCommittedConfiguration( wrapper );
-		if ( ! committed || committed.activeMachineSource === 'none' ) {
-			setSummaryMessage( wrapper, 'Please select a machine or standard product before adding to cart.' );
-			return;
-		}
-
 		doAddAllToCart( wrapper, button, false );
 	}
 

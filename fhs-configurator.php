@@ -679,19 +679,10 @@ function fhs_configurator_validate_committed_request($base_product_id, $submitte
 		? $submitted_state['sections']
 		: array();
 
-	// Require the user to have actively chosen a machine/standard product.
-	// 'none' means nothing was selected — reject the request outright.
-	if ( 'none' === $machine_source || ! in_array( $machine_source, array( 'base_product', 'machine_packages' ), true ) ) {
-		return new WP_Error(
-			'no_machine_selected',
-			__( 'Please select a machine or standard product before adding to cart.', 'woocommerce' )
-		);
-	}
-
 	$validated = array(
 		'base_product_id'           => $base_product_id,
-		'active_machine_source'     => 'base_product',
-		'active_machine_product_id' => $base_product_id,
+		'active_machine_source'     => 'none',
+		'active_machine_product_id' => 0,
 		'sections'                  => array(),
 		'product_ids'               => array(),
 	);
@@ -717,11 +708,16 @@ function fhs_configurator_validate_committed_request($base_product_id, $submitte
 
 		$validated['active_machine_source']     = 'machine_packages';
 		$validated['active_machine_product_id'] = $machine_id;
-	} elseif ($machine_id && $machine_id !== $base_product_id) {
-		return new WP_Error('invalid_machine_source', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
-	}
+		$validated['product_ids'][]             = $machine_id;
 
-	$validated['product_ids'][] = $validated['active_machine_product_id'];
+	} elseif ('base_product' === $machine_source) {
+		// User chose the Standard card.
+		$validated['active_machine_source']     = 'base_product';
+		$validated['active_machine_product_id'] = $base_product_id;
+		$validated['product_ids'][]             = $base_product_id;
+
+	}
+	// 'none' → no machine product added; other section items still processed below.
 
 	foreach ($definitions as $section_key => $definition) {
 		$submitted_ids = isset($submitted_sections[$section_key]) && is_array($submitted_sections[$section_key])
@@ -789,7 +785,7 @@ function fhs_configurator_validate_committed_request($base_product_id, $submitte
 	$validated['product_ids'] = array_values(array_unique(array_filter(array_map('absint', $validated['product_ids']))));
 
 	if (empty($validated['product_ids'])) {
-		return new WP_Error('empty_configuration', __('Unable to add this configuration to the cart. Please refresh the page and try again.', 'woocommerce'));
+		return new WP_Error('empty_configuration', __('Please select at least one product before adding to cart.', 'woocommerce'));
 	}
 
 	return $validated;
