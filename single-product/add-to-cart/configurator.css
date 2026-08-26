@@ -1306,3 +1306,232 @@ body.fhs-configurator-active .woocommerce-notices-wrapper {
         width: 100% !important;
     }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONFIGURATOR BESIDE SUMMARY — inline two-column layout
+   The .fhs-configurator sits beside the right summary sidebar when both are
+   inside a shared wrapper. The configurator column stretches to match the
+   sidebar height via align-items: stretch.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* When the configurator and sidebar share a parent row, stretch both to the
+   same height so the configurator fills the full available space. */
+.fhs-configurator-inline-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 32px;
+    align-items: stretch;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.fhs-configurator-inline-row .fhs-configurator {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.fhs-configurator-inline-row .fhs-configurator__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sidebar stretches to match configurator height */
+.fhs-configurator-inline-row .fhs-configurator-sidebar {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STICKY TAB BAR
+   The tab nav sticks to the top of the viewport when the user scrolls
+   through the section panels below.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fhs-configurator__tabs--sticky {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #fff;
+    border-bottom: 1px solid #e0e4ea;
+    /* box-shadow when stuck */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLICKABLE PRODUCT TITLE LINK
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fhs-configurator__card-name-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.fhs-configurator__card-name-link:hover .fhs-configurator__card-name,
+.fhs-configurator__card-name-link:focus .fhs-configurator__card-name {
+    color: #00587d;
+    text-decoration: underline;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   QUANTITY STEPPER ON CONFIGURATOR CARDS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fhs-configurator__card-qty-wrap {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+    width: fit-content;
+}
+
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-minus,
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-plus {
+    width: 28px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 600;
+    border: none;
+    background: #f5f6f8;
+    color: #374151;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.12s;
+    line-height: 1;
+    box-shadow: none;
+}
+
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-minus:hover,
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-plus:hover {
+    background: #e0e4ea;
+}
+
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-input {
+    width: 38px;
+    height: 30px;
+    text-align: center;
+    font-size: 1.3rem;
+    border: none;
+    border-left: 1px solid #d1d5db;
+    border-right: 1px solid #d1d5db;
+    outline: none;
+    -moz-appearance: textfield;
+    appearance: textfield;
+    background: #fff;
+    color: #1a1a1a;
+    font-weight: 600;
+    padding: 0;
+    box-shadow: none;
+}
+
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-input::-webkit-inner-spin-button,
+.fhs-configurator__card-qty-wrap .fhs-conf-qty-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+/* Only show qty stepper when card is selected */
+.fhs-configurator__card .fhs-configurator__card-qty-wrap {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    height: 0;
+    overflow: hidden;
+    margin-top: 0;
+}
+
+.fhs-configurator__card.is-selected .fhs-configurator__card-qty-wrap {
+    opacity: 1;
+    pointer-events: auto;
+    height: auto;
+    margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW MORE / LESS TOGGLE
+   After the first row of cards, remaining cards are hidden. A "View more"
+   button with a chevron reveals them. Clicking again collapses.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Cards beyond the first row are hidden by default via JS adding this class */
+.fhs-configurator__card--overflow {
+    display: none !important;
+}
+
+.fhs-configurator__card--overflow.is-visible {
+    display: flex !important;
+}
+
+/* The view-more bar */
+.fhs-configurator__view-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 0 4px;
+}
+
+.fhs-configurator__view-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid #e0e4ea;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #00587d;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    box-shadow: none;
+}
+
+.fhs-configurator__view-more-btn:hover,
+.fhs-configurator__view-more-btn:focus {
+    background: #f0f4fb;
+    border-color: #00587d;
+    color: #00587d;
+}
+
+.fhs-configurator__view-more-arrow {
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.fhs-configurator__view-more-btn[aria-expanded="true"] .fhs-configurator__view-more-arrow {
+    transform: rotate(180deg);
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+    .fhs-configurator-inline-row {
+        grid-template-columns: 1fr;
+    }
+
+    .fhs-configurator-inline-row .fhs-configurator-sidebar {
+        position: static;
+    }
+}
+
+/* Variation card title link */
+.fhs-variation-card__name-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.fhs-variation-card__name-link:hover,
+.fhs-variation-card__name-link:focus {
+    color: #00587d;
+    text-decoration: underline;
+}

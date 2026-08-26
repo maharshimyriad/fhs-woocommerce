@@ -58,6 +58,15 @@
 			updateSelectAllButton( wrapper, sectionKey );
 			dispatchTemporaryChangeEvent( wrapper );
 
+			// Reset qty to 1 when a card is deselected.
+			var card = input.closest( '.fhs-configurator__card' );
+			if ( card && ! input.checked ) {
+				var qtyInput = card.querySelector( '.fhs-conf-qty-input' );
+				if ( qtyInput ) {
+					qtyInput.value = 1;
+				}
+			}
+
 			// Show "Updating…" immediately; commit fires after debounce.
 			scheduleSectionCommit( wrapper, sectionKey );
 		} );
@@ -97,6 +106,10 @@
 		updateAllSelectAllButtons( wrapper );
 		renderCommittedConfigurationPanel( wrapper );
 		dispatchCommittedChangeEvent( wrapper );
+
+		// New features: qty steppers + view-more collapse.
+		initQtySteppers( wrapper );
+		initViewMore( wrapper );
 	}
 
 	function createInitialCommittedConfiguration( wrapper ) {
@@ -1002,6 +1015,259 @@ remove.setAttribute( 'title', 'Remove' );
 		}
 	}
 
+	// ── Quantity steppers ────────────────────────────────────────────────────
+	//
+	// Each configurator card now has a .fhs-configurator__card-qty-wrap with
+	// minus / input / plus controls.  The wrap is hidden via CSS until the card
+	// gets .is-selected; we only need to wire up the +/- buttons here.
+	//
+	// Quantities are stored on the card's <label> element as data-qty so other
+	// code can read them without querying the input each time.
+
+	function initQtySteppers( wrapper ) {
+		// Delegate — works for any cards present now or after a DOM change.
+		wrapper.addEventListener( 'click', function ( event ) {
+			var btn = event.target;
+
+			// Ignore clicks that aren't on a stepper button.
+			if (
+				! btn.classList.contains( 'fhs-conf-qty-minus' ) &&
+				! btn.classList.contains( 'fhs-conf-qty-plus' )
+			) {
+				return;
+			}
+
+			// Stop the click bubbling to the parent <label> which would
+			// accidentally toggle the card's radio/checkbox.
+			event.preventDefault();
+			event.stopPropagation();
+
+			var wrap  = btn.closest( '.fhs-configurator__card-qty-wrap' );
+			if ( ! wrap ) return;
+
+			var input = wrap.querySelector( '.fhs-conf-qty-input' );
+			if ( ! input ) return;
+
+			var current = parseInt( input.value, 10 ) || 1;
+			var min     = parseInt( input.getAttribute( 'min' ), 10 ) || 1;
+			var max     = parseInt( input.getAttribute( 'max' ), 10 ) || 999;
+
+			var next = btn.classList.contains( 'fhs-conf-qty-plus' )
+				? Math.min( current + 1, max )
+				: Math.max( current - 1, min );
+
+			if ( next === current ) return;
+
+			input.value = next;
+
+			// Store on the card label so cart logic can read it.
+			var card = wrap.closest( '.fhs-configurator__card' );
+			if ( card ) {
+				card.setAttribute( 'data-qty', next );
+			}
+
+			// Fire a native input event so any external listeners are notified.
+			input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+
+		// Also handle direct typing into the qty input.
+		wrapper.addEventListener( 'change', function ( event ) {
+			var input = event.target;
+			if ( ! input.classList.contains( 'fhs-conf-qty-input' ) ) return;
+
+			var min   = parseInt( input.getAttribute( 'min' ), 10 ) || 1;
+			var max   = parseInt( input.getAttribute( 'max' ), 10 ) || 999;
+			var value = parseInt( input.value, 10 );
+
+			if ( isNaN( value ) || value < min ) value = min;
+			if ( value > max ) value = max;
+			input.value = value;
+
+			var card = input.closest( '.fhs-configurator__card' );
+			if ( card ) {
+				card.setAttribute( 'data-qty', value );
+			}
+		} );
+	}
+
+	// ── View more / less toggle ──────────────────────────────────────────────
+	//
+	// Reads data-cols from .fhs-configurator__grid-wrap (set in the PHP template)
+	// to know how many cards fill one row.  Cards beyond that first row get the
+	// .fhs-configurator__card--overflow class and are hidden by CSS.
+	// A "View more ▾" button is shown below the grid; clicking it toggles
+	// visibility and flips the button label / chevron.
+	//
+	// initViewMore must be called once per configurator wrapper on init AND
+	// again whenever a tab switch shows a panel for the first time (panels
+	// start [hidden] so their layout hasn't been measured yet).  We handle
+	// both cases by calling setupPanelViewMore inside switchTab as well.
+
+	function initViewMore( wrapper ) {
+		// Wire up every panel that is already visible.
+		wrapper.querySelectorAll( '.fhs-configurator__panel' ).forEach( function ( panel ) {
+			setupPanelViewMore( panel );
+		} );
+
+		// Re-run whenever a tab is activated (panels start hidden so offsetTop
+		// is 0 until they are shown for the first time).
+		var tabs = wrapper.querySelectorAll( '.fhs-configurator__tab' );
+		tabs.forEach( function ( tab ) {
+			tab.addEventListener( 'click', function () {
+				var key   = tab.getAttribute( 'data-section-key' );
+				var panel = wrapper.querySelector(
+					'#fhs-conf-panel-' + key
+				);
+				if ( panel ) {
+					// Small delay so the panel is visible before we measure.
+					setTimeout( function () {
+						setupPanelViewMore( panel );
+					}, 30 );
+				}
+			} );
+		} );
+	}
+
+	function setupPanelViewMore( panel ) {
+		var gridWrap = panel.querySelector( '.fhs-configurator__grid-wrap' );
+		if ( ! gridWrap ) return;
+
+		var grid   = gridWrap.querySelector( '.fhs-configurator__grid' );
+		var moreBtnWrap = gridWrap.querySelector( '.fhs-configurator__view-more' );
+		if ( ! grid || ! moreBtnWrap ) return;
+
+		var cards  = Array.prototype.slice.call(
+			grid.querySelectorAll( '.fhs-configurator__card' )
+		);
+
+		// Determine columns from data-cols attribute or by counting.
+		var cols = parseInt( gridWrap.getAttribute( 'data-cols' ), 10 ) || 4;
+
+		// Recalculate from actual rendered layout when panel is visible.
+		if ( panel.offsetParent !== null ) {
+			cols = getRenderedColumns( grid, cards );
+		}
+
+		var threshold = cols; // hide everything after the first row
+
+		if ( cards.length <= threshold ) {
+			// All cards fit in one row — no toggle needed.
+			moreBtnWrap.style.display = 'none';
+			cards.forEach( function ( c ) {
+				c.classList.remove( 'fhs-configurator__card--overflow' );
+				c.classList.remove( 'is-visible' );
+			} );
+			return;
+		}
+
+		// Mark overflow cards.
+		cards.forEach( function ( card, idx ) {
+			if ( idx >= threshold ) {
+				card.classList.add( 'fhs-configurator__card--overflow' );
+				card.classList.remove( 'is-visible' );
+			} else {
+				card.classList.remove( 'fhs-configurator__card--overflow' );
+			}
+		} );
+
+		// Show the toggle bar.
+		moreBtnWrap.style.display = '';
+
+		var btn = moreBtnWrap.querySelector( '.fhs-configurator__view-more-btn' );
+		if ( ! btn ) return;
+
+		// Remove any previously attached listener by cloning.
+		var freshBtn = btn.cloneNode( true );
+		moreBtnWrap.replaceChild( freshBtn, btn );
+		btn = freshBtn;
+
+		var labelEl = btn.querySelector( '.fhs-configurator__view-more-label' );
+		var expanded = false;
+
+		btn.setAttribute( 'aria-expanded', 'false' );
+
+		btn.addEventListener( 'click', function () {
+			expanded = ! expanded;
+			btn.setAttribute( 'aria-expanded', expanded ? 'true' : 'false' );
+
+			cards.forEach( function ( card, idx ) {
+				if ( idx >= threshold ) {
+					if ( expanded ) {
+						card.classList.add( 'is-visible' );
+					} else {
+						card.classList.remove( 'is-visible' );
+					}
+				}
+			} );
+
+			if ( labelEl ) {
+				labelEl.textContent = expanded ? 'View less' : 'View more';
+			}
+
+			// Scroll the newly revealed cards into view when expanding.
+			if ( expanded ) {
+				var firstHidden = cards[ threshold ];
+				if ( firstHidden ) {
+					firstHidden.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+				}
+			}
+		} );
+	}
+
+	// Count how many grid columns are actually rendered by comparing offsetTop
+	// of successive cards.  Falls back to data-cols if cards aren't visible.
+	function getRenderedColumns( grid, cards ) {
+		if ( ! cards.length ) return 4;
+		var firstTop = cards[0].offsetTop;
+		var count    = 0;
+		for ( var i = 0; i < cards.length; i++ ) {
+			if ( cards[i].offsetTop === firstTop ) {
+				count++;
+			} else {
+				break;
+			}
+		}
+		return count > 0 ? count : 4;
+	}
+
+	// ── Expose per-card quantities on getConfiguratorSelections ─────────────
+	//
+	// Wraps the original function so callers (including the Add-to-Cart handler)
+	// get quantity information alongside the selected product IDs.
+
+	var _originalGetSelections = getConfiguratorSelections;
+	getConfiguratorSelections = function ( wrapper ) {
+		var state = _originalGetSelections( wrapper );
+		// Annotate each selected ID with its quantity.
+		if ( wrapper || document.querySelector( '.fhs-configurator' ) ) {
+			var w = wrapper || document.querySelector( '.fhs-configurator' );
+			Object.keys( state ).forEach( function ( sectionKey ) {
+				var ids = state[ sectionKey ];
+				if ( ! ids || ! ids.length ) return;
+				state[ sectionKey ] = ids.map( function ( id ) {
+					var card = w.querySelector(
+						'.fhs-configurator__card[data-product-id="' + id + '"]'
+					);
+					var qty = card ? ( parseInt( card.getAttribute( 'data-qty' ), 10 ) || 1 ) : 1;
+					// Return the id as-is (backwards compat) but also expose qty
+					// on a parallel map so cart code can read it.
+					return id;
+				} );
+				// Build parallel qty map: state.__qty[sectionKey][id] = qty
+				if ( ! state.__qty ) state.__qty = {};
+				if ( ! state.__qty[ sectionKey ] ) state.__qty[ sectionKey ] = {};
+				ids.forEach( function ( id ) {
+					var card = w.querySelector(
+						'.fhs-configurator__card[data-product-id="' + id + '"]'
+					);
+					state.__qty[ sectionKey ][ id ] =
+						card ? ( parseInt( card.getAttribute( 'data-qty' ), 10 ) || 1 ) : 1;
+				} );
+			} );
+		}
+		return state;
+	};
+
 	window.fhsConfigurator = {
 		getSelections: function () {
 			return getConfiguratorSelections();
@@ -1009,6 +1275,13 @@ remove.setAttribute( 'title', 'Remove' );
 		getCommittedConfiguration: function () {
 			var wrapper = document.querySelector( '.fhs-configurator' );
 			return wrapper ? cloneCommittedConfiguration( getCommittedConfiguration( wrapper ) ) : {};
+		},
+		// Helper: get quantity for a specific product card.
+		getProductQty: function ( productId ) {
+			var card = document.querySelector(
+				'.fhs-configurator__card[data-product-id="' + productId + '"]'
+			);
+			return card ? ( parseInt( card.getAttribute( 'data-qty' ), 10 ) || 1 ) : 1;
 		},
 	};
 

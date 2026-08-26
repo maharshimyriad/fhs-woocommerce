@@ -298,7 +298,11 @@ if ( ! has_action( 'fhs_inside_product_main_container', 'fhs_render_variation_ca
 				<div class="fhs-variation-card__body">
 
 					<h4 class="fhs-variation-card__name">
-						<?php echo esc_html( $variation_name ); ?>
+						<a href="<?php echo esc_url( get_permalink( $variation_id ) ); ?>"
+							class="fhs-variation-card__name-link"
+							aria-label="<?php echo esc_attr( sprintf( __( 'View %s', 'woocommerce' ), $variation_name ) ); ?>">
+							<?php echo esc_html( $variation_name ); ?>
+						</a>
 					</h4>
 
 					<?php if ( $sku ) : ?>
