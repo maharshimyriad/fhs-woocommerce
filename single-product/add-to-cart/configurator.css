@@ -53,6 +53,7 @@
 
 .fhs-configurator-sidebar {
     min-width: 0;
+    display:none;
 }
 
 .fhs-configurator__right {
