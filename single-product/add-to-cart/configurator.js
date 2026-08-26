@@ -967,7 +967,7 @@
 	}
 
 	function formatItemCount( count ) {
-		return count + ' ' + ( count === 1 ? 'product' : 'products' );
+		return count + ' ' + ( count === 1 ? 'item' : 'items' );
 	}
 
 	function formatSectionLabel( sectionKey ) {
@@ -1143,18 +1143,6 @@
 		// Click — runs after mousedown; label forwarding is already blocked.
 		wrapper.addEventListener( 'click', function ( event ) {
 			var target = event.target;
-
-			// ── DEBUG (append ?fhs_debug=1 to URL to enable) ────────────────
-			if ( window.location.search.indexOf( 'fhs_debug=1' ) !== -1 ) {
-				console.group( '[FHS QTY DEBUG] click' );
-				console.log( 'target:', target.tagName, target.className );
-				console.log( 'is stepper:', target.classList.contains( 'fhs-conf-qty-minus' ) || target.classList.contains( 'fhs-conf-qty-plus' ) );
-				var lbl = target.closest( 'label' );
-				var inp = lbl ? lbl.querySelector( '.fhs-configurator__card-input' ) : null;
-				console.log( 'card input checked:', inp ? inp.checked : 'n/a' );
-				console.groupEnd();
-			}
-			// ── END DEBUG ────────────────────────────────────────────────────
 
 			if ( handleQtyTrigger( target ) ) {
 				event.preventDefault();
